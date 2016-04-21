@@ -1,0 +1,3 @@
+# jgitver: git versioning library
+
+
