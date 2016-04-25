@@ -24,16 +24,44 @@ When computing versions, `jgitver` focuses on providing [semver](http://semver.o
 
 ### no calculation for commits with annotated tag
 
-When the HEAD is on git commit which contains an annotated tag that matches a version, this version is used without any modification.
+When the HEAD is on a git commit which contains an annotated tag that matches a version definition, this annotated tag is used to extract the version.
+
+### use annotated tags version by default
+
+Without any configuration, `jgitver` will retrieve the ancestor commit (starrting from HEAD) that has an annotated tag on it, and will use this a a base version name.
+It will append to that found version, any distance or branch name where needed.
+If no tag with a version can be found ``0.0.0` will be used.     
 
 ### auto increasing version
 
-By default, `jgitver` will do a `+1` to the version found on the latest annotated tag found starting from the current commit.
+If asked, `jgitver` will do a `+1` to the version found on the latest annotated tag found starting from the current commit.
+
+To activate, call method `GitVersionCalculator#setAutoIncrementPatch(true)`
 
 ### lightweight tags
 
 By looking for a version on an annotated tag, `jgitver` will also lookup lightweight tags. If one defining a version is found on a parent commit, it will be used.
-Lightweight tags have the precedence on annotated tags, so that starting from the exact same commit as the one defining the previous release, you can defined the next version pattern to use and thus _override_ the default `+1` mechanism.
+Lightweight tags have the precedence on annotated tags, so that starting from the exact same commit as the one defining the previous release, you can defined the next version pattern to use and thus _override_ the default mechanism or the `+1` one.
+
+## Identifier & Qualifiers
+
+`jgitver` will also generate qualifiers and thus an identifier using:
+
+- existing qualifiers on found tag (including SNAPSHOT)
+- the tag distance from the HEAD if > 0 (active by default)
+- the branch name if not omit by a call to `GitVersionCalculator#setNonQualifierBranches( ... )` ; by default only `master` branch is omit for branch qualification (active by default)
+- the git commit id (inactive by default)
+
+## TODOs
+
+1. TODO evaluate activating by default `+1` so that versions from newer commit are _higher_ than the tag one (probably a better default) 
+1. TODO eat your own food and integrate maven-external-version-plugin
+1. TODO generate images from draw.io graphs located under src/main/graphs to illustrate the use cases
+1. TODO provide illustrated example & point to corresponding test cases
+1. TODO document contribution guidelines
+1. TODO document coding guidelines (checkstyles, ...)
+
+the REST of the page is _WIP_
 
 ## Qualifiers
 
@@ -53,7 +81,6 @@ p:alpha, p:beta, p:rc
 
 ## Identifier
 
-TODO
 [] explain how to combine qualifiers
 [] expose some pattern like syntax: %b-SNAPSHOT
 

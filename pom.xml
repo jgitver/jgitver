@@ -1,6 +1,6 @@
 <!--
 
-    Copyright (C) 2016 Matthieu Brouillard [http://oss.brouillard.fr/git-versioning] (matthieu@brouillard.fr)
+    Copyright (C) 2016 Matthieu Brouillard [http://oss.brouillard.fr/jgitver] (matthieu@brouillard.fr)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -106,12 +106,14 @@
                 <configuration>
                     <header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</header>
                     <properties>
-                        <owner>Matthieu Brouillard [http://oss.brouillard.fr/git-versioning]</owner>
+                        <owner>Matthieu Brouillard [http://oss.brouillard.fr/jgitver]</owner>
                         <email>matthieu@brouillard.fr</email>
                     </properties>
                     <excludes>
                         <exclude>**/README</exclude>
                         <exclude>**/LICENSE</exclude>
+                        <exclude>.*</exclude>
+                        <exclude>src/quality/**</exclude>
                         <exclude>src/test/resources/**</exclude>
                         <exclude>src/main/resources/**</exclude>
                     </excludes>
@@ -119,6 +121,37 @@
                 <executions>
                     <execution>
                         <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>2.17</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.puppycrawl.tools</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <version>6.17</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>validate</id>
+                        <phase>validate</phase>
+                        <configuration>
+                            <configLocation>${project.baseUri}/src/quality/checkstyle/checks.xml</configLocation>
+                            <propertyExpansion>checkstyle.suppression.file=${project.baseUri}/src/quality/checkstyle/suppressions.xml</propertyExpansion>
+                            <encoding>UTF-8</encoding>
+                            <consoleOutput>true</consoleOutput>
+                            <failsOnError>true</failsOnError>
+                            <linkXRef>false</linkXRef>
+                            <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                            <checkstyle.suppressions.file></checkstyle.suppressions.file>
+                        </configuration>
                         <goals>
                             <goal>check</goal>
                         </goals>
@@ -141,6 +174,19 @@
                                         <groupId>com.mycila</groupId>
                                         <artifactId>license-maven-plugin</artifactId>
                                         <versionRange>[2.11,)</versionRange>
+                                        <goals>
+                                            <goal>check</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.apache.maven.plugins</groupId>
+                                        <artifactId>maven-checkstyle-plugin</artifactId>
+                                        <versionRange>[2.17,)</versionRange>
                                         <goals>
                                             <goal>check</goal>
                                         </goals>
