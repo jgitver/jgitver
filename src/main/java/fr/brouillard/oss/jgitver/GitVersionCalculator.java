@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.eclipse.jgit.api.Git;
@@ -41,16 +42,20 @@ public class GitVersionCalculator implements AutoCloseable {
     private boolean useGitCommitId = false;
     private int gitCommitIdLength = 8;
     private String nonQualifierBranches = "master";
+    
+    private String findTagVersionPattern = "v?([0-9]+(?:\\.[0-9]+){0,2}(?:-[a-zA-Z0-9\\-_]+)?)";
+    private String extractTagVersionPattern = "$1";
+    private Pattern findVersionPattern;
 
     private GitVersionCalculator(File gitRepositoryLocation) throws IOException {
         this.repository = openRepository(gitRepositoryLocation);
+        findVersionPattern = Pattern.compile(findTagVersionPattern);
     }
 
     /**
      * Creates a {@link GitVersionCalculator} for the git repository pointing to the given path.
      * 
-     * @param gitRepositoryLocation
-     *            the location of the git repository to find version for
+     * @param gitRepositoryLocation the location of the git repository to find version for
      * @return a non null {@link GitVersionCalculator}
      */
     public static GitVersionCalculator location(File gitRepositoryLocation) {
@@ -76,35 +81,39 @@ public class GitVersionCalculator implements AutoCloseable {
     public String getVersion() {
         try (Git git = new Git(repository)) {
             Version v = findRelevantVersionFromTag(git);
-            
+
             v = enhanceVersionWithBranch(v);
-            
+
             if (v.isSnapshot()) {
                 // reset the SNAPSHOT qualifier at the end
                 v = v.removeQualifier("SNAPSHOT").addQualifier("SNAPSHOT");
             }
-            
+
             return v.toString();
         }
     }
 
     private Version enhanceVersionWithBranch(Version version) {
         List<String> noQualifierForBranches = Arrays.asList(nonQualifierBranches.split("\\s*,\\s*"));
-        
+
         try {
             String currentBranch = repository.getBranch();
-            
+
             if (!noQualifierForBranches.contains(currentBranch) && !isDetachedHead(repository)) {
                 // we need to append a branch qualifier
                 return version.addQualifier(sanitizeBranchName(currentBranch));
             }
-            
+
             return version;
         } catch (Exception ex) {
             throw new IllegalStateException("failure adding branch information to version " + version.toString(), ex);
         }
     }
     
+    private String extractVersionFromTag(String tagName) {
+        return findVersionPattern.matcher(tagName).replaceAll(extractTagVersionPattern);
+    }
+
     private String sanitizeBranchName(String currentBranch) {
         return currentBranch.replaceAll("[\\s\\-]+", "_");
     }
@@ -116,7 +125,7 @@ public class GitVersionCalculator implements AutoCloseable {
     private Version findRelevantVersionFromTag(Git git) {
         try {
             // retrieve all tags matching a version, and get all info for each of them
-            List<Ref> allTags = git.tagList().call().stream().filter(this::tagIsAVersionOne).map(this::peel)
+            List<Ref> allTags = git.tagList().call().stream().filter(this::isATagVersion).map(this::peel)
                     .collect(Collectors.toCollection(ArrayList::new));
             // let's have tags sorted from most recent to oldest
             Collections.reverse(allTags);
@@ -125,11 +134,11 @@ public class GitVersionCalculator implements AutoCloseable {
             List<Ref> lights = allTags.stream().filter(as(this::isAnnotated).negate()).collect(Collectors.toList());
 
             List<Ref> tags = new ArrayList<>();
-            tags.addAll(lights);        // first add lights one for precedence on top of normals/annotated ones
+            tags.addAll(lights); // first add lights one for precedence on top of normals/annotated ones
             tags.addAll(normals);
 
             // let's find a tag with a version on it
-            
+
             try (RevWalk revWalk = new RevWalk(repository)) {
                 ObjectId rootId = repository.resolve("HEAD");
                 revWalk.markStart(revWalk.parseCommit(rootId));
@@ -150,7 +159,7 @@ public class GitVersionCalculator implements AutoCloseable {
                                 tagIsOnHead = true;
                             }
                         }
-                        String tag = tagFound.get().getName().replace("refs/tags/", "");
+                        String tag = extractVersionFromTag(tagNameFromRef(tagFound.get()));
                         Version v = Version.parse(tag);
 
                         if (!tagIsOnHead && autoIncrementPatch && isAnnotated(tagFound.get())) {
@@ -160,7 +169,7 @@ public class GitVersionCalculator implements AutoCloseable {
                         if (useDistance && depth > 0 && !tagIsOnHead && !v.isSnapshot()) {
                             v = v.addQualifier("" + depth);
                         }
-                        
+
                         if (useGitCommitId && !!tagIsOnHead && !v.isSnapshot()) {
                             v = v.addQualifier(rootId.getName().substring(0, gitCommitIdLength));
                         }
@@ -186,10 +195,13 @@ public class GitVersionCalculator implements AutoCloseable {
                 .findFirst();
     }
 
-    private boolean tagIsAVersionOne(Ref tag) {
-        // TODO provide a regexp find replace to handle common cases like:
-        // v1.0 -> 1.0
-        return true;
+    private boolean isATagVersion(Ref tag) {
+        String tagName = tagNameFromRef(tag);
+        return findVersionPattern.matcher(tagName).matches();
+    }
+
+    private String tagNameFromRef(Ref tag) {
+        return tag.getName().replace("refs/tags/", "");
     }
 
     private Ref peel(Ref tag) {
@@ -201,26 +213,62 @@ public class GitVersionCalculator implements AutoCloseable {
         repository.close();
     }
 
+    /**
+     * When true, when the found tag to calculate a version for HEAD is a normal/annotated one, 
+     * the semver patch version of the tag is increased by one ; except when the tag is on the HEAD itself.
+     * This action is not in use if the SNAPSHOT qualifier is present on the found version or if the found tag is a lightweight one.
+     * @param value if true and when found tag is not on HEAD, 
+     *      then version returned will be the found version with patch number increased by one.
+     * @return itself to chain settings
+     */
     public GitVersionCalculator setAutoIncrementPatch(boolean value) {
         this.autoIncrementPatch = value;
         return this;
     }
 
+    /**
+     * Defines a comma separated list of branches for which no branch name qualifier will be used. default "master".
+     * Example: "master, integration"
+     * @param nonQualifierBranches a comma separated list of branch name for which no branch name qualifier should be used,
+     *      can be null and/or empty 
+     * @return itself to chain settings
+     */
     public GitVersionCalculator setNonQualifierBranches(String nonQualifierBranches) {
-        this.nonQualifierBranches = nonQualifierBranches;
+        this.nonQualifierBranches = Optional.ofNullable(nonQualifierBranches).orElse("");
         return this;
     }
 
+    /**
+     * When true, append a qualifier with the distance between the HEAD commit and the found commit with a version tag.
+     * This qualifier is not used if the SNAPSHOT qualifier is used.
+     *  
+     * @param useDistance if true, a qualifier with found distance will be used.
+     * @return itself to chain settings
+     */
     public GitVersionCalculator setUseDistance(boolean useDistance) {
         this.useDistance = useDistance;
         return this;
     }
 
+    /**
+     * When true, append the git commit id (SHA1) to the version.
+     * This qualifier is not used if the SNAPSHOT qualifier is used.
+     * 
+     * @param useGitCommitId if true, a qualifier with SHA1 git commit will be used, default true
+     * @return itself to chain settings
+     */
     public GitVersionCalculator setUseGitCommitId(boolean useGitCommitId) {
         this.useGitCommitId = useGitCommitId;
         return this;
     }
 
+    /**
+     * Defines how long the qualifier from SHA1 git commit has to be.
+     * 
+     * @param gitCommitIdLength the length of the SHA1 substring to use as qualifier, valid values [8, 40], default 8
+     * @return itself to chain settings
+     * @throws IllegalArgumentException in case the length is not in the range [8,40]
+     */
     public GitVersionCalculator setGitCommitIdLength(int gitCommitIdLength) {
         if (gitCommitIdLength < 8 || gitCommitIdLength > 40) {
             throw new IllegalStateException("GitCommitIdLength must be between 8 & 40");

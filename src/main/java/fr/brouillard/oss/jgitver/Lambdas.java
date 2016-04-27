@@ -28,10 +28,11 @@ import java.util.function.Supplier;
 public final class Lambdas {
     private Lambdas() {
     }
-
+    
     /**
      * Returns the given argument as a predicate, usefull when called with method reference. 
      * @param predicate the argument already resolved by the compiler as a predicate
+     * @param <T> the type of the object used within the predicate
      * @return the given argument as a typed predicate
      */
     public static <T> Predicate<T> as(Predicate<T> predicate) {
@@ -41,6 +42,7 @@ public final class Lambdas {
     /**
      * Returns the given argument as a consumer, usefull when called with method reference. 
      * @param consumer the argument already resolved by the compiler as a consumer
+     * @param <T> the type of the object consumed by the consumer
      * @return the given argument as a typed consumer
      */
     public static <T> Consumer<T> as(Consumer<T> consumer) {
@@ -50,6 +52,7 @@ public final class Lambdas {
     /**
      * Returns the given argument as a supplier, usefull when called with method reference. 
      * @param supplier the argument already resolved by the compiler as a supplier
+     * @param <T> the type of the object produced by the supplier
      * @return the given argument as a typed supplier
      */
     public static <T> Supplier<T> as(Supplier<T> supplier) {
@@ -59,6 +62,8 @@ public final class Lambdas {
     /**
      * Returns the given argument as a function, usefull when called with method reference. 
      * @param function the argument already resolved by the compiler as a function
+     * @param <T> the type of the object consumed by the function
+     * @param <R> the type of the object returned by the function
      * @return the given argument as a typed function
      */
     public static <T, R> Function<T, R> as(Function<T, R> function) {

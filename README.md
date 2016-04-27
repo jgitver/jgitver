@@ -28,7 +28,7 @@ When the HEAD is on a git commit which contains an annotated tag that matches a 
 
 ### use annotated tags version by default
 
-Without any configuration, `jgitver` will retrieve the ancestor commit (starrting from HEAD) that has an annotated tag on it, and will use this a a base version name.
+Without any configuration, `jgitver` will retrieve the ancestor commit (starting from HEAD) that has an annotated tag on it, and will use this a a base version name.
 It will append to that found version, any distance or branch name where needed.
 If no tag with a version can be found ``0.0.0` will be used.     
 

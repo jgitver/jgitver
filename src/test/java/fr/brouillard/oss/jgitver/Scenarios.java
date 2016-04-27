@@ -166,6 +166,32 @@ $ git lg
                 .getScenario();
     }
     
+    /**
+     * Builds the following repository
+     * <pre>
+$ git log --graph --abbrev-commit --decorate --format=format:'%h - (%ar) %s - %an %d'
+* 80eee6d - (18 seconds ago) content E - Matthieu Brouillard (HEAD -> master)
+* 98358d0 - (18 seconds ago) content D - Matthieu Brouillard (tag: 2.0.0)
+* 00a993e - (18 seconds ago) content C - Matthieu Brouillard
+* 183ccc6 - (18 seconds ago) content B - Matthieu Brouillard (tag: 1.0.0)
+* b048402 - (18 seconds ago) content A - Matthieu Brouillard
+     * </pre>
+     * @return the scenario object corresponding to the above git repository
+     */
+    public static Scenario s6_matching_and_non_matching_versions_tags() {
+        return new ScenarioBuilder()
+            .commit("content", "A")
+            .tag("1.0")
+            .commit("content", "B")
+            .tag("v2.0")
+            .commit("content", "C")
+            .tag("a3.0")
+            .commit("content", "D")
+            .tag("dummy")
+            .commit("content", "E")
+            .master()
+            .getScenario();
+    }
 
     public static class Scenario {
         private File repositoryLocation;
