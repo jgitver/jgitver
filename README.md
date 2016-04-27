@@ -1,4 +1,4 @@
-# jgitver: git versioning library
+# jgitver: git versioning library [![Build Status](https://travis-ci.org/jgitver/jgitver.svg)](https://travis-ci.org/jgitver/jgitver)
 
 The goal of `jgitver` is to provide a common way, via a library, to calculate a project [semver](http://semver.org) compatible version from a git repository and the tags it contains.
 By doing so, it will then be _easy_ to integrate it into build systems like maven, gradle or ant.
