@@ -72,38 +72,3 @@ Here is a serie of different settings supported by `jgitver`. Please look also a
 
 ![Example 4](src/doc/images/s7_linear_with_SNAPSHOT_tags_and_branch.gif?raw=true "Example 4")
 
-
-## TODOs
-
-1. TODO evaluate activating by default `+1` so that versions from newer commit are _higher_ than the tag one (probably a better default) 
-1. TODO eat your own food and integrate maven-external-version-plugin
-1. TODO generate images from draw.io graphs located under src/main/graphs to illustrate the use cases
-1. TODO provide illustrated example & point to corresponding test cases
-1. TODO document contribution guidelines
-1. TODO document coding guidelines (checkstyles, ...)
-
-the REST of the page is _WIP_
-
-## Qualifiers
-
-### commit id (c)
-
-### distance (d)
-
-### timestamp (t)
-
-### branch (b)
-
-### lightweight tags (letter:value)
-
-#### phase (alpha, beta, rc)
-
-p:alpha, p:beta, p:rc
-
-## Identifier
-
-[] explain how to combine qualifiers
-[] expose some pattern like syntax: %b-SNAPSHOT
-
-
-
