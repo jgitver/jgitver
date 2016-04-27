@@ -52,6 +52,27 @@ Lightweight tags have the precedence on annotated tags, so that starting from th
 - the branch name if not omit by a call to `GitVersionCalculator#setNonQualifierBranches( ... )` ; by default only `master` branch is omit for branch qualification (active by default)
 - the git commit id (inactive by default)
 
+## Examples
+
+Here is a serie of different settings supported by `jgitver`. Please look also at the junit tests cases that are aimed to cover all possibilities. 
+
+### Example 1
+
+![Example 1](src/doc/images/s1_linear_with_only_annotated_tags.gif?raw=true "Example 1")
+
+### Example 2
+
+![Example 2](src/doc/images/s1_linear_with_only_annotated_tags_autoIncrement.gif?raw=true "Example 2")
+
+### Example 3
+
+![Example 3](src/doc/images/s2_linear_with_both_tags_autoIncrement.gif?raw=true "Example 3")
+
+### Example 4
+
+![Example 4](src/doc/images/s7_linear_with_SNAPSHOT_tags_and_branch.gif?raw=true "Example 4")
+
+
 ## TODOs
 
 1. TODO evaluate activating by default `+1` so that versions from newer commit are _higher_ than the tag one (probably a better default) 

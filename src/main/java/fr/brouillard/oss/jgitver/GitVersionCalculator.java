@@ -218,7 +218,7 @@ public class GitVersionCalculator implements AutoCloseable {
      * the semver patch version of the tag is increased by one ; except when the tag is on the HEAD itself.
      * This action is not in use if the SNAPSHOT qualifier is present on the found version or if the found tag is a lightweight one.
      * @param value if true and when found tag is not on HEAD, 
-     *      then version returned will be the found version with patch number increased by one.
+     *      then version returned will be the found version with patch number increased by one. default false.
      * @return itself to chain settings
      */
     public GitVersionCalculator setAutoIncrementPatch(boolean value) {

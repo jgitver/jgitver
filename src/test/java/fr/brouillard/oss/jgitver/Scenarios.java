@@ -170,11 +170,11 @@ $ git lg
      * Builds the following repository
      * <pre>
 $ git log --graph --abbrev-commit --decorate --format=format:'%h - (%ar) %s - %an %d'
-* 80eee6d - (18 seconds ago) content E - Matthieu Brouillard (HEAD -> master)
-* 98358d0 - (18 seconds ago) content D - Matthieu Brouillard (tag: 2.0.0)
-* 00a993e - (18 seconds ago) content C - Matthieu Brouillard
-* 183ccc6 - (18 seconds ago) content B - Matthieu Brouillard (tag: 1.0.0)
-* b048402 - (18 seconds ago) content A - Matthieu Brouillard
+* 2edd5f0 - (23 seconds ago) content E - Matthieu Brouillard  (HEAD -> master)
+* 1fd4fc5 - (23 seconds ago) content D - Matthieu Brouillard  (tag: dummy)
+* 8b7702c - (23 seconds ago) content C - Matthieu Brouillard  (tag: a3.0)
+* bf740e5 - (23 seconds ago) content B - Matthieu Brouillard  (tag: v2.0)
+* 7166362 - (23 seconds ago) content A - Matthieu Brouillard  (tag: 1.0)
      * </pre>
      * @return the scenario object corresponding to the above git repository
      */
