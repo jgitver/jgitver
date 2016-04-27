@@ -41,6 +41,18 @@
         </license>
     </licenses>
 
+    <scm>
+        <connection>scm:git:https://github.com/jgitver/jgitver.git</connection>
+        <developerConnection>scm:git:https://github.com/jgitver/jgitver.git</developerConnection>
+        <url>http://oss.brouillard.fr/projects/jgitver/</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/jgitver/jgitver/issues</url>
+    </issueManagement>
+
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
