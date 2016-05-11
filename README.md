@@ -5,12 +5,12 @@ By doing so, it will then be _easy_ to integrate it into build systems like mave
 
 ## How it works
 
-`jgitver` uses annotated tags, lightweight tags & branches names to deduce the version of a particular git commit. 
-From a given commit, a little bit like `git describe` command, `jgitver` walks thru the commit tree to retrieve the latest tag on an ancestor commit. From this tag and depending on the configuration a version will be deducted/calculated.
+`jgitver` uses annotated tags, lightweight tags, branches names & commits to deduce the version of a particular git commit. 
+From a given commit, a little bit like `git describe` command, `jgitver` walks thru the commit tree to retrieve tag(s) on ancestor commit(s). From there , depending on the configuration, a version will be deducted/calculated.
 
 ## Simplicity & power
 
-`jgitver` comes with default modes that follow best practices & conventions or you can configure it to provide much more.
+`jgitver` comes with default modes that follow best practices & conventions making it a no brainer to use with good defaults but you can configure it to work as you would like to.
 
 ### versions, identifier & qualifiers
 
@@ -18,57 +18,136 @@ When computing versions, `jgitver` focuses on providing [semver](http://semver.o
 
 - version: as defined by [semver](http://semver.org), a serie of X.Y.Z where X, Y & Z are non-negative integers
 - identifier: a textual information following the version, build from alphanumeric characters & hyphen
-- qualifiers: qualifiers are textual information that can be combined to build a [semver](http://semver.org) identifier 
+- qualifiers: qualifiers are textual information that can be combined to build a [semver](http://semver.org) identifier
 
-## Versions
+### Quick examples
 
-### no calculation for commits with annotated tag
+Before going into deep explanations & documentation let's first show what you will have when using `jgitver` on your git projects.
+
+#### Using default configuration
+
+![Default configuration](src/doc/images/jgitver-configurable-defaults.gif?raw=true "default configuration")
+
+#### Using default _maven like_ configuration
+ 
+![Default maven like](src/doc/images/jgitver-maven-like.gif?raw=true "maven like")
+
+## Usage
+
+Most of the time you will want to use `jgitver` via one of its extensions/plugins:
+
+- [jgitver maven plugin](http://www.github.com/jgitver/jgitver-maven-plugin), which can be used in its simplest form as:
+    ```
+    ...
+      <build>
+          <extensions>
+              <extension>
+                  <groupId>fr.brouillard.oss</groupId>
+                  <artifactId>jgitver-maven-plugin</artifactId>
+                  <version>X.Y.Z</version>
+              </extension>
+          </extensions>
+         ...
+      </build>
+    ...
+    ```
+    find the latest version on [maven central](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22fr.brouillard.oss%22%20AND%20a%3A%22jgitver-maven-plugin%22) 
+    
+- [jgitver gradle plugin](https://github.com/jgitver/gradle-jgitver-plugin) which can be used using plugins DSL syntax:
+    ```
+    plugins {
+      id "fr.brouillard.oss.gradle.jgitver" version "X.Y.Z"
+    }
+    ```
+    find the latest version in [gradle plugin portal](https://plugins.gradle.org/plugin/fr.brouillard.oss.gradle.jgitver)
+
+But of course, `jgitver` is a java library published on [maven central](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22fr.brouillard.oss%22%20AND%20a%3A%22jgitver%22) and can be used as such.
+
+```java
+package fr.brouillard.oss.jgitver;
+
+import java.io.File;
+
+public class UsageExample {
+    /**
+     * Display the calculated version of the working directory, using jgitver in mode 'maven like'.
+     */
+    public static void main(String[] args) throws Exception {
+        File workDir = new File(System.getProperty("user.dir"));
+        try (GitVersionCalculator jgitver = GitVersionCalculator.location(workDir).setMavenLike(true)) {
+            System.out.println(jgitver.getVersion());
+        }
+    }
+}
+```
+
+## Concepts
+
+### Annotated tags
 
 When the HEAD is on a git commit which contains an annotated tag that matches a version definition, this annotated tag is used to extract the version.
 
-### use annotated tags version by default
+### Lightweight tags
 
-Without any configuration, `jgitver` will retrieve the ancestor commit (starting from HEAD) that has an annotated tag on it, and will use this a a base version name.
-It will append to that found version, any distance or branch name where needed.
-If no tag with a version can be found ``0.0.0` will be used.     
+Lightweight tags are used by jgitver to better control the resulting version calculation (for example jump from 1.0.X scheme to 2.0.X starting from commit _ABCDEF_).
 
-### auto increasing version
+If you do not know the difference between lightweight & annotated tags, please refer to [git documentation](https://git-scm.com/docs/git-tag) ; here is an extract of _git tag_ man page. 
 
-If asked, `jgitver` will do a `+1` to the version found on the latest annotated tag found starting from the current commit.
+> Annotated tags are meant for release while lightweight tags are meant for private or temporary object labels. 
+> For this reason, some git commands for naming objects (like git describe) will ignore lightweight tags by default.
 
-To activate, call method `GitVersionCalculator#setAutoIncrementPatch(true)`
+In contrary to annotated tags, Lightweight tags are considered by jgitver as _ìndicators_ and will be used as a basis for other computation/calculations depending on the configuration:
+- adding SNAPSHOT qualifier
+- adding distance qualifier
+- adding SHA1 qualifier
+- ...
 
-### lightweight tags
+### default version 
 
-By looking for a version on an annotated tag, `jgitver` will also lookup lightweight tags. If one defining a version is found on a parent commit, it will be used.
-Lightweight tags have the precedence on annotated tags, so that starting from the exact same commit as the one defining the previous release, you can defined the next version pattern to use and thus _override_ the default mechanism or the `+1` one.
+When no suitable tag can be found in the commit history, then `jgitver` will consider that a virtual lightweight tag was found on first commit with a version `0.0.0`.  
 
-## Identifier & Qualifiers
+## Configuration, modes & strategies
 
-`jgitver` will also generate qualifiers and thus an identifier using:
+### Maven strategy
 
-- existing qualifiers on found tag (including SNAPSHOT)
-- the tag distance from the HEAD if > 0 (active by default)
-- the branch name if not omit by a call to `GitVersionCalculator#setNonQualifierBranches( ... )` ; by default only `master` branch is omit for branch qualification (active by default)
-- the git commit id (inactive by default)
+In this mode (_which is the default mode of the [jgitver maven plugin](http://www.github.com/jgitver/jgitver-maven-plugin)_) activated by a call to `GitVersionCalculator#setMavenLike(true)`, `jgitver` will:
 
-## Examples
+- on a DETACHED HEAD having an annotated tag, use the tag name without further computation
+- add SNAPSHOT qualifier to the calculated version
+- increase the patch version except if it comes from a lightweight tag
+- use annotated tags before lightweight ones when on a DETACHED HEAD 
+- use lightweight tags before annotated ones when on a normal branch (master or any other branch)
+- add a branch qualifier on purpose
 
-Here is a serie of different settings supported by `jgitver`. Please look also at the junit tests cases that are aimed to cover all possibilities. 
+Parameters affecting this mode:
 
-### Example 1
+- `GitVersionCalculator#setNonQualifierBranches(String)`: comma separated list of branch name for which no branch qualifier will be used. Default value is _master_.
 
-![Example 1](src/doc/images/s1_linear_with_only_annotated_tags.gif?raw=true "Example 1")
+### Default strategy
 
-### Example 2
+In this mode, which is the default one, `jgitver` will:
 
-![Example 2](src/doc/images/s1_linear_with_only_annotated_tags_autoIncrement.gif?raw=true "Example 2")
+- on a DETACHED HEAD having an annotated tag, use the tag name without further computation
+- use annotated tags before lightweight ones when on a DETACHED HEAD
+- use lightweight tags before annotated ones when on a normal branch (master or any other branch)
+- add a branch qualifier on purpose
 
-### Example 3
+Then depending on the configuration it will also:
 
-![Example 3](src/doc/images/s2_linear_with_both_tags_autoIncrement.gif?raw=true "Example 3")
+- `GitVersionCalculator#setUseDistance(boolean)`: add distance from HEAD as a qualifer, default is _true_
+- `GitVersionCalculator#setAutoIncrementPatch(boolean)`: increment the patch version except if it comes from a lightweight tag, default is _false_
+- `GitVersionCalculator#setNonQualifierBranches(String)`: comma separated list of branch name for which no branch qualifier will be used. Default value is _master_.
+- `GitVersionCalculator#setUseGitCommitId(boolean)`: add git commit HEAD SHA1 as a qualifier, default is _false_
+- `GitVersionCalculator#setGitCommitIdLength(int)`: truncate the previous qualifier to the given length. Valid value must be between 8 & 40, default is _8_ 
 
-### Example 4
+### Versions naming & extraction
 
-![Example 4](src/doc/images/s7_linear_with_SNAPSHOT_tags_and_branch.gif?raw=true "Example 4")
+`jgitver` uses a pattern recognition in order to filter the tags it uses for any version computation.
 
+The pattern used is the following (_interpreted as [java.util.regex.Pattern](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html))_: `v?([0-9]+(?:\.[0-9]+){0,2}(?:-[a-zA-Z0-9\-_]+)?)``
+
+For non regex experts basically it identifies:
+
+- dotted versions in the form MAJOR.MINOR.PATCH, where MAJOR, MINOR & PATCH are integers and having MINOR & PATCH as optional
+- followed optionally by a `-` (_minus_) sign and an identifier. The identifier can be interpreted by `jgitver` as a serie of qualifiers separated by the `-` (_minus_) sign
+- the version can be optionally preceded by the 'v' (letter V) character

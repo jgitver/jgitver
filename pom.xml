@@ -178,7 +178,7 @@
                 <executions>
                     <execution>
                         <id>validate</id>
-                        <phase>validate</phase>
+                        <phase>verify</phase>
                         <configuration>
                             <configLocation>${project.baseUri}/src/quality/checkstyle/checks.xml</configLocation>
                             <propertyExpansion>checkstyle.suppression.file=${project.baseUri}/src/quality/checkstyle/suppressions.xml</propertyExpansion>

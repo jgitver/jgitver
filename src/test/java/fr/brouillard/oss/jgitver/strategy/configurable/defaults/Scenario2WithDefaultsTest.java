@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.brouillard.oss.jgitver;
+package fr.brouillard.oss.jgitver.strategy.configurable.defaults;
 
 import static fr.brouillard.oss.jgitver.Lambdas.mute;
 import static fr.brouillard.oss.jgitver.Lambdas.unchecked;
@@ -33,10 +33,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import fr.brouillard.oss.jgitver.GitVersionCalculator;
+import fr.brouillard.oss.jgitver.Misc;
+import fr.brouillard.oss.jgitver.Scenarios;
 import fr.brouillard.oss.jgitver.Scenarios.Scenario;
 
-
-public class Scenario3SnapshotsWithDefaultsTest {
+public class Scenario2WithDefaultsTest {
     private static Scenario scenario;
     private Repository repository;
     private Git git;
@@ -47,7 +49,7 @@ public class Scenario3SnapshotsWithDefaultsTest {
      */
     @BeforeClass
     public static void initClass() {
-        scenario = Scenarios.s3_linear_with_snapshots_light_tags();
+        scenario = Scenarios.s2_linear_with_both_tags();
         if (Misc.isDebugMode()) {
             System.out.println("git repository created under: " + scenario.getRepositoryLocation());
         }
@@ -64,9 +66,10 @@ public class Scenario3SnapshotsWithDefaultsTest {
             System.err.println("cannot remove " + scenario.getRepositoryLocation());
         }
     }
-    
+
     /**
      * Prepare common variables to access the git repository.
+     * 
      * @throws IOException if a disk error occurred
      */
     @Before
@@ -74,7 +77,7 @@ public class Scenario3SnapshotsWithDefaultsTest {
         repository = new FileRepositoryBuilder().setGitDir(scenario.getRepositoryLocation()).build();
         git = new Git(repository);
         versionCalculator = GitVersionCalculator.location(scenario.getRepositoryLocation());
-        
+
         // reset the head to master
         unchecked(() -> git.checkout().setName("master").call());
     }
@@ -88,29 +91,28 @@ public class Scenario3SnapshotsWithDefaultsTest {
         mute(() -> repository.close());
         mute(() -> versionCalculator.close());
     }
-    
+
     @Test
     public void head_is_on_master_by_default() throws Exception {
         assertThat(repository.getBranch(), is("master"));
     }
-    
+
     @Test
-    public void version_on_normal_tag_is_tag_value() {
-        Arrays.asList("1.0.0", "2.0.0").forEach(tag -> {
-            // when tag is checkout
-            unchecked(() -> git.checkout().setName(tag).call());
-            // the version matches the tag
-            assertThat(versionCalculator.getVersion(), is(tag));
-        });
-    }
-    
-    @Test
-    public void version_of_first_commit_without_ancestor_tag() {
+    public void version_of_A() {
         ObjectId firstCommit = scenario.getCommits().get("A");
 
         // checkout the first commit in scenario
         unchecked(() -> git.checkout().setName(firstCommit.name()).call());
-        assertThat(versionCalculator.getVersion(), is(Version.DEFAULT_VERSION.toString()));
+        assertThat(versionCalculator.getVersion(), is("0.0.0-0"));
+    }
+
+    @Test
+    public void version_of_B() {
+        ObjectId bCommit = scenario.getCommits().get("B");
+
+        // checkout the commit in scenario
+        unchecked(() -> git.checkout().setName(bCommit.name()).call());
+        assertThat(versionCalculator.getVersion(), is("1.0.0"));
     }
 
     @Test
@@ -119,24 +121,50 @@ public class Scenario3SnapshotsWithDefaultsTest {
 
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName(cCommit.name()).call());
-        assertThat(versionCalculator.getVersion(), is("1.1.0-SNAPSHOT"));
+        assertThat(versionCalculator.getVersion(), is("1.1.0-1"));
     }
-    
+
+    @Test
+    public void version_of_D_commit() {
+        ObjectId cCommit = scenario.getCommits().get("D");
+
+        // checkout the commit in scenario
+        unchecked(() -> git.checkout().setName(cCommit.name()).call());
+        assertThat(versionCalculator.getVersion(), is("2.0.0"));
+    }
+
     @Test
     public void version_of_E_commit() {
         ObjectId cCommit = scenario.getCommits().get("E");
 
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName(cCommit.name()).call());
-        assertThat(versionCalculator.getVersion(), is("3.0.0-SNAPSHOT"));
+        assertThat(versionCalculator.getVersion(), is("2.0.0-1"));
+    }
+
+    @Test
+    public void version_of_annotated_tags() {
+        Arrays.asList("1.0.0", "2.0.0").forEach(tag -> {
+            // when tag is checkout
+            unchecked(() -> git.checkout().setName(tag).call());
+            // the version matches the tag
+            assertThat(versionCalculator.getVersion(), is(tag));
+        });
+    }
+
+    @Test
+    public void version_of_light_1_1_0() {
+        // we checkout light tag 1.1.0
+        unchecked(() -> git.checkout().setName("1.1.0").call());
+        // which is on a commit with annotated tag 1.0.0
+        // that must have precedence
+        assertThat(versionCalculator.getVersion(), is("1.0.0"));
     }
     
     @Test
-    public void version_of_F_commit() {
-        ObjectId cCommit = scenario.getCommits().get("F");
-        
+    public void version_of_master() {
         // checkout the commit in scenario
-        unchecked(() -> git.checkout().setName(cCommit.name()).call());
-        assertThat(versionCalculator.getVersion(), is("3.0.0-SNAPSHOT"));
+        unchecked(() -> git.checkout().setName("master").call());
+        assertThat(versionCalculator.getVersion(), is("2.0.0-1"));
     }
 }

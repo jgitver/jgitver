@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.brouillard.oss.jgitver;
+package fr.brouillard.oss.jgitver.strategy.configurable.inc;
 
 import static fr.brouillard.oss.jgitver.Lambdas.mute;
 import static fr.brouillard.oss.jgitver.Lambdas.unchecked;
@@ -21,9 +21,9 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.junit.After;
@@ -32,10 +32,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import fr.brouillard.oss.jgitver.GitVersionCalculator;
+import fr.brouillard.oss.jgitver.Misc;
+import fr.brouillard.oss.jgitver.Scenarios;
 import fr.brouillard.oss.jgitver.Scenarios.Scenario;
 
-
-public class Scenario5WithMasterAndIntBranchSkippedTest {
+public class Scenario6AutoIncTest {
     private static Scenario scenario;
     private Repository repository;
     private Git git;
@@ -46,7 +48,7 @@ public class Scenario5WithMasterAndIntBranchSkippedTest {
      */
     @BeforeClass
     public static void initClass() {
-        scenario = Scenarios.s5_several_branches();
+        scenario = Scenarios.s6_matching_and_non_matching_versions_tags();
         if (Misc.isDebugMode()) {
             System.out.println("git repository created under: " + scenario.getRepositoryLocation());
         }
@@ -63,17 +65,18 @@ public class Scenario5WithMasterAndIntBranchSkippedTest {
             System.err.println("cannot remove " + scenario.getRepositoryLocation());
         }
     }
-    
+
     /**
      * Prepare common variables to access the git repository.
+     * 
      * @throws IOException if a disk error occurred
      */
     @Before
     public void init() throws IOException {
         repository = new FileRepositoryBuilder().setGitDir(scenario.getRepositoryLocation()).build();
         git = new Git(repository);
-        versionCalculator = GitVersionCalculator.location(scenario.getRepositoryLocation()).setNonQualifierBranches("master, int");
-        
+        versionCalculator = GitVersionCalculator.location(scenario.getRepositoryLocation()).setAutoIncrementPatch(true);
+
         // reset the head to master
         unchecked(() -> git.checkout().setName("master").call());
     }
@@ -87,40 +90,70 @@ public class Scenario5WithMasterAndIntBranchSkippedTest {
         mute(() -> repository.close());
         mute(() -> versionCalculator.close());
     }
-    
+
     @Test
     public void head_is_on_master_by_default() throws Exception {
         assertThat(repository.getBranch(), is("master"));
     }
-    
+
     @Test
-    public void version_on_normal_tag_is_tag_value() {
-        Arrays.asList("1.0.0").forEach(tag -> {
-            // when tag is checkout
-            unchecked(() -> git.checkout().setName(tag).call());
-            // the version matches the tag
-            assertThat(versionCalculator.getVersion(), is(tag));
-        });
+    public void version_of_A_commit() {
+        ObjectId firstCommit = scenario.getCommits().get("A");
+
+        // checkout the first commit in scenario
+        unchecked(() -> git.checkout().setName(firstCommit.name()).call());
+        assertThat(versionCalculator.getVersion(), is("1.0.0"));
+    }
+
+    @Test
+    public void version_of_B_commit() {
+        ObjectId bCommit = scenario.getCommits().get("B");
+
+        // checkout the commit in scenario
+        unchecked(() -> git.checkout().setName(bCommit.name()).call());
+        assertThat(versionCalculator.getVersion(), is("2.0.0"));
+    }
+
+    @Test
+    public void version_of_C_commit() {
+        ObjectId cCommit = scenario.getCommits().get("C");
+
+        // checkout the commit in scenario
+        unchecked(() -> git.checkout().setName(cCommit.name()).call());
+        assertThat(versionCalculator.getVersion(), is("2.0.1-1"));
+    }
+
+    @Test
+    public void version_of_D_commit() {
+        ObjectId dCommit = scenario.getCommits().get("D");
+
+        // checkout the commit in scenario
+        unchecked(() -> git.checkout().setName(dCommit.name()).call());
+        assertThat(versionCalculator.getVersion(), is("2.0.1-2"));
     }
     
     @Test
-    public void version_of_master_branch() {
+    public void version_of_E_commit() {
+        ObjectId eCommit = scenario.getCommits().get("E");
+        
+        // checkout the commit in scenario
+        unchecked(() -> git.checkout().setName(eCommit.name()).call());
+        assertThat(versionCalculator.getVersion(), is("2.0.1-3"));
+    }
+
+    @Test
+    public void version_of_annotated_tags() {
+        unchecked(() -> git.checkout().setName("1.0").call());
+        assertThat(versionCalculator.getVersion(), is("1.0.0"));
+        
+        unchecked(() -> git.checkout().setName("v2.0").call());
+        assertThat(versionCalculator.getVersion(), is("2.0.0"));
+    }
+    
+    @Test
+    public void version_of_master() {
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName("master").call());
-        assertThat(versionCalculator.getVersion(), is("1.0.0-1"));
-    }
-    
-    @Test
-    public void version_of_int_branch() {
-        // checkout the commit in scenario
-        unchecked(() -> git.checkout().setName("int").call());
-        assertThat(versionCalculator.getVersion(), is("1.0.0-1"));
-    }
-    
-    @Test
-    public void version_of_dev_branch() {
-        // checkout the commit in scenario
-        unchecked(() -> git.checkout().setName("dev").call());
-        assertThat(versionCalculator.getVersion(), is("1.0.0-1-dev"));
+        assertThat(versionCalculator.getVersion(), is("2.0.1-3"));
     }
 }

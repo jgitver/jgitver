@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.brouillard.oss.jgitver;
+package fr.brouillard.oss.jgitver.strategy.configurable.defaults;
 
 import static fr.brouillard.oss.jgitver.Lambdas.mute;
 import static fr.brouillard.oss.jgitver.Lambdas.unchecked;
@@ -33,6 +33,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import fr.brouillard.oss.jgitver.GitVersionCalculator;
+import fr.brouillard.oss.jgitver.Misc;
+import fr.brouillard.oss.jgitver.Scenarios;
 import fr.brouillard.oss.jgitver.Scenarios.Scenario;
 
 
@@ -43,7 +46,7 @@ public class Scenario1WithDefaultsTest {
     private GitVersionCalculator versionCalculator;
 
     /**
-     * Initialiaze the whole junit class tests ; creates the git scenario.
+     * Initialize the whole junit class tests ; creates the git scenario.
      */
     @BeforeClass
     public static void initClass() {
@@ -105,29 +108,54 @@ public class Scenario1WithDefaultsTest {
     }
     
     @Test
-    public void version_of_first_commit_without_ancestor_tag() {
-        ObjectId firstCommit = scenario.getCommits().get("A");
+    public void version_of_A_commit() {
+        ObjectId cCommit = scenario.getCommits().get("A");
 
-        // checkout the first commit in scenario
-        unchecked(() -> git.checkout().setName(firstCommit.name()).call());
-        assertThat(versionCalculator.getVersion(), is(Version.DEFAULT_VERSION.toString()));
+        // checkout the commit in scenario
+        unchecked(() -> git.checkout().setName(cCommit.name()).call());
+        assertThat(versionCalculator.getVersion(), is("0.0.0-0"));
     }
-
+    
+    @Test
+    public void version_of_B_commit() {
+        ObjectId cCommit = scenario.getCommits().get("B");
+        
+        // checkout the commit in scenario
+        unchecked(() -> git.checkout().setName(cCommit.name()).call());
+        assertThat(versionCalculator.getVersion(), is("1.0.0"));
+    }
+    
     @Test
     public void version_of_C_commit() {
         ObjectId cCommit = scenario.getCommits().get("C");
-
+        
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName(cCommit.name()).call());
         assertThat(versionCalculator.getVersion(), is("1.0.0-1"));
     }
     
     @Test
-    public void version_of_E_commit() {
-        ObjectId cCommit = scenario.getCommits().get("E");
-
+    public void version_of_D_commit() {
+        ObjectId cCommit = scenario.getCommits().get("D");
+        
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName(cCommit.name()).call());
+        assertThat(versionCalculator.getVersion(), is("2.0.0"));
+    }
+    
+    @Test
+    public void version_of_E_commit() {
+        ObjectId cCommit = scenario.getCommits().get("E");
+        
+        // checkout the commit in scenario
+        unchecked(() -> git.checkout().setName(cCommit.name()).call());
+        assertThat(versionCalculator.getVersion(), is("2.0.0-1"));
+    }
+    
+    @Test
+    public void version_of_master() {
+        // checkout the commit in scenario
+        unchecked(() -> git.checkout().setName("master").call());
         assertThat(versionCalculator.getVersion(), is("2.0.0-1"));
     }
 }

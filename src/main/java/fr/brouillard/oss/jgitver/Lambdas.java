@@ -71,7 +71,7 @@ public final class Lambdas {
     }
     
     @FunctionalInterface
-    interface CheckedRunnable {
+    public interface CheckedRunnable {
         void run() throws Throwable;
     }
 

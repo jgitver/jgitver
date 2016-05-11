@@ -17,6 +17,7 @@ package fr.brouillard.oss.jgitver;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -24,6 +25,8 @@ import java.util.regex.Pattern;
 
 public class Version {
     public static final Version DEFAULT_VERSION = new Version(0, 0, 0);
+    public static final Version EMPTY_REPOSITORY_VERSION = DEFAULT_VERSION.addQualifier("EMPTY_GIT_REPOSITORY");
+    public static final Version NOT_GIT_VERSION = DEFAULT_VERSION.addQualifier("NOT_A_GIT_REPOSITORY");
     
     private final int major;
     private final int minor;
@@ -76,6 +79,14 @@ public class Version {
         return new Version(major, minor, patch, newQualifiers.toArray(new String[newQualifiers.size()]));
     }
     
+    /**
+     * Creates a new Version object from the current one, but removes all qualifiers from it.
+     * @return a new Version object with exact same major/minor/patch numbers, but without any qualifier
+     */
+    public Version noQualifier() {
+        return new Version(major, minor, patch, Collections.emptyList());
+    }
+    
     private static final Pattern globalVersionPattern = Pattern.compile("^([0-9]+)(?:\\.([0-9]+))?(?:\\.([0-9]+))?(\\-[a-zA-Z0-9][a-zA-Z0-9\\-_]*)?$");
     
     /**
@@ -111,5 +122,9 @@ public class Version {
     
     public boolean isSnapshot() {
         return qualifiers.stream().anyMatch("SNAPSHOT"::equals);
+    }
+    
+    public boolean isQualified() {
+        return qualifiers.size() > 0;
     }
 }
