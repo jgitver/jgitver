@@ -56,8 +56,8 @@ public abstract class VersionStrategy {
      * Defines the history commit depth, starting from HEAD, until which parent commits will be parsed to find tags
      * information. This parameter is informative and will be respected only if at least one commit with version
      * information is found between HEAD and the defined depth. If none is found then the search will go deeper until it
-     * find one commit with version information or until it reaches the first commit. Valid only when the
-     * {@link #searchMode()} is {@see VersionStrategy.StrategySearchMode#DEPTH}.
+     * find one commit with version information or until it reaches the first commit. Valid only when the {@link #searchMode()}
+     * is {@link VersionStrategy.StrategySearchMode#DEPTH}.
      * 
      * @return a strict positive integer representing the depth until which the search will stop.
      */
@@ -87,7 +87,7 @@ public abstract class VersionStrategy {
         STOP_AT_FIRST,
         /**
          * Search go deep in the git commit history tree to find all relevant commits having at least one tag with
-         * version information. The search will respect {@see VersionStrategy#searchDepthLimit()} defined value.
+         * version information. The search will respect {@link VersionStrategy#searchDepthLimit()} defined value.
          */
         DEPTH;
     }
