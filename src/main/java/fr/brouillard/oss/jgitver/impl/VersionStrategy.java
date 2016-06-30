@@ -24,22 +24,30 @@ import org.eclipse.jgit.lib.Repository;
 
 import fr.brouillard.oss.jgitver.Version;
 import fr.brouillard.oss.jgitver.VersionCalculationException;
+import fr.brouillard.oss.jgitver.metadata.MetadataRegistrar;
 
 public abstract class VersionStrategy {
     private VersionNamingConfiguration vnc;
     private Repository repository;
     private Git git;
+    private MetadataRegistrar registrar;
+
+    protected MetadataRegistrar getRegistrar() {
+        return registrar;
+    }
 
     /**
      * Default constructor.
      * @param vnc the configuration to use
      * @param repository the git repository
      * @param git a git helper object built from the repository
+     * @param registrar a storage for found/calculated metadata
      */
-    public VersionStrategy(VersionNamingConfiguration vnc, Repository repository, Git git) {
+    public VersionStrategy(VersionNamingConfiguration vnc, Repository repository, Git git, MetadataRegistrar registrar) {
         this.vnc = vnc;
         this.repository = repository;
         this.git = git;
+        this.registrar = registrar;
     }
 
     /**

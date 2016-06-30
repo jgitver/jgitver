@@ -24,6 +24,8 @@ import org.eclipse.jgit.lib.Repository;
 
 import fr.brouillard.oss.jgitver.Version;
 import fr.brouillard.oss.jgitver.VersionCalculationException;
+import fr.brouillard.oss.jgitver.metadata.MetadataRegistrar;
+import fr.brouillard.oss.jgitver.metadata.Metadatas;
 
 public class ConfigurableVersionStrategy extends VersionStrategy {
     private boolean autoIncrementPatch = false;
@@ -32,8 +34,8 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
     private int gitCommitIdLength = 8;
     private boolean useDirty = false;
     
-    public ConfigurableVersionStrategy(VersionNamingConfiguration vnc, Repository repository, Git git) {
-        super(vnc, repository, git);
+    public ConfigurableVersionStrategy(VersionNamingConfiguration vnc, Repository repository, Git git, MetadataRegistrar metadatas) {
+        super(vnc, repository, git, metadatas);
     }
     
     public ConfigurableVersionStrategy setAutoIncrementPatch(boolean autoIncrementPatch) {
@@ -83,8 +85,10 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
                 // we have reach the initial commit of the repository
                 baseVersion = Version.DEFAULT_VERSION;
             } else {
+                String tagName = GitUtils.tagNameFromRef(tagToUse);
+                getRegistrar().registerMetadata(Metadatas.BASE_TAG, tagName);
                 baseVersion = Version
-                        .parse(getVersionNamingConfiguration().extractVersionFrom(GitUtils.tagNameFromRef(tagToUse)));
+                        .parse(getVersionNamingConfiguration().extractVersionFrom(tagName));
             }
             
             final boolean useSnapshot = baseVersion.isSnapshot();
@@ -115,6 +119,8 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
             }
             
             if (!GitUtils.isDetachedHead(getRepository())) {
+                getRegistrar().registerMetadata(Metadatas.BRANCH_NAME, getRepository().getBranch());
+                
                 // let's add a branch qualifier if one is computed
                 Optional<String> branchQualifier = getVersionNamingConfiguration().branchQualifier(getRepository().getBranch());
                 if (branchQualifier.isPresent()) {

@@ -36,6 +36,7 @@ import fr.brouillard.oss.jgitver.GitVersionCalculator;
 import fr.brouillard.oss.jgitver.Misc;
 import fr.brouillard.oss.jgitver.Scenarios;
 import fr.brouillard.oss.jgitver.Scenarios.Scenario;
+import fr.brouillard.oss.jgitver.metadata.Metadatas;
 
 public class Scenario8WithDefaultsTest {
     private static Scenario scenario;
@@ -174,5 +175,8 @@ public class Scenario8WithDefaultsTest {
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName("issue-10").call());
         assertThat(versionCalculator.getVersion(), is("1.0.1-issue_10-SNAPSHOT"));
+        
+        assertThat(versionCalculator.meta(Metadatas.BRANCH_NAME).get(), is("issue-10"));
+        assertThat(versionCalculator.meta(Metadatas.BASE_TAG).get(), is("1.0.0"));
     }
 }

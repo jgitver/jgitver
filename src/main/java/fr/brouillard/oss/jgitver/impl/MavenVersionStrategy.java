@@ -24,10 +24,12 @@ import org.eclipse.jgit.lib.Repository;
 
 import fr.brouillard.oss.jgitver.Version;
 import fr.brouillard.oss.jgitver.VersionCalculationException;
+import fr.brouillard.oss.jgitver.metadata.MetadataRegistrar;
+import fr.brouillard.oss.jgitver.metadata.Metadatas;
 
 public class MavenVersionStrategy extends VersionStrategy {
-    public MavenVersionStrategy(VersionNamingConfiguration vnc, Repository repository, Git git) {
-        super(vnc, repository, git);
+    public MavenVersionStrategy(VersionNamingConfiguration vnc, Repository repository, Git git, MetadataRegistrar metadatas) {
+        super(vnc, repository, git, metadatas);
     }
 
     @Override
@@ -55,8 +57,10 @@ public class MavenVersionStrategy extends VersionStrategy {
                 baseVersion = Version.DEFAULT_VERSION;
                 needSnapshot = true;
             } else {
+                String tagName = GitUtils.tagNameFromRef(tagToUse);
+                getRegistrar().registerMetadata(Metadatas.BASE_TAG, tagName);
                 baseVersion = Version
-                        .parse(getVersionNamingConfiguration().extractVersionFrom(GitUtils.tagNameFromRef(tagToUse)));
+                        .parse(getVersionNamingConfiguration().extractVersionFrom(tagName));
                 needSnapshot = baseVersion.isSnapshot() || !isBaseCommitOnHead(head, base)
                         || !GitUtils.isAnnotated(tagToUse);
             }
@@ -71,6 +75,8 @@ public class MavenVersionStrategy extends VersionStrategy {
             }
 
             if (!GitUtils.isDetachedHead(getRepository())) {
+                getRegistrar().registerMetadata(Metadatas.BRANCH_NAME, getRepository().getBranch());
+                
                 // let's add a branch qualifier if one is computed
                 Optional<String> branchQualifier = getVersionNamingConfiguration().branchQualifier(getRepository().getBranch());
                 if (branchQualifier.isPresent()) {

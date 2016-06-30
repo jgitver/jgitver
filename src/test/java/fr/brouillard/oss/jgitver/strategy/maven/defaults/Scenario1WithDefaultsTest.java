@@ -37,6 +37,7 @@ import fr.brouillard.oss.jgitver.GitVersionCalculator;
 import fr.brouillard.oss.jgitver.Misc;
 import fr.brouillard.oss.jgitver.Scenarios;
 import fr.brouillard.oss.jgitver.Scenarios.Scenario;
+import fr.brouillard.oss.jgitver.metadata.Metadatas;
 
 
 public class Scenario1WithDefaultsTest {
@@ -157,5 +158,21 @@ public class Scenario1WithDefaultsTest {
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName("master").call());
         assertThat(versionCalculator.getVersion(), is("2.0.1-SNAPSHOT"));
+        
+        assertThat(versionCalculator.meta(Metadatas.BRANCH_NAME).get(), is("master"));
+        assertThat(versionCalculator.meta(Metadatas.BASE_TAG).get(), is("2.0.0"));
+        assertThat(versionCalculator.meta(Metadatas.ALL_TAGS).get(), is("2.0.0,1.0.0"));
+        assertThat(versionCalculator.meta(Metadatas.ALL_ANNOTATED_TAGS).get(), is("2.0.0,1.0.0"));
+        assertThat(versionCalculator.meta(Metadatas.ALL_LIGHTWEIGHT_TAGS).get(), is(""));
+        assertThat(versionCalculator.meta(Metadatas.ALL_VERSION_TAGS).get(), is("2.0.0,1.0.0"));
+        assertThat(versionCalculator.meta(Metadatas.ALL_VERSION_ANNOTATED_TAGS).get(), is("2.0.0,1.0.0"));
+        assertThat(versionCalculator.meta(Metadatas.ALL_VERSION_LIGHTWEIGHT_TAGS).get(), is(""));
+        assertThat(versionCalculator.meta(Metadatas.HEAD_TAGS).get(), is(""));
+        assertThat(versionCalculator.meta(Metadatas.HEAD_ANNOTATED_TAGS).get(), is(""));
+        assertThat(versionCalculator.meta(Metadatas.HEAD_LIGHTWEIGHT_TAGS).get(), is(""));
+        
+        ObjectId headCommit = scenario.getCommits().get("E");
+        assertThat(versionCalculator.meta(Metadatas.GIT_SHA1_FULL).get(), is(headCommit.name()));
+        assertThat(versionCalculator.meta(Metadatas.GIT_SHA1_8).get(), is(headCommit.abbreviate(8).name()));
     }
 }

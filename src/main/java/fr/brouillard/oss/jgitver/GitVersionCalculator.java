@@ -19,16 +19,19 @@ import static fr.brouillard.oss.jgitver.Lambdas.as;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -42,8 +45,12 @@ import fr.brouillard.oss.jgitver.impl.MavenVersionStrategy;
 import fr.brouillard.oss.jgitver.impl.VersionNamingConfiguration;
 import fr.brouillard.oss.jgitver.impl.VersionStrategy;
 import fr.brouillard.oss.jgitver.impl.VersionStrategy.StrategySearchMode;
+import fr.brouillard.oss.jgitver.metadata.MetadataHolder;
+import fr.brouillard.oss.jgitver.metadata.MetadataProvider;
+import fr.brouillard.oss.jgitver.metadata.Metadatas;
 
-public class GitVersionCalculator implements AutoCloseable {
+public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
+    private MetadataHolder metadatas;
     private Repository repository;
     private boolean mavenLike = false;
     private boolean autoIncrementPatch = false;
@@ -57,8 +64,12 @@ public class GitVersionCalculator implements AutoCloseable {
     private String extractTagVersionPattern = "$1";
     private File gitRepositoryLocation;
 
+    private final SimpleDateFormat dtfmt;
+
     private GitVersionCalculator(File gitRepositoryLocation) throws IOException {
         this.gitRepositoryLocation = gitRepositoryLocation;
+
+        dtfmt = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z", Locale.US);
     }
 
     /**
@@ -88,6 +99,8 @@ public class GitVersionCalculator implements AutoCloseable {
      * @return the calculated version object
      */
     public Version getVersionObject() {
+        metadatas = new MetadataHolder();
+
         try {
             this.repository = openRepository();
         } catch (Exception ex) {
@@ -100,9 +113,9 @@ public class GitVersionCalculator implements AutoCloseable {
                     extractTagVersionPattern, Arrays.asList(nonQualifierBranches.split("\\s*,\\s*")));
 
             if (mavenLike) {
-                strategy = new MavenVersionStrategy(vnc, repository, git);
+                strategy = new MavenVersionStrategy(vnc, repository, git, metadatas);
             } else {
-                ConfigurableVersionStrategy cvs = new ConfigurableVersionStrategy(vnc, repository, git);
+                ConfigurableVersionStrategy cvs = new ConfigurableVersionStrategy(vnc, repository, git, metadatas);
                 cvs.setAutoIncrementPatch(autoIncrementPatch);
                 cvs.setUseDistance(useDistance);
                 cvs.setUseDirty(useDirty);
@@ -126,19 +139,33 @@ public class GitVersionCalculator implements AutoCloseable {
 
     private Version buildVersion(Git git, VersionStrategy strategy) {
         try {
+            //
+            metadatas.registerMetadata(Metadatas.DIRTY, "" + GitUtils.isDirty(git));
+            
             // retrieve all tags matching a version, and get all info for each of them
-            List<Ref> allTags = git.tagList().call().stream().filter(strategy::considerTagAsAVersionOne).map(this::peel)
+            List<Ref> allTags = git.tagList().call().stream().map(this::peel)
                     .collect(Collectors.toCollection(ArrayList::new));
             // let's have tags sorted from most recent to oldest
             Collections.reverse(allTags);
 
-            List<Ref> normals = allTags.stream().filter(GitUtils::isAnnotated).collect(Collectors.toList());
-            List<Ref> lights = allTags.stream().filter(as(GitUtils::isAnnotated).negate()).collect(Collectors.toList());
+            metadatas.registerMetadataTags(Metadatas.ALL_TAGS, allTags.stream());
+            metadatas.registerMetadataTags(Metadatas.ALL_ANNOTATED_TAGS,
+                    allTags.stream().filter(GitUtils::isAnnotated));
+            metadatas.registerMetadataTags(Metadatas.ALL_LIGHTWEIGHT_TAGS,
+                    allTags.stream().filter(as(GitUtils::isAnnotated).negate()));
+
+            List<Ref> allVersionTags = allTags.stream().filter(strategy::considerTagAsAVersionOne)
+                    .collect(Collectors.toCollection(ArrayList::new));
+
+            List<Ref> normals = allVersionTags.stream().filter(GitUtils::isAnnotated).collect(Collectors.toList());
+            List<Ref> lights = allVersionTags.stream().filter(as(GitUtils::isAnnotated).negate())
+                    .collect(Collectors.toList());
+
+            metadatas.registerMetadataTags(Metadatas.ALL_VERSION_TAGS, allVersionTags.stream());
+            metadatas.registerMetadataTags(Metadatas.ALL_VERSION_ANNOTATED_TAGS, normals.stream());
+            metadatas.registerMetadataTags(Metadatas.ALL_VERSION_LIGHTWEIGHT_TAGS, lights.stream());
 
             ObjectId rootId = repository.resolve("HEAD");
-            Commit head = new Commit(rootId, 0, tagsOf(normals, rootId), tagsOf(lights, rootId));
-
-            List<Commit> commits = new LinkedList<>();
 
             // handle a call on an empty git repository
             if (rootId == null) {
@@ -146,6 +173,28 @@ public class GitVersionCalculator implements AutoCloseable {
                 // the GIT repo might just be initialized without any commit
                 return Version.EMPTY_REPOSITORY_VERSION;
             }
+
+            git.log().add(rootId).setMaxCount(1).call().spliterator().tryAdvance(rc -> {
+                PersonIdent commitInfo = rc.getAuthorIdent();
+                metadatas.registerMetadata(Metadatas.HEAD_COMMITTER_NAME, commitInfo.getName());
+                metadatas.registerMetadata(Metadatas.HEAD_COMMITER_EMAIL, commitInfo.getEmailAddress());
+                dtfmt.setTimeZone(commitInfo.getTimeZone());
+                metadatas.registerMetadata(Metadatas.HEAD_COMMIT_DATETIME, dtfmt.format(commitInfo.getWhen()));
+            });
+
+            metadatas.registerMetadataTags(Metadatas.HEAD_TAGS, tagsOf(allTags, rootId).stream());
+            metadatas.registerMetadataTags(Metadatas.HEAD_ANNOTATED_TAGS,
+                    tagsOf(allTags.stream().filter(GitUtils::isAnnotated).collect(Collectors.toList()), rootId)
+                            .stream());
+            metadatas.registerMetadataTags(Metadatas.HEAD_LIGHTWEIGHT_TAGS,
+                    tagsOf(allTags.stream().filter(as(GitUtils::isAnnotated).negate()).collect(Collectors.toList()),
+                            rootId).stream());
+
+            metadatas.registerMetadata(Metadatas.GIT_SHA1_FULL, rootId.getName());
+            metadatas.registerMetadata(Metadatas.GIT_SHA1_8, rootId.getName().substring(0, 8));
+            
+            Commit head = new Commit(rootId, 0, tagsOf(normals, rootId), tagsOf(lights, rootId));
+            List<Commit> commits = new LinkedList<>();
 
             try (RevWalk revWalk = new RevWalk(repository)) {
                 revWalk.markStart(revWalk.parseCommit(rootId));
@@ -289,5 +338,13 @@ public class GitVersionCalculator implements AutoCloseable {
     public GitVersionCalculator setMavenLike(boolean mavenLike) {
         this.mavenLike = mavenLike;
         return this;
+    }
+
+    @Override
+    public Optional<String> meta(Metadatas meta) {
+        if (metadatas == null) {
+            getVersion();
+        }
+        return metadatas.meta(meta);
     }
 }
