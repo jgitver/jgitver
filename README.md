@@ -130,6 +130,7 @@ In this mode, which is the default one, `jgitver` will:
 - on a DETACHED HEAD having an annotated tag, use the tag name without further computation
 - use annotated tags before lightweight ones when on a DETACHED HEAD
 - use lightweight tags before annotated ones when on a normal branch (master or any other branch)
+    - _exception is when HEAD is on current branch, lightweight tags have precedence only when the repository is dirty_
 - add a branch qualifier on purpose
 
 Then depending on the configuration it will also:
@@ -137,6 +138,7 @@ Then depending on the configuration it will also:
 - `GitVersionCalculator#setUseDistance(boolean)`: add distance from HEAD as a qualifer, default is _true_
 - `GitVersionCalculator#setAutoIncrementPatch(boolean)`: increment the patch version except if it comes from a lightweight tag, default is _false_
 - `GitVersionCalculator#setNonQualifierBranches(String)`: comma separated list of branch name for which no branch qualifier will be used. Default value is _master_.
+- `GitVersionCalculator#setUseDirty(boolean)`: add "dirty" as a qualifier if the repository is stale (uncommited changes, new files, ...), default is _false_
 - `GitVersionCalculator#setUseGitCommitId(boolean)`: add git commit HEAD SHA1 as a qualifier, default is _false_
 - `GitVersionCalculator#setGitCommitIdLength(int)`: truncate the previous qualifier to the given length. Valid value must be between 8 & 40, default is _8_ 
 

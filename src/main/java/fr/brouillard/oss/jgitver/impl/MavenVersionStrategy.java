@@ -15,7 +15,6 @@
  */
 package fr.brouillard.oss.jgitver.impl;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,7 +36,7 @@ public class MavenVersionStrategy extends VersionStrategy {
             Commit base = parentsWithTags.get(0);
 
             Ref tagToUse;
-            if (isBaseCommitOnHead(head, base) && GitUtils.isDetachedHead(getRepository())) {
+            if (isBaseCommitOnHead(head, base) && !GitUtils.isDirty(getGit())) {
                 // consider first the annotated tags
                 tagToUse = base.getAnnotatedTags().stream().findFirst()
                         .orElseGet(() -> base.getLightTags().stream().findFirst().orElse(null));
@@ -80,7 +79,7 @@ public class MavenVersionStrategy extends VersionStrategy {
             }
 
             return needSnapshot ? baseVersion.removeQualifier("SNAPSHOT").addQualifier("SNAPSHOT") : baseVersion;
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             throw new VersionCalculationException("cannot compute version", ex);
         }
     }

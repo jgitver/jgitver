@@ -16,6 +16,8 @@
 package fr.brouillard.oss.jgitver;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -306,12 +308,34 @@ $ git lg
             commits = new HashMap<>();
         }
 
+        /**
+         * Retrieve the git repository location as a {@link File}.
+         * @return the file object
+         */
         public File getRepositoryLocation() {
             return repositoryLocation;
         }
 
+        /**
+         * Retrieves the named commits of the scenario. 
+         * @return a non null map of scenario commits
+         */
         public Map<String, ObjectId> getCommits() {
             return commits;
+        }
+        
+        /**
+         * Creates a new file with dummy content inside the git repository to make it dirty.
+         * @return the created file
+         * @throws IOException if an error occured creating the file
+         */
+        public File makeDirty() throws IOException {
+            File f = File.createTempFile("dirty", ".tmp", repositoryLocation.getParentFile());
+            FileWriter fw = new FileWriter(f);
+            fw.write("" + System.currentTimeMillis());
+            fw.flush();
+            fw.close();
+            return f;
         }
     }
     

@@ -18,6 +18,7 @@ package fr.brouillard.oss.jgitver.impl;
 import java.util.List;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 
@@ -77,9 +78,7 @@ public abstract class VersionStrategy {
     private String tagNameFromRef(Ref tag) {
         return tag.getName().replace("refs/tags/", "");
     }
-
-
-
+    
     public static enum StrategySearchMode {
         /**
          * Search will stop on first commit having at least one tag with version information.

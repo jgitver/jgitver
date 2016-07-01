@@ -49,6 +49,7 @@ public class GitVersionCalculator implements AutoCloseable {
     private boolean autoIncrementPatch = false;
     private boolean useDistance = true;
     private boolean useGitCommitId = false;
+    private boolean useDirty = false;
     private int gitCommitIdLength = 8;
     private String nonQualifierBranches = "master";
 
@@ -94,24 +95,22 @@ public class GitVersionCalculator implements AutoCloseable {
         }
         try (Git git = new Git(repository)) {
             VersionStrategy strategy;
-            
-            VersionNamingConfiguration vnc = new VersionNamingConfiguration(
-                    findTagVersionPattern,
-                    extractTagVersionPattern,
-                    Arrays.asList(nonQualifierBranches.split("\\s*,\\s*"))
-                    );
-            
+
+            VersionNamingConfiguration vnc = new VersionNamingConfiguration(findTagVersionPattern,
+                    extractTagVersionPattern, Arrays.asList(nonQualifierBranches.split("\\s*,\\s*")));
+
             if (mavenLike) {
                 strategy = new MavenVersionStrategy(vnc, repository, git);
             } else {
                 ConfigurableVersionStrategy cvs = new ConfigurableVersionStrategy(vnc, repository, git);
                 cvs.setAutoIncrementPatch(autoIncrementPatch);
                 cvs.setUseDistance(useDistance);
+                cvs.setUseDirty(useDirty);
                 cvs.setUseGitCommitId(useGitCommitId);
                 cvs.setGitCommitIdLength(gitCommitIdLength);
                 strategy = cvs;
             }
-            
+
             return buildVersion(git, strategy);
         }
     }
@@ -124,7 +123,7 @@ public class GitVersionCalculator implements AutoCloseable {
     public String getVersion() {
         return getVersionObject().toString();
     }
-    
+
     private Version buildVersion(Git git, VersionStrategy strategy) {
         try {
             // retrieve all tags matching a version, and get all info for each of them
@@ -140,7 +139,7 @@ public class GitVersionCalculator implements AutoCloseable {
             Commit head = new Commit(rootId, 0, tagsOf(normals, rootId), tagsOf(lights, rootId));
 
             List<Commit> commits = new LinkedList<>();
-            
+
             // handle a call on an empty git repository
             if (rootId == null) {
                 // no HEAD exist
@@ -239,6 +238,18 @@ public class GitVersionCalculator implements AutoCloseable {
      */
     public GitVersionCalculator setUseDistance(boolean useDistance) {
         this.useDistance = useDistance;
+        return this;
+    }
+
+    /**
+     * When true, append a qualifier with the "dirty" qualifier if the repository is in a dirty state (ie with
+     * uncommited changes or new files)
+     * 
+     * @param useDirty if true, a qualifier with "dirty" qualifier will be used if the repository is stall.
+     * @return itself to chain settings
+     */
+    public GitVersionCalculator setUseDirty(boolean useDirty) {
+        this.useDirty = useDirty;
         return this;
     }
 

@@ -17,6 +17,10 @@ package fr.brouillard.oss.jgitver.impl;
 
 import java.io.IOException;
 
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.Status;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 
@@ -35,5 +39,16 @@ public class GitUtils {
     
     public static boolean isDetachedHead(Repository repository) throws IOException {
         return repository.getFullBranch().matches("[0-9a-f]{40}");
+    }
+    
+    /**
+     * Checks that underlying repository is dirty (modified with uncommitted changes).
+     * @return true if the underlying repository is dirty, false otherwise
+     * @throws GitAPIException if a git eeror occured while computing status
+     * @throws NoWorkTreeException  if the underlying repsoitory directory is not git managed 
+     */
+    public static boolean isDirty(Git git) throws NoWorkTreeException, GitAPIException {
+        Status status = git.status().call();
+        return !status.isClean();
     }
 }

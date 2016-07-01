@@ -20,6 +20,7 @@ import static fr.brouillard.oss.jgitver.Lambdas.unchecked;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.eclipse.jgit.api.Git;
@@ -169,6 +170,23 @@ public class Scenario12WithDefaultsTest {
     public void version_of_master() {
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName("master").call());
-        assertThat(versionCalculator.getVersion(), is("2.0.0-0"));
+        assertThat(versionCalculator.getVersion(), is("1.0.0"));
+    }
+    
+    @Test
+    public void version_of_master_in_dirty_state() throws IOException {
+        File dirtyFile = null;
+        try {
+            // checkout the commit in scenario
+            unchecked(() -> git.checkout().setName("master").call());
+            dirtyFile = scenario.makeDirty();
+            assertThat(versionCalculator.getVersion(), is("2.0.0-0"));
+            versionCalculator.setUseDirty(true);
+            assertThat(versionCalculator.getVersion(), is("2.0.0-0-dirty"));
+        } finally {
+            if (dirtyFile != null) {
+                dirtyFile.delete();
+            }
+        }
     }
 }

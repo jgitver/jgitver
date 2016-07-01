@@ -15,7 +15,6 @@
  */
 package fr.brouillard.oss.jgitver.impl;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,6 +30,7 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
     private boolean useDistance = true;
     private boolean useGitCommitId = false;
     private int gitCommitIdLength = 8;
+    private boolean useDirty = false;
     
     public ConfigurableVersionStrategy(VersionNamingConfiguration vnc, Repository repository, Git git) {
         super(vnc, repository, git);
@@ -56,13 +56,18 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
         return this;
     }
 
+    public ConfigurableVersionStrategy setUseDirty(boolean useDirty) {
+        this.useDirty = useDirty;
+        return this;
+    }
+
     @Override
     public Version build(Commit head, List<Commit> parents) throws VersionCalculationException {
         try {
             Commit base = parents.get(0);
             Ref tagToUse;
             
-            if (isBaseCommitOnHead(head, base) && GitUtils.isDetachedHead(getRepository())) {
+            if (isBaseCommitOnHead(head, base) && !GitUtils.isDirty(getGit())) {
                 // consider first the annotated tags
                 tagToUse = base.getAnnotatedTags().stream().findFirst()
                         .orElseGet(() -> base.getLightTags().stream().findFirst().orElse(null));
@@ -117,8 +122,12 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
                 }
             }
             
+            if (useDirty && GitUtils.isDirty(getGit())) {
+                baseVersion = baseVersion.addQualifier("dirty");
+            }
+            
             return useSnapshot ? baseVersion.removeQualifier("SNAPSHOT").addQualifier("SNAPSHOT") : baseVersion;
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             throw new VersionCalculationException("cannot compute version", ex);
         }
     }
