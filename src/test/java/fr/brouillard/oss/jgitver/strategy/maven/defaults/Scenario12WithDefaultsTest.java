@@ -167,6 +167,7 @@ public class Scenario12WithDefaultsTest {
         unchecked(() -> git.checkout().setName("master").call());
         assertThat(versionCalculator.getVersion(), is("1.0.0"));
 
+        assertThat(versionCalculator.meta(Metadatas.CALCULATED_VERSION).get(), is("1.0.0"));
         assertThat(versionCalculator.meta(Metadatas.BRANCH_NAME).get(), is("master"));
         assertThat(versionCalculator.meta(Metadatas.BASE_TAG).get(), is("1.0.0"));
         assertThat(versionCalculator.meta(Metadatas.DIRTY).get(), is("false"));

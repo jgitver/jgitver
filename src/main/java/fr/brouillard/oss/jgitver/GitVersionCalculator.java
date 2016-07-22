@@ -229,7 +229,9 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
                 }
             }
 
-            return strategy.build(head, commits);
+            Version version = strategy.build(head, commits);
+            metadatas.registerMetadata(Metadatas.CALCULATED_VERSION, version.toString());
+            return version;
         } catch (Exception ex) {
             throw new IllegalStateException("failure calculating version", ex);
         }

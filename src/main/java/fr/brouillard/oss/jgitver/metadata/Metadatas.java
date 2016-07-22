@@ -24,6 +24,10 @@ import fr.brouillard.oss.jgitver.GitVersionCalculator;
  */
 public enum Metadatas {
     /**
+     * The calculated version.
+     */
+    CALCULATED_VERSION, 
+    /**
      * Is the repository dirty. 
      */
     DIRTY, 

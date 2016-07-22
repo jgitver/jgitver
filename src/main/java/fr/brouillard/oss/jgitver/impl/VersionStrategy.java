@@ -18,7 +18,6 @@ package fr.brouillard.oss.jgitver.impl;
 import java.util.List;
 
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 
