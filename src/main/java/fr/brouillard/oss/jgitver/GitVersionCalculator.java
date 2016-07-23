@@ -38,6 +38,7 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 
+import fr.brouillard.oss.jgitver.BranchingPolicy.BranchNameTransformations;
 import fr.brouillard.oss.jgitver.impl.Commit;
 import fr.brouillard.oss.jgitver.impl.ConfigurableVersionStrategy;
 import fr.brouillard.oss.jgitver.impl.GitUtils;
@@ -58,7 +59,8 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     private boolean useGitCommitId = false;
     private boolean useDirty = false;
     private int gitCommitIdLength = 8;
-    private String nonQualifierBranches = "master";
+    private List<BranchingPolicy> qualifierBranchingPolicies;
+    private boolean useDefaultBranchingPolicy = true;
 
     private String findTagVersionPattern = "v?([0-9]+(?:\\.[0-9]+){0,2}(?:-[a-zA-Z0-9\\-_]+)?)";
     private String extractTagVersionPattern = "$1";
@@ -70,6 +72,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
         this.gitRepositoryLocation = gitRepositoryLocation;
 
         dtfmt = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z", Locale.US);
+        setNonQualifierBranches("master");
     }
 
     /**
@@ -108,9 +111,13 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
         }
         try (Git git = new Git(repository)) {
             VersionStrategy strategy;
+            
+            List<BranchingPolicy> policiesToUse = new LinkedList<>(qualifierBranchingPolicies);
+            if (useDefaultBranchingPolicy) {
+                policiesToUse.add(BranchingPolicy.DEFAULT_FALLBACK);
+            }
 
-            VersionNamingConfiguration vnc = new VersionNamingConfiguration(findTagVersionPattern,
-                    extractTagVersionPattern, Arrays.asList(nonQualifierBranches.split("\\s*,\\s*")));
+            VersionNamingConfiguration vnc = new VersionNamingConfiguration(findTagVersionPattern, extractTagVersionPattern, policiesToUse.toArray(new BranchingPolicy[policiesToUse.size()]));
 
             if (mavenLike) {
                 strategy = new MavenVersionStrategy(vnc, repository, git, metadatas);
@@ -270,13 +277,46 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     /**
      * Defines a comma separated list of branches for which no branch name qualifier will be used. default "master".
      * Example: "master, integration"
+     * This method overrides the usage of {@link #setQualifierBranchingPolicies(List)} & {@link #setQualifierBranchingPolicies(BranchingPolicy...)}.
      * 
      * @param nonQualifierBranches a comma separated list of branch name for which no branch name qualifier should be
      *        used, can be null and/or empty
      * @return itself to chain settings
      */
     public GitVersionCalculator setNonQualifierBranches(String nonQualifierBranches) {
-        this.nonQualifierBranches = Optional.ofNullable(nonQualifierBranches).orElse("");
+        List<BranchingPolicy> branchPolicies = new LinkedList<>();
+        
+        if (nonQualifierBranches != null && !"".equals(nonQualifierBranches.trim())) {
+            for (String branch : nonQualifierBranches.split(",")) {
+                branchPolicies.add(BranchingPolicy.fixedBranchName(branch, Collections.singletonList(BranchNameTransformations.IGNORE.name())));
+            }
+        }
+        
+        return setQualifierBranchingPolicies(branchPolicies);
+    }
+    
+    /**
+     * Sets as an array the policies that will be applied to try to build a qualifier from the branch of the HEAD.
+     * This method overrides the usage of {@link #setNonQualifierBranches(String)} & {@link #setQualifierBranchingPolicies(List)}.
+     * 
+     * @param policies an array of policies to apply can be empty
+     * @return itself to chain settings
+     */
+    public GitVersionCalculator setQualifierBranchingPolicies(BranchingPolicy...policies) {
+        return setQualifierBranchingPolicies(Arrays.asList(policies));
+    }
+    
+    /**
+     * Sets as a list the policies that will be applied to try to build a qualifier from the branch of the HEAD.  
+     * This method overrides the usage of {@link #setNonQualifierBranches(String)} & {@link #setQualifierBranchingPolicies(BranchingPolicy...)}.
+     * 
+     * @param policies an array of policies to apply can be empty
+     * @return itself to chain settings
+     */
+    public GitVersionCalculator setQualifierBranchingPolicies(List<BranchingPolicy> policies) {
+        if (policies != null) {
+            this.qualifierBranchingPolicies = new LinkedList<>(policies);
+        }
         return this;
     }
 
@@ -315,6 +355,18 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
         this.useGitCommitId = useGitCommitId;
         return this;
     }
+    
+    /**
+     * When true, uses as last a {@link BranchingPolicy} that capture every branch and return a qualifier 
+     * 
+     * @param useGitCommitId if true, a qualifier with SHA1 git commit will be used, default true
+     * @return itself to chain settings
+     */
+    public GitVersionCalculator setUseDefaultBranchingPolicy(boolean useDefaultBranchingPolicy) {
+        this.useDefaultBranchingPolicy = useDefaultBranchingPolicy;
+        return this;
+    }
+    
 
     /**
      * Defines how long the qualifier from SHA1 git commit has to be.

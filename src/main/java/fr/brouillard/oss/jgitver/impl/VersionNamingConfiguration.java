@@ -15,14 +15,20 @@
  */
 package fr.brouillard.oss.jgitver.impl;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import fr.brouillard.oss.jgitver.BranchingPolicy;
+import fr.brouillard.oss.jgitver.BranchingPolicy.BranchNameTransformations;
+
 public class VersionNamingConfiguration {
     private Pattern searchPattern;
     private String replaceVersionRegex;
-    private List<String> noQualifierForBranches;
+    private List<BranchingPolicy> branchPolicies;
 
     /**
      * Builds a Configuration object holding information to use while building version.
@@ -30,13 +36,31 @@ public class VersionNamingConfiguration {
      *      to filter only the tags that represent a version
      * @param replaceVersionRegex a replacement regex string that will be applied on searchVersionRegex to extract the tag string to use
      * @param noQualifierForBranches comma separated string of branches name for which no qualifier will be built
+     * @deprecated since 0.2.0, use {@link #VersionNamingConfiguration(String, String, BranchingPolicy...)} instead
      */
     public VersionNamingConfiguration(String searchVersionRegex, String replaceVersionRegex, List<String> noQualifierForBranches) {
-        this.noQualifierForBranches = noQualifierForBranches;
+        branchPolicies = new LinkedList<>();
+        for (String branch : noQualifierForBranches) {
+            branchPolicies.add(BranchingPolicy.fixedBranchName(branch, Collections.singletonList(BranchNameTransformations.IGNORE.name())));
+        }
+        branchPolicies.add(new BranchingPolicy("(.*)"));
         this.searchPattern = Pattern.compile(searchVersionRegex);
         this.replaceVersionRegex = replaceVersionRegex;
     }
 
+    /**
+     * Builds a Configuration object holding information to use while building version.
+     * @param searchVersionRegex a regex pattern that will be applied to the repository tag list 
+     *      to filter only the tags that represent a version
+     * @param replaceVersionRegex a replacement regex string that will be applied on searchVersionRegex to extract the tag string to use
+     * @param policies list of policies to apply for branch qualifier 
+     */
+    public VersionNamingConfiguration(String searchVersionRegex, String replaceVersionRegex, BranchingPolicy ... policies) {
+        this.branchPolicies = new LinkedList<>(Arrays.asList(policies));
+        this.searchPattern = Pattern.compile(searchVersionRegex);
+        this.replaceVersionRegex = replaceVersionRegex;
+    }
+    
     protected Pattern getSearchPattern() {
         return searchPattern;
     }
@@ -57,10 +81,17 @@ public class VersionNamingConfiguration {
      * @return a non null optional object containing or not a qualifier 
      */
     public Optional<String> branchQualifier(String branch) {
-        if (noQualifierForBranches.contains(branch)) {
-            return Optional.empty();
+        for (BranchingPolicy bPolicy : branchPolicies) {
+            if (bPolicy.appliesOn(branch)) {
+                return bPolicy.qualifier(branch);
+            }
         }
         
-        return Optional.of(GitUtils.sanitizeBranchName(branch));
+        return Optional.empty();
+//        if (noQualifierForBranches.contains(branch)) {
+//            return Optional.empty();
+//        }
+//        
+//        return Optional.of(GitUtils.sanitizeBranchName(branch));
     }
 }

@@ -299,6 +299,46 @@ $ git lg
                 .getScenario();
     }
     
+    /**
+     * Builds a repository with branches name like gitflow
+     * <pre>
+** 8c102d4 - (develop) content H (33 seconds ago) <Matthieu Brouillard>
+*| * e42d934 - (feature/add-sso) content G (33 seconds ago) <Matthieu Brouillard>
+*|/
+*| * c426c65 - (HEAD, tag: 3.0.0, master) content D (33 seconds ago) <Matthieu Brouillard>
+*| | * d8893cc - (release/1.x) content E (33 seconds ago) <Matthieu Brouillard>
+*| |/
+*|/|
+*| | * 29d7fe2 - (release/2.x) content F (33 seconds ago) <Matthieu Brouillard>
+*| |/
+*| * fdbe434 - (tag: v2.0.0) content C (33 seconds ago) <Matthieu Brouillard>
+*|/
+** ef278a5 - content B (33 seconds ago) <Matthieu Brouillard>
+** fb1f2d9 - (tag: 1.0.0) content A (33 seconds ago) <Matthieu Brouillard>
+     * </pre>
+     * @return
+     */
+    public static Scenario s13_gitflow() {
+        return new ScenarioBuilder()
+                .commit("content", "A")
+                .tag("1.0.0")
+                .commit("content", "B")
+                .commit("content", "C")
+                .commit("content", "D")
+                .tag("3.0.0")
+                .branchOnAppId("release/1.x","B")
+                .commit("content", "E")
+                .branchOnAppId("release/2.x","C")
+                .commit("content", "F")
+                .tagLight("v2.0.0")
+                .branchOnAppId("feature/add-sso","B")
+                .commit("content", "G")
+                .branchOnAppId("develop","B")
+                .commit("content", "H")
+                .master()
+                .getScenario();
+    }
+    
     public static class Scenario {
         private File repositoryLocation;
         private Map<String, ObjectId> commits;
