@@ -36,22 +36,18 @@ Before going into deep explanations & documentation let's first show what you wi
 
 Most of the time you will want to use `jgitver` via one of its extensions/plugins:
 
-- [jgitver maven plugin](http://www.github.com/jgitver/jgitver-maven-plugin), which can be used in its simplest form as:
+- [jgitver maven plugin](http://www.github.com/jgitver/jgitver-maven-plugin), which can be used as a core aven extension by creating a file `YOUR_PROJECT/.mvn/extensions.xml`:
     ```
-    ...
-      <build>
-          <extensions>
-              <extension>
-                  <groupId>fr.brouillard.oss</groupId>
-                  <artifactId>jgitver-maven-plugin</artifactId>
-                  <version>X.Y.Z</version>
-              </extension>
-          </extensions>
-         ...
-      </build>
-    ...
+    <extensions xmlns="http://maven.apache.org/EXTENSIONS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://maven.apache.org/EXTENSIONS/1.0.0 http://maven.apache.org/xsd/core-extensions-1.0.0.xsd">
+      <extension>
+        <groupId>fr.brouillard.oss</groupId>
+        <artifactId>jgitver-maven-plugin</artifactId>
+        <version>0.3.0-alpha2</version>
+      </extension>
+    </extensions>
     ```
-    find the latest version on [maven central](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22fr.brouillard.oss%22%20AND%20a%3A%22jgitver-maven-plugin%22) 
+    find the latest version on [maven central](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22fr.brouillard.oss%22%20AND%20a%3A%22jgitver-maven-plugin%22) & read [jgitver maven plugin](http://www.github.com/jgitver/jgitver-maven-plugin) homepage for further configuration with maven. 
     
 - [jgitver gradle plugin](https://github.com/jgitver/gradle-jgitver-plugin) which can be used using plugins DSL syntax:
     ```
@@ -154,6 +150,12 @@ For non regex experts basically it identifies:
 - followed optionally by a `-` (_minus_) sign and an identifier. The identifier can be interpreted by `jgitver` as a serie of qualifiers separated by the `-` (_minus_) sign
 - the version can be optionally preceded by the 'v' (letter V) character
 
+
+## Metadatas
+
+Since `0.2.0-alpha1` [jgitver](https://github.com/jgitver/jgitver) provides a mechanism to retrieve several useful information after a version calculation, for example the git commitID, the branch name of HEAD (if any), the list of tags used for the version resolution and so on.
+
+You can query `GitVersionCalculator#meta(Metadatas)` in order to retrieve the data associated to a given so called [Metadatas](https://github.com/jgitver/jgitver/blob/master/src/main/java/fr/brouillard/oss/jgitver/metadata/Metadatas.java) (click the [link](https://github.com/jgitver/jgitver/blob/master/src/main/java/fr/brouillard/oss/jgitver/metadata/Metadatas.java) to browse all available Metadatas).
 
 ## Build & release
 
