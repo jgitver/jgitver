@@ -357,9 +357,9 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     }
     
     /**
-     * When true, uses as last a {@link BranchingPolicy} that capture every branch and return a qualifier 
+     * When true, uses {@link BranchingPolicy#DEFAULT_FALLBACK} as last {@link BranchingPolicy}
      * 
-     * @param useGitCommitId if true, a qualifier with SHA1 git commit will be used, default true
+     * @param useDefaultBranchingPolicy if true, appends {@link BranchingPolicy#DEFAULT_FALLBACK} as last branching policy
      * @return itself to chain settings
      */
     public GitVersionCalculator setUseDefaultBranchingPolicy(boolean useDefaultBranchingPolicy) {
