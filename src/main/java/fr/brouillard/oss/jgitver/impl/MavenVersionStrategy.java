@@ -28,6 +28,8 @@ import fr.brouillard.oss.jgitver.metadata.MetadataRegistrar;
 import fr.brouillard.oss.jgitver.metadata.Metadatas;
 
 public class MavenVersionStrategy extends VersionStrategy {
+    private boolean useDirty = false;
+
     public MavenVersionStrategy(VersionNamingConfiguration vnc, Repository repository, Git git, MetadataRegistrar metadatas) {
         super(vnc, repository, git, metadatas);
     }
@@ -83,10 +85,18 @@ public class MavenVersionStrategy extends VersionStrategy {
                     baseVersion = baseVersion.addQualifier(branchQualifier.get());
                 }
             }
+            
+            if (useDirty && GitUtils.isDirty(getGit())) {
+                baseVersion = baseVersion.addQualifier("dirty");
+            }
 
             return needSnapshot ? baseVersion.removeQualifier("SNAPSHOT").addQualifier("SNAPSHOT") : baseVersion;
         } catch (Exception ex) {
             throw new VersionCalculationException("cannot compute version", ex);
         }
+    }
+
+    public void setUseDirty(boolean useDirty) {
+        this.useDirty = useDirty;
     }
 }

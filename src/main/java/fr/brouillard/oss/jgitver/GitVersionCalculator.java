@@ -120,7 +120,9 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
             VersionNamingConfiguration vnc = new VersionNamingConfiguration(findTagVersionPattern, extractTagVersionPattern, policiesToUse.toArray(new BranchingPolicy[policiesToUse.size()]));
 
             if (mavenLike) {
-                strategy = new MavenVersionStrategy(vnc, repository, git, metadatas);
+                final MavenVersionStrategy mavenStrategy = new MavenVersionStrategy(vnc, repository, git, metadatas);
+                mavenStrategy.setUseDirty(useDirty);
+                strategy = mavenStrategy;
             } else {
                 ConfigurableVersionStrategy cvs = new ConfigurableVersionStrategy(vnc, repository, git, metadatas);
                 cvs.setAutoIncrementPatch(autoIncrementPatch);

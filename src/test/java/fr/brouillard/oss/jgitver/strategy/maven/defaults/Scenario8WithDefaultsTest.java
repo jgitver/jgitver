@@ -20,7 +20,9 @@ import static fr.brouillard.oss.jgitver.Lambdas.unchecked;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
@@ -76,7 +78,7 @@ public class Scenario8WithDefaultsTest {
     public void init() throws IOException {
         repository = new FileRepositoryBuilder().setGitDir(scenario.getRepositoryLocation()).build();
         git = new Git(repository);
-        versionCalculator = GitVersionCalculator.location(scenario.getRepositoryLocation()).setMavenLike(true);
+        versionCalculator = GitVersionCalculator.location(scenario.getRepositoryLocation()).setMavenLike(true).setUseDirty(true);
 
         // reset the head to master
         unchecked(() -> git.checkout().setName("master").call());
@@ -158,6 +160,16 @@ public class Scenario8WithDefaultsTest {
     }
     
     @Test
+    public void version_of_annotated_tags_in_dirty_state() {
+        unchecked(() -> git.checkout().setName("1.0.0").call());
+        unchecked(() -> {
+            File f = scenario.makeDirty();
+            assertThat(versionCalculator.getVersion(), is("1.0.0-dirty"));
+            Files.deleteIfExists(f.toPath());
+        });
+    }
+    
+    @Test
     public void version_of_light_tag_1_1_0() {
         unchecked(() -> git.checkout().setName("1.1.0").call());
         assertThat(versionCalculator.getVersion(), is("1.1.0-SNAPSHOT"));
@@ -168,6 +180,17 @@ public class Scenario8WithDefaultsTest {
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName("master").call());
         assertThat(versionCalculator.getVersion(), is("1.1.0-SNAPSHOT"));
+    }
+    
+    @Test
+    public void version_of_master_with_dirty_state() {
+        // checkout the commit in scenario
+        unchecked(() -> git.checkout().setName("master").call());
+        unchecked(() -> {
+            File f = scenario.makeDirty();
+            assertThat(versionCalculator.getVersion(), is("1.1.0-dirty-SNAPSHOT"));
+            Files.deleteIfExists(f.toPath());
+        });
     }
     
     @Test
