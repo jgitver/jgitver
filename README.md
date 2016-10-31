@@ -1,12 +1,16 @@
 # jgitver: git versioning library [![Build Status](https://travis-ci.org/jgitver/jgitver.svg)](https://travis-ci.org/jgitver/jgitver)
 
-The goal of `jgitver` is to provide a common way, via a library, to calculate a project [semver](http://semver.org) compatible version from a git repository and the tags it contains.
-By doing so, it will then be _easy_ to integrate it into build systems like maven, gradle or ant.
+The goal of `jgitver` is to provide a standardized way, via a library, to calculate a project [semver](http://semver.org) compatible version from a git repository and its content: `tags`, `branches`, `HEAD`, ...  
+
+With this `automation` & `standardization` it is then possible to:
+- have clear, controlled & respected naming rules for project versions
+- setup clean Continuous Integration (_version per branch, ..._)
+- keep your project history clean, no more polluting commits to update any project descriptor
 
 ## How it works
 
-`jgitver` uses annotated tags, lightweight tags, branches names & commits to deduce the version of a particular git commit. 
-From a given commit, a little bit like `git describe` command, `jgitver` walks thru the commit tree to retrieve tag(s) on ancestor commit(s). From there , depending on the configuration, a version will be deducted/calculated.
+`jgitver` uses annotated tags, lightweight tags, branches names & commits to deduce/calculate the version of a particular git commit.  
+From a given commit, a little bit like `git describe` command, `jgitver` walks through the commit tree to retrieve information (including tags, distance, ...) on ancestor commit(s). From there, depending on the configuration, a version will be deducted/calculated.
 
 ## Simplicity & power
 
@@ -24,13 +28,13 @@ When computing versions, `jgitver` focuses on providing [semver](http://semver.o
 
 Before going into deep explanations & documentation let's first show what you will have when using `jgitver` on your git projects.
 
-#### Using default configuration
+#### Using default configuration with increment
 
-![Default configuration](src/doc/images/jgitver-configurable-defaults.gif?raw=true "default configuration")
+![Default configuration](src/doc/images/jgitver-maven-plugin-homepage-inc.png?raw=true "default configuration")
 
 #### Using default _maven like_ configuration
  
-![Default maven like](src/doc/images/jgitver-maven-like.gif?raw=true "maven like")
+![Default maven like](src/doc/images/jgitver-maven-plugin-homepage.png?raw=true "maven like")
 
 ## Usage
 
@@ -43,7 +47,7 @@ Most of the time you will want to use `jgitver` via one of its extensions/plugin
       <extension>
         <groupId>fr.brouillard.oss</groupId>
         <artifactId>jgitver-maven-plugin</artifactId>
-        <version>0.3.0-alpha2</version>
+        <version>0.3.0</version>
       </extension>
     </extensions>
     ```

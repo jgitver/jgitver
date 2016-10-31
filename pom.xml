@@ -129,6 +129,7 @@
                         <exclude>**/README</exclude>
                         <exclude>**/LICENSE</exclude>
                         <exclude>.*</exclude>
+                        <exclude>src/doc/images/**</exclude>
                         <exclude>src/quality/**</exclude>
                         <exclude>src/test/resources/**</exclude>
                         <exclude>src/main/resources/**</exclude>
