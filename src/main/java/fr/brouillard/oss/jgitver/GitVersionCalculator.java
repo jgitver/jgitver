@@ -62,7 +62,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     private List<BranchingPolicy> qualifierBranchingPolicies;
     private boolean useDefaultBranchingPolicy = true;
 
-    private String findTagVersionPattern = "v?([0-9]+(?:\\.[0-9]+){0,2}(?:-[a-zA-Z0-9\\-_]+)?)";
+    private String findTagVersionPattern = "[^0-9]*([0-9]+(?:\\.[0-9]+){0,2}(?:-[a-zA-Z0-9\\-_]+)?)";
     private String extractTagVersionPattern = "$1";
     private File gitRepositoryLocation;
 
