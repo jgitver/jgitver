@@ -174,8 +174,8 @@
                         <id>validate</id>
                         <phase>verify</phase>
                         <configuration>
-                            <configLocation>${project.baseUri}/src/quality/checkstyle/checks.xml</configLocation>
-                            <propertyExpansion>checkstyle.suppression.file=${project.baseUri}/src/quality/checkstyle/suppressions.xml</propertyExpansion>
+        					<propertiesLocation>${project.basedir}/src/quality/checkstyle/checkstyle_maven.properties</propertiesLocation>
+                            <configLocation>${project.basedir}/src/quality/checkstyle/checks.xml</configLocation>
                             <encoding>UTF-8</encoding>
                             <consoleOutput>true</consoleOutput>
                             <failsOnError>true</failsOnError>

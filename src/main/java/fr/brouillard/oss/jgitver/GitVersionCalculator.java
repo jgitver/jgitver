@@ -117,7 +117,11 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
                 policiesToUse.add(BranchingPolicy.DEFAULT_FALLBACK);
             }
 
-            VersionNamingConfiguration vnc = new VersionNamingConfiguration(findTagVersionPattern, extractTagVersionPattern, policiesToUse.toArray(new BranchingPolicy[policiesToUse.size()]));
+            VersionNamingConfiguration vnc = new VersionNamingConfiguration(
+                    findTagVersionPattern, 
+                    extractTagVersionPattern, 
+                    policiesToUse.toArray(new BranchingPolicy[policiesToUse.size()])
+            );
 
             if (mavenLike) {
                 final MavenVersionStrategy mavenStrategy = new MavenVersionStrategy(vnc, repository, git, metadatas);
@@ -158,17 +162,15 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
             Collections.reverse(allTags);
 
             metadatas.registerMetadataTags(Metadatas.ALL_TAGS, allTags.stream());
-            metadatas.registerMetadataTags(Metadatas.ALL_ANNOTATED_TAGS,
-                    allTags.stream().filter(GitUtils::isAnnotated));
-            metadatas.registerMetadataTags(Metadatas.ALL_LIGHTWEIGHT_TAGS,
-                    allTags.stream().filter(as(GitUtils::isAnnotated).negate()));
+            metadatas.registerMetadataTags(Metadatas.ALL_ANNOTATED_TAGS, allTags.stream().filter(GitUtils::isAnnotated));
+            metadatas.registerMetadataTags(Metadatas.ALL_LIGHTWEIGHT_TAGS, allTags.stream().filter(as(GitUtils::isAnnotated).negate()));
 
-            List<Ref> allVersionTags = allTags.stream().filter(strategy::considerTagAsAVersionOne)
+            List<Ref> allVersionTags = allTags.stream()
+                    .filter(strategy::considerTagAsAVersionOne)
                     .collect(Collectors.toCollection(ArrayList::new));
 
             List<Ref> normals = allVersionTags.stream().filter(GitUtils::isAnnotated).collect(Collectors.toList());
-            List<Ref> lights = allVersionTags.stream().filter(as(GitUtils::isAnnotated).negate())
-                    .collect(Collectors.toList());
+            List<Ref> lights = allVersionTags.stream().filter(as(GitUtils::isAnnotated).negate()).collect(Collectors.toList());
 
             metadatas.registerMetadataTags(Metadatas.ALL_VERSION_TAGS, allVersionTags.stream());
             metadatas.registerMetadataTags(Metadatas.ALL_VERSION_ANNOTATED_TAGS, normals.stream());
@@ -279,7 +281,8 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     /**
      * Defines a comma separated list of branches for which no branch name qualifier will be used. default "master".
      * Example: "master, integration"
-     * This method overrides the usage of {@link #setQualifierBranchingPolicies(List)} & {@link #setQualifierBranchingPolicies(BranchingPolicy...)}.
+     * This method overrides the usage of {@link #setQualifierBranchingPolicies(List)} &amp;
+     * {@link #setQualifierBranchingPolicies(BranchingPolicy...)}.
      * 
      * @param nonQualifierBranches a comma separated list of branch name for which no branch name qualifier should be
      *        used, can be null and/or empty
@@ -290,7 +293,12 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
         
         if (nonQualifierBranches != null && !"".equals(nonQualifierBranches.trim())) {
             for (String branch : nonQualifierBranches.split(",")) {
-                branchPolicies.add(BranchingPolicy.fixedBranchName(branch, Collections.singletonList(BranchNameTransformations.IGNORE.name())));
+                branchPolicies.add(
+                        BranchingPolicy.fixedBranchName(
+                                branch, 
+                                Collections.singletonList(BranchNameTransformations.IGNORE.name())
+                        )
+                );
             }
         }
         
@@ -310,7 +318,8 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     
     /**
      * Sets as a list the policies that will be applied to try to build a qualifier from the branch of the HEAD.  
-     * This method overrides the usage of {@link #setNonQualifierBranches(String)} & {@link #setQualifierBranchingPolicies(BranchingPolicy...)}.
+     * This method overrides the usage of {@link #setNonQualifierBranches(String)} &amp;
+     * {@link #setQualifierBranchingPolicies(BranchingPolicy...)}.
      * 
      * @param policies an array of policies to apply can be empty
      * @return itself to chain settings
@@ -359,7 +368,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     }
     
     /**
-     * When true, uses {@link BranchingPolicy#DEFAULT_FALLBACK} as last {@link BranchingPolicy}
+     * When true, uses {@link BranchingPolicy#DEFAULT_FALLBACK} as last {@link BranchingPolicy}.
      * 
      * @param useDefaultBranchingPolicy if true, appends {@link BranchingPolicy#DEFAULT_FALLBACK} as last branching policy
      * @return itself to chain settings

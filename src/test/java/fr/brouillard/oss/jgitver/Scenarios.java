@@ -298,7 +298,7 @@ $ git lg
                 .master()
                 .getScenario();
     }
-    
+
     /**
      * Builds a repository with branches name like gitflow
      * <pre>

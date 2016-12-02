@@ -30,13 +30,22 @@ public class BranchingPolicy {
     private List<Function<String, String>> transformations;
 
     /**
-     * Default branching policy that sanitizes branch names as per jgtiver <= 0.2.0-alpha1; 
+     * Default branching policy that sanitizes branch names as per jgtiver <=
+     * 0.2.0-alpha1;
      */
-    public static BranchingPolicy DEFAULT_FALLBACK = new BranchingPolicy("(.*)", Arrays.asList(BranchNameTransformations.REPLACE_UNEXPECTED_CHARS_UNDERSCORE.name(), BranchNameTransformations.LOWERCASE_EN.name()));
+    public static BranchingPolicy DEFAULT_FALLBACK = new BranchingPolicy("(.*)",
+            Arrays.asList(
+                    BranchNameTransformations.REPLACE_UNEXPECTED_CHARS_UNDERSCORE.name(), 
+                    BranchNameTransformations.LOWERCASE_EN.name())
+            );
 
     public BranchingPolicy(String recognitionPattern) {
-        this(recognitionPattern, Arrays.asList(BranchNameTransformations.REPLACE_UNEXPECTED_CHARS_UNDERSCORE.name(), BranchNameTransformations.LOWERCASE_EN.name()));
+        this(recognitionPattern, Arrays.asList(
+                BranchNameTransformations.REPLACE_UNEXPECTED_CHARS_UNDERSCORE.name(),
+                BranchNameTransformations.LOWERCASE_EN.name())
+        );
     }
+
     public BranchingPolicy(String recognitionPattern, List<String> transformationsNames) {
         this.recognitionPattern = Pattern.compile(recognitionPattern);
         transformations = transformationsNames.stream().map(BranchNameTransformations::valueOf).collect(Collectors.toList());
@@ -46,17 +55,18 @@ public class BranchingPolicy {
         BranchingPolicy bp = new BranchingPolicy(rememberWhole(Pattern.quote(name)), transformations);
         return bp;
     }
-    
+
     public static BranchingPolicy fixedBranchName(String name) {
         BranchingPolicy bp = new BranchingPolicy(rememberWhole(Pattern.quote(name)));
         return bp;
     }
-    
+
     public static BranchingPolicy ignoreBranchName(String name) {
-        BranchingPolicy bp = new BranchingPolicy(rememberWhole(Pattern.quote(name)), Collections.singletonList(BranchNameTransformations.IGNORE.name()));
+        BranchingPolicy bp = new BranchingPolicy(rememberWhole(Pattern.quote(name)),
+                Collections.singletonList(BranchNameTransformations.IGNORE.name()));
         return bp;
     }
-    
+
     private static String rememberWhole(String pattern) {
         return "(" + pattern + ")";
     }
@@ -64,7 +74,7 @@ public class BranchingPolicy {
     public boolean appliesOn(String branch) {
         return recogniseBranch(branch).isPresent();
     }
-    
+
     private Optional<String> recogniseBranch(String branch) {
         if (branch != null) {
             Matcher matcher = recognitionPattern.matcher(branch);
@@ -75,14 +85,14 @@ public class BranchingPolicy {
 
         return Optional.empty();
     }
+
     public Optional<String> qualifier(String branch) {
         return recogniseBranch(branch)
                 .map(extractedName -> transformations.stream().reduce(extractedName, (bName, f) -> f.apply(bName), (b1, b2) -> b2));
     }
-    
+
     public static enum BranchNameTransformations implements Function<String, String> {
-        IDENTITY
-        , REMOVE_UNEXPECTED_CHARS {
+        IDENTITY, REMOVE_UNEXPECTED_CHARS {
             @Override
             public String apply(String branch) {
                 if (branch != null) {
@@ -90,8 +100,8 @@ public class BranchingPolicy {
                 }
                 return null;
             }
-        }
-        , REPLACE_UNEXPECTED_CHARS_UNDERSCORE {
+        },
+        REPLACE_UNEXPECTED_CHARS_UNDERSCORE {
             @Override
             public String apply(String branch) {
                 if (branch != null) {
@@ -99,8 +109,8 @@ public class BranchingPolicy {
                 }
                 return null;
             }
-        }
-        , UPPERCASE {
+        },
+        UPPERCASE {
             @Override
             public String apply(String branch) {
                 if (branch != null) {
@@ -108,8 +118,8 @@ public class BranchingPolicy {
                 }
                 return null;
             }
-        }
-        , LOWERCASE {
+        },
+        LOWERCASE {
             @Override
             public String apply(String branch) {
                 if (branch != null) {
@@ -117,8 +127,8 @@ public class BranchingPolicy {
                 }
                 return null;
             }
-        }
-        , UPPERCASE_EN {
+        },
+        UPPERCASE_EN {
             @Override
             public String apply(String branch) {
                 if (branch != null) {
@@ -126,8 +136,8 @@ public class BranchingPolicy {
                 }
                 return null;
             }
-        }
-        , LOWERCASE_EN {
+        },
+        LOWERCASE_EN {
             @Override
             public String apply(String branch) {
                 if (branch != null) {
@@ -135,7 +145,8 @@ public class BranchingPolicy {
                 }
                 return null;
             }
-        }, IGNORE {
+        },
+        IGNORE {
             @Override
             public String apply(String branch) {
                 return null;

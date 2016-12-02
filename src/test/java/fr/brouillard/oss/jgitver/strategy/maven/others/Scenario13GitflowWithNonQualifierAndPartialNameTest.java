@@ -82,11 +82,14 @@ public class Scenario13GitflowWithNonQualifierAndPartialNameTest {
                 .location(scenario.getRepositoryLocation())
                 .setMavenLike(true)
                 .setQualifierBranchingPolicies(
-                        BranchingPolicy.ignoreBranchName("master")
-                        , BranchingPolicy.fixedBranchName("develop")
-                        , new BranchingPolicy("release/(.*)", Collections.singletonList(BranchNameTransformations.IGNORE.name()))
-                        , new BranchingPolicy("feature/(.*)", Arrays.asList(BranchNameTransformations.REMOVE_UNEXPECTED_CHARS.name(), BranchNameTransformations.LOWERCASE_EN.name()))
-                        )
+                    BranchingPolicy.ignoreBranchName("master"),
+                    BranchingPolicy.fixedBranchName("develop"),
+                    new BranchingPolicy("release/(.*)", Collections.singletonList(BranchNameTransformations.IGNORE.name())),
+                    new BranchingPolicy("feature/(.*)", Arrays.asList(
+                            BranchNameTransformations.REMOVE_UNEXPECTED_CHARS.name(),
+                            BranchNameTransformations.LOWERCASE_EN.name())
+                    )
+                )
                 .setUseDefaultBranchingPolicy(false);
 
         // reset the head to master

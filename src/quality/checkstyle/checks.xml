@@ -23,8 +23,11 @@
     <property name="fileExtensions" value="java, properties, xml" />
     
     <module name="SuppressionFilter">
-        <property name="file" value="${checkstyle.suppression.file}" />
+<!--         <property name="file" value="${checkstyle.suppression.file}" /> -->
+        <property name="file" value="${config_loc}/suppressions.xml" />
     </module>
+    <module name="SuppressionCommentFilter"/>
+<!--     <module name="SuppressWarningsFilter" /> -->
 
     <!-- Checks for whitespace                               -->
     <!-- See http://checkstyle.sf.net/config_whitespace.html -->
@@ -44,6 +47,7 @@
             <property name="allowByTailComment" value="true" />
             <property name="allowNonPrintableEscapes" value="true" />
         </module>
+<!--         <module name="SuppressWarningsHolder" /> -->
         <module name="LineLength">
             <property name="max" value="140" />
             <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://|Pattern\.compile" />
@@ -100,15 +104,15 @@
             <message key="name.invalidPattern" value="Type name ''{0}'' must match pattern ''{1}''." />
         </module>
         <module name="MemberName">
-            <property name="format" value="^[a-z][a-z0-9][a-zA-Z0-9]*$" />
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$" />
             <message key="name.invalidPattern" value="Member name ''{0}'' must match pattern ''{1}''." />
         </module>
         <module name="ParameterName">
-            <property name="format" value="^[a-z][a-z0-9][a-zA-Z0-9]*$" />
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$" />
             <message key="name.invalidPattern" value="Parameter name ''{0}'' must match pattern ''{1}''." />
         </module>
         <module name="CatchParameterName">
-            <property name="format" value="^[a-z][a-z0-9][a-zA-Z0-9]*$" />
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$" />
             <message key="name.invalidPattern" value="Catch parameter name ''{0}'' must match pattern ''{1}''." />
         </module>
         <module name="LocalVariableName">

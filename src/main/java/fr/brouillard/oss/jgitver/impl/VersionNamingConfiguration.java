@@ -88,10 +88,5 @@ public class VersionNamingConfiguration {
         }
         
         return Optional.empty();
-//        if (noQualifierForBranches.contains(branch)) {
-//            return Optional.empty();
-//        }
-//        
-//        return Optional.of(GitUtils.sanitizeBranchName(branch));
     }
 }
