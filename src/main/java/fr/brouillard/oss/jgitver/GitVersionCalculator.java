@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.eclipse.jgit.api.Git;
@@ -62,11 +63,10 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     private List<BranchingPolicy> qualifierBranchingPolicies;
     private boolean useDefaultBranchingPolicy = true;
 
-    private String findTagVersionPattern = "v?([0-9]+(?:\\.[0-9]+){0,2}(?:-[a-zA-Z0-9\\-_]+)?)";
-    private String extractTagVersionPattern = "$1";
     private File gitRepositoryLocation;
 
     private final SimpleDateFormat dtfmt;
+    private Pattern findTagVersionPattern = VersionNamingConfiguration.DEFAULT_FIND_TAG_VERSION_PATTERN;
 
     private GitVersionCalculator(File gitRepositoryLocation) throws IOException {
         this.gitRepositoryLocation = gitRepositoryLocation;
@@ -118,8 +118,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
             }
 
             VersionNamingConfiguration vnc = new VersionNamingConfiguration(
-                    findTagVersionPattern, 
-                    extractTagVersionPattern, 
+                    findTagVersionPattern,
                     policiesToUse.toArray(new BranchingPolicy[policiesToUse.size()])
             );
 
@@ -402,6 +401,19 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
      */
     public GitVersionCalculator setMavenLike(boolean mavenLike) {
         this.mavenLike = mavenLike;
+        return this;
+    }
+    
+    /**
+     * Defines a regexp search pattern that will match tags identifying a version.
+     * The provided regexp MUST contains at least one selector group that will represent the version extracted from the tag. 
+     * @param pattern a non null string representing a java regexp pattern able to match tag containing versions
+     * @return itself to chain settings
+     * @throws java.util.regex.PatternSyntaxException if the given string cannot be parsed 
+     *      as a correct {@link java.util.regex.Pattern} object
+     */
+    public GitVersionCalculator setFindTagVersionPattern(String pattern) {
+        this.findTagVersionPattern = Pattern.compile(pattern);
         return this;
     }
 

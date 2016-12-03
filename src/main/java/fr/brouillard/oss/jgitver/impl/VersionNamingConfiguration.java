@@ -16,49 +16,39 @@
 package fr.brouillard.oss.jgitver.impl;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
 import fr.brouillard.oss.jgitver.BranchingPolicy;
-import fr.brouillard.oss.jgitver.BranchingPolicy.BranchNameTransformations;
 
 public class VersionNamingConfiguration {
+    public static final Pattern DEFAULT_FIND_TAG_VERSION_PATTERN = Pattern.compile("v?([0-9]+(?:\\.[0-9]+){0,2}(?:-[a-zA-Z0-9\\-_]+)?)");
+    private static final String EXTRACT_TAG_VERSION_PATTERN = "$1";
+
     private Pattern searchPattern;
-    private String replaceVersionRegex;
     private List<BranchingPolicy> branchPolicies;
 
     /**
      * Builds a Configuration object holding information to use while building version.
-     * @param searchVersionRegex a regex pattern that will be applied to the repository tag list 
-     *      to filter only the tags that represent a version
-     * @param replaceVersionRegex a replacement regex string that will be applied on searchVersionRegex to extract the tag string to use
-     * @param noQualifierForBranches comma separated string of branches name for which no qualifier will be built
-     * @deprecated since 0.2.0, use {@link #VersionNamingConfiguration(String, String, BranchingPolicy...)} instead
-     */
-    public VersionNamingConfiguration(String searchVersionRegex, String replaceVersionRegex, List<String> noQualifierForBranches) {
-        branchPolicies = new LinkedList<>();
-        for (String branch : noQualifierForBranches) {
-            branchPolicies.add(BranchingPolicy.fixedBranchName(branch, Collections.singletonList(BranchNameTransformations.IGNORE.name())));
-        }
-        branchPolicies.add(new BranchingPolicy("(.*)"));
-        this.searchPattern = Pattern.compile(searchVersionRegex);
-        this.replaceVersionRegex = replaceVersionRegex;
-    }
-
-    /**
-     * Builds a Configuration object holding information to use while building version.
-     * @param searchVersionRegex a regex pattern that will be applied to the repository tag list 
-     *      to filter only the tags that represent a version
-     * @param replaceVersionRegex a replacement regex string that will be applied on searchVersionRegex to extract the tag string to use
+     * Uses a default pattern matching <code>[v]X[.Y[.Z[-qualifiers]]]</code>
      * @param policies list of policies to apply for branch qualifier 
      */
-    public VersionNamingConfiguration(String searchVersionRegex, String replaceVersionRegex, BranchingPolicy ... policies) {
+    public VersionNamingConfiguration(BranchingPolicy ... policies) {
         this.branchPolicies = new LinkedList<>(Arrays.asList(policies));
-        this.searchPattern = Pattern.compile(searchVersionRegex);
-        this.replaceVersionRegex = replaceVersionRegex;
+        this.searchPattern = DEFAULT_FIND_TAG_VERSION_PATTERN;
+    }
+    
+    /**
+     * Builds a Configuration object holding information to use while building version.
+     * @param searchVersionPattern a regex pattern that will be applied to the repository tag list 
+     *      to filter only the tags that represent a version
+     * @param policies list of policies to apply for branch qualifier 
+     */
+    public VersionNamingConfiguration(Pattern searchVersionPattern, BranchingPolicy ... policies) {
+        this.branchPolicies = new LinkedList<>(Arrays.asList(policies));
+        this.searchPattern = searchVersionPattern;
     }
     
     protected Pattern getSearchPattern() {
@@ -66,16 +56,16 @@ public class VersionNamingConfiguration {
     }
     
     protected String getReplaceVersionRegex() {
-        return replaceVersionRegex;
+        return EXTRACT_TAG_VERSION_PATTERN;
     }
     
     public String extractVersionFrom(String tagName) {
-        return searchPattern.matcher(tagName).replaceAll(replaceVersionRegex);
+        return searchPattern.matcher(tagName).replaceAll(getReplaceVersionRegex());
     }
     
     /**
      * Builds an optional qualifier from the given branch name.
-     * Depending on the settings given {@link #VersionNamingConfiguration(String, String, List)} during construction,
+     * Depending on the settings given {@link #VersionNamingConfiguration(String, String, BranchingPolicy...)} during construction,
      * a qualifier will or not be built.
      * @param branch the branch name for which a qualifier should be built
      * @return a non null optional object containing or not a qualifier 
