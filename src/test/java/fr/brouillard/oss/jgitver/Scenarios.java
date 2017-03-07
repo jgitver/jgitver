@@ -30,6 +30,7 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 
 import com.google.common.io.Files;
 
+@SuppressWarnings({"checkstyle:nonemptyatclausedescription","checkstyle:javadocparagraph", "checkstyle:summaryjavadoc"})
 public class Scenarios {
     /**
      * Builds the following repository

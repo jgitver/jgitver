@@ -186,6 +186,10 @@ public class Scenario12WithDefaultsTest {
         ObjectId headCommit = scenario.getCommits().get("G");
         assertThat(versionCalculator.meta(Metadatas.GIT_SHA1_FULL).get(), is(headCommit.name()));
         assertThat(versionCalculator.meta(Metadatas.GIT_SHA1_8).get(), is(headCommit.abbreviate(8).name()));
+
+        assertThat(versionCalculator.meta(Metadatas.NEXT_MAJOR_VERSION).get(), is("2.0.0"));
+        assertThat(versionCalculator.meta(Metadatas.NEXT_MINOR_VERSION).get(), is("1.1.0"));
+        assertThat(versionCalculator.meta(Metadatas.NEXT_PATCH_VERSION).get(), is("1.0.1"));
     }
     
     @Test

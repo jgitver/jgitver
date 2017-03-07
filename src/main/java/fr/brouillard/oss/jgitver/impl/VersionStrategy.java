@@ -24,6 +24,7 @@ import org.eclipse.jgit.lib.Repository;
 import fr.brouillard.oss.jgitver.Version;
 import fr.brouillard.oss.jgitver.VersionCalculationException;
 import fr.brouillard.oss.jgitver.metadata.MetadataRegistrar;
+import fr.brouillard.oss.jgitver.metadata.TagType;
 
 public abstract class VersionStrategy {
     private VersionNamingConfiguration vnc;
@@ -85,7 +86,16 @@ public abstract class VersionStrategy {
     private String tagNameFromRef(Ref tag) {
         return tag.getName().replace("refs/tags/", "");
     }
-    
+
+    protected TagType computeTagType(Ref tagToUse, Ref annotatedTag) {
+        if (annotatedTag != null) {
+            if (tagToUse.getObjectId().toString().equals(annotatedTag.getObjectId().toString())) {
+                return TagType.ANNOTATED;
+            }
+        }
+        return TagType.LIGHTWEIGHT;
+    }
+
     public static enum StrategySearchMode {
         /**
          * Search will stop on first commit having at least one tag with version information.

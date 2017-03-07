@@ -50,6 +50,7 @@ import fr.brouillard.oss.jgitver.impl.VersionStrategy.StrategySearchMode;
 import fr.brouillard.oss.jgitver.metadata.MetadataHolder;
 import fr.brouillard.oss.jgitver.metadata.MetadataProvider;
 import fr.brouillard.oss.jgitver.metadata.Metadatas;
+import fr.brouillard.oss.jgitver.metadata.TagType;
 
 public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     private MetadataHolder metadatas;
@@ -138,7 +139,56 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
                 strategy = cvs;
             }
 
-            return buildVersion(git, strategy);
+            Version calculatedVersion = buildVersion(git, strategy);
+
+
+            return calculatedVersion;
+        }
+    }
+
+    private boolean hasPatchVersionBeenIncremented(VersionStrategy strategy, Version calculatedVersion) {
+        if (Version.EMPTY_REPOSITORY_VERSION.equals(calculatedVersion)) {
+            return false;
+        }
+        return (autoIncrementPatch || strategy instanceof MavenVersionStrategy)
+                && metadatas.meta(Metadatas.HEAD_VERSION_TAGS).get().isEmpty();
+    }
+
+    private void provideNextVersionsMetadatas(Version calculatedVersion, boolean patchIsIncremented) {
+        Version unqualifiedCalculatedVersion = calculatedVersion.noQualifier();
+        Version baseVersion = Version.parse(metadatas.meta(Metadatas.BASE_VERSION).get());
+        Version unqualifiedBaseVersion = baseVersion.noQualifier();
+
+        if (baseVersion.isSnapshot() || TagType.LIGHTWEIGHT.name().equals(metadatas.meta(Metadatas.BASE_TAG_TYPE).orElse(null))) {
+            // base version was a snapshot or a lightweight tag, meaning the version it represent has never been published yet
+            metadatas.registerMetadata(Metadatas.NEXT_PATCH_VERSION, unqualifiedBaseVersion.toString());
+            if (unqualifiedBaseVersion.getPatch() == 0) {
+                metadatas.registerMetadata(Metadatas.NEXT_MINOR_VERSION, unqualifiedBaseVersion.toString());
+            } else {
+                metadatas.registerMetadata(Metadatas.NEXT_MINOR_VERSION, unqualifiedBaseVersion.incrementMinor().toString());
+            }
+            if (unqualifiedBaseVersion.getMinor() == 0) {
+                metadatas.registerMetadata(Metadatas.NEXT_MAJOR_VERSION, unqualifiedBaseVersion.toString());
+            } else {
+                metadatas.registerMetadata(Metadatas.NEXT_MAJOR_VERSION, unqualifiedBaseVersion.incrementMajor().toString());
+            }
+        } else {
+            if (patchIsIncremented) {
+                if (unqualifiedCalculatedVersion.equals(unqualifiedBaseVersion)) {
+                    // we're probably on the tag itself don't do anything to the base version
+                } else {
+                    // we need to decrement the patch number
+                    unqualifiedCalculatedVersion = new Version(
+                            unqualifiedCalculatedVersion.getMajor(),
+                            unqualifiedCalculatedVersion.getMinor(),
+                            unqualifiedCalculatedVersion.getPatch() - 1
+                    );
+                }
+            }
+
+            metadatas.registerMetadata(Metadatas.NEXT_MAJOR_VERSION, unqualifiedCalculatedVersion.incrementMajor().toString());
+            metadatas.registerMetadata(Metadatas.NEXT_MINOR_VERSION, unqualifiedCalculatedVersion.incrementMinor().toString());
+            metadatas.registerMetadata(Metadatas.NEXT_PATCH_VERSION, unqualifiedCalculatedVersion.incrementPatch().toString());
         }
     }
 
@@ -201,6 +251,13 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
             metadatas.registerMetadataTags(Metadatas.HEAD_LIGHTWEIGHT_TAGS,
                     tagsOf(allTags.stream().filter(as(GitUtils::isAnnotated).negate()).collect(Collectors.toList()),
                             rootId).stream());
+            metadatas.registerMetadataTags(Metadatas.HEAD_VERSION_TAGS, tagsOf(allVersionTags, rootId).stream());
+            metadatas.registerMetadataTags(Metadatas.HEAD_VERSION_ANNOTATED_TAGS,
+                    tagsOf(allVersionTags.stream().filter(GitUtils::isAnnotated).collect(Collectors.toList()), rootId)
+                            .stream());
+            metadatas.registerMetadataTags(Metadatas.HEAD_VERSION_LIGHTWEIGHT_TAGS,
+                    tagsOf(allVersionTags.stream().filter(as(GitUtils::isAnnotated).negate()).collect(Collectors.toList()),
+                            rootId).stream());
 
             metadatas.registerMetadata(Metadatas.GIT_SHA1_FULL, rootId.getName());
             metadatas.registerMetadata(Metadatas.GIT_SHA1_8, rootId.getName().substring(0, 8));
@@ -241,9 +298,14 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
                 }
             }
 
-            Version version = strategy.build(head, commits);
-            metadatas.registerMetadata(Metadatas.CALCULATED_VERSION, version.toString());
-            return version;
+            Version calculatedVersion = strategy.build(head, commits);
+            metadatas.registerMetadata(Metadatas.CALCULATED_VERSION, calculatedVersion.toString());
+
+            // Calculated version could have the patch already incremented under conditions
+            boolean patchVersionIsIncremented = hasPatchVersionBeenIncremented(strategy, calculatedVersion);
+            provideNextVersionsMetadatas(calculatedVersion, patchVersionIsIncremented);
+
+            return calculatedVersion;
         } catch (Exception ex) {
             throw new IllegalStateException("failure calculating version", ex);
         }
@@ -357,8 +419,9 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     }
 
     /**
-     * When true describes commits hash with long format pattern, ie preceded with the letter 'g'
-     * @param useLongFormat if true and useGitCommitId, then commitId will be prepended with a 'g' to be compliant with `git describe --long` format
+     * When true describes commits hash with long format pattern, ie preceded with the letter 'g'.
+     * @param useLongFormat if true and useGitCommitId,
+     *                      then commitId will be prepended with a 'g' to be compliant with `git describe --long` format
      * @return itself to chain settings
      */
     public GitVersionCalculator setUseLongFormat(boolean useLongFormat) {

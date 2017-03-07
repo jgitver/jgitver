@@ -26,6 +26,7 @@ import fr.brouillard.oss.jgitver.Version;
 import fr.brouillard.oss.jgitver.VersionCalculationException;
 import fr.brouillard.oss.jgitver.metadata.MetadataRegistrar;
 import fr.brouillard.oss.jgitver.metadata.Metadatas;
+import fr.brouillard.oss.jgitver.metadata.TagType;
 
 public class MavenVersionStrategy extends VersionStrategy {
     private boolean useDirty = false;
@@ -60,18 +61,21 @@ public class MavenVersionStrategy extends VersionStrategy {
                 needSnapshot = true;
             } else {
                 String tagName = GitUtils.tagNameFromRef(tagToUse);
+                TagType tagType = computeTagType(tagToUse, base.getAnnotatedTags().stream().findFirst().orElse(null));
                 getRegistrar().registerMetadata(Metadatas.BASE_TAG, tagName);
+                getRegistrar().registerMetadata(Metadatas.BASE_TAG_TYPE, tagType.name());
                 baseVersion = Version
                         .parse(getVersionNamingConfiguration().extractVersionFrom(tagName));
                 needSnapshot = baseVersion.isSnapshot() || !isBaseCommitOnHead(head, base)
                         || !GitUtils.isAnnotated(tagToUse);
             }
+            getRegistrar().registerMetadata(Metadatas.BASE_VERSION, baseVersion.toString());
 
             if (!isBaseCommitOnHead(head, base)) {
                 // we are not on head
                 if (GitUtils.isAnnotated(tagToUse) && !baseVersion.removeQualifier("SNAPSHOT").isQualified()) {
                     // found tag to use was a non qualified annotated one, lets' increment the version automatically
-                    baseVersion = baseVersion.increasePatch();
+                    baseVersion = baseVersion.incrementPatch();
                 }
                 baseVersion = baseVersion.noQualifier();
             }

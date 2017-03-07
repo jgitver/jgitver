@@ -26,6 +26,7 @@ import fr.brouillard.oss.jgitver.Version;
 import fr.brouillard.oss.jgitver.VersionCalculationException;
 import fr.brouillard.oss.jgitver.metadata.MetadataRegistrar;
 import fr.brouillard.oss.jgitver.metadata.Metadatas;
+import fr.brouillard.oss.jgitver.metadata.TagType;
 
 public class ConfigurableVersionStrategy extends VersionStrategy {
     private boolean autoIncrementPatch = false;
@@ -92,18 +93,21 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
                 baseVersion = Version.DEFAULT_VERSION;
             } else {
                 String tagName = GitUtils.tagNameFromRef(tagToUse);
+                TagType tagType = computeTagType(tagToUse, base.getAnnotatedTags().stream().findFirst().orElse(null));
+                getRegistrar().registerMetadata(Metadatas.BASE_TAG_TYPE, tagType.name());
                 getRegistrar().registerMetadata(Metadatas.BASE_TAG, tagName);
                 baseVersion = Version
                         .parse(getVersionNamingConfiguration().extractVersionFrom(tagName));
             }
-            
+            getRegistrar().registerMetadata(Metadatas.BASE_VERSION, baseVersion.toString());
+
             final boolean useSnapshot = baseVersion.isSnapshot();
             
             if (!isBaseCommitOnHead(head, base) && autoIncrementPatch && !useLongFormat) {
                 // we are not on head
                 if (GitUtils.isAnnotated(tagToUse)) {
                     // found tag to use was an annotated one, lets' increment the version automatically
-                    baseVersion = baseVersion.increasePatch();
+                    baseVersion = baseVersion.incrementPatch();
                 }
             }
             
@@ -115,14 +119,19 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
                     // use distance when long format is asked
                     // or not on head
                     // or if on head with a light tag
-                    if (useLongFormat ||!isBaseCommitOnHead(head, base) || !GitUtils.isAnnotated(tagToUse)) {
+                    if (useLongFormat || !isBaseCommitOnHead(head, base) || !GitUtils.isAnnotated(tagToUse)) {
                         baseVersion = baseVersion.addQualifier("" + base.getHeadDistance());
                     }
                 }
             }
-            
-            if (useLongFormat || (useGitCommitId && !(isBaseCommitOnHead(head, base) && !baseVersion.noQualifier().equals(Version.DEFAULT_VERSION)))) {
-                String commitIdQualifier = (useLongFormat?"g":"") + head.getGitObject().getName().substring(0, useLongFormat?8:gitCommitIdLength);
+
+            boolean needsCommitId = useGitCommitId
+                    && !(isBaseCommitOnHead(head, base)
+                    && !baseVersion.noQualifier().equals(Version.DEFAULT_VERSION));
+
+            if (useLongFormat || needsCommitId) {
+                String commitIdQualifier =
+                        (useLongFormat ? "g" : "") + head.getGitObject().getName().substring(0, useLongFormat ? 8 : gitCommitIdLength);
                 baseVersion = baseVersion.addQualifier(commitIdQualifier);
             }
             

@@ -37,6 +37,7 @@ import fr.brouillard.oss.jgitver.GitVersionCalculator;
 import fr.brouillard.oss.jgitver.Misc;
 import fr.brouillard.oss.jgitver.Scenarios;
 import fr.brouillard.oss.jgitver.Scenarios.Scenario;
+import fr.brouillard.oss.jgitver.metadata.Metadatas;
 
 public class Scenario4WithDefaultsTest {
     private static Scenario scenario;
@@ -175,6 +176,10 @@ public class Scenario4WithDefaultsTest {
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName("master").call());
         assertThat(versionCalculator.getVersion(), is("2.0.1-SNAPSHOT"));
+
+        assertThat(versionCalculator.meta(Metadatas.NEXT_MAJOR_VERSION).get(), is("3.0.0"));
+        assertThat(versionCalculator.meta(Metadatas.NEXT_MINOR_VERSION).get(), is("2.1.0"));
+        assertThat(versionCalculator.meta(Metadatas.NEXT_PATCH_VERSION).get(), is("2.0.1"));
     }
     
     @Test

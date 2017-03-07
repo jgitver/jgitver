@@ -124,6 +124,10 @@ public class Scenario1WithDefaultsTest {
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName(cCommit.name()).call());
         assertThat(versionCalculator.getVersion(), is("1.0.0"));
+
+        assertThat(versionCalculator.meta(Metadatas.NEXT_MAJOR_VERSION).get(), is("2.0.0"));
+        assertThat(versionCalculator.meta(Metadatas.NEXT_MINOR_VERSION).get(), is("1.1.0"));
+        assertThat(versionCalculator.meta(Metadatas.NEXT_PATCH_VERSION).get(), is("1.0.1"));
     }
     
     @Test
@@ -170,7 +174,10 @@ public class Scenario1WithDefaultsTest {
         assertThat(versionCalculator.meta(Metadatas.HEAD_TAGS).get(), is(""));
         assertThat(versionCalculator.meta(Metadatas.HEAD_ANNOTATED_TAGS).get(), is(""));
         assertThat(versionCalculator.meta(Metadatas.HEAD_LIGHTWEIGHT_TAGS).get(), is(""));
-        
+        assertThat(versionCalculator.meta(Metadatas.NEXT_MAJOR_VERSION).get(), is("3.0.0"));
+        assertThat(versionCalculator.meta(Metadatas.NEXT_MINOR_VERSION).get(), is("2.1.0"));
+        assertThat(versionCalculator.meta(Metadatas.NEXT_PATCH_VERSION).get(), is("2.0.1"));
+
         ObjectId headCommit = scenario.getCommits().get("E");
         assertThat(versionCalculator.meta(Metadatas.GIT_SHA1_FULL).get(), is(headCommit.name()));
         assertThat(versionCalculator.meta(Metadatas.GIT_SHA1_8).get(), is(headCommit.abbreviate(8).name()));

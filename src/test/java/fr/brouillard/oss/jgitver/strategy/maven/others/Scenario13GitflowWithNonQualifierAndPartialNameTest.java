@@ -39,6 +39,7 @@ import fr.brouillard.oss.jgitver.GitVersionCalculator;
 import fr.brouillard.oss.jgitver.Misc;
 import fr.brouillard.oss.jgitver.Scenarios;
 import fr.brouillard.oss.jgitver.Scenarios.Scenario;
+import fr.brouillard.oss.jgitver.metadata.Metadatas;
 
 public class Scenario13GitflowWithNonQualifierAndPartialNameTest {
     private static Scenario scenario;
@@ -116,6 +117,10 @@ public class Scenario13GitflowWithNonQualifierAndPartialNameTest {
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName("master").call());
         assertThat(versionCalculator.getVersion(), is("3.0.0"));
+
+        assertThat(versionCalculator.meta(Metadatas.NEXT_MAJOR_VERSION).get(), is("4.0.0"));
+        assertThat(versionCalculator.meta(Metadatas.NEXT_MINOR_VERSION).get(), is("3.1.0"));
+        assertThat(versionCalculator.meta(Metadatas.NEXT_PATCH_VERSION).get(), is("3.0.1"));
     }
     
     @Test

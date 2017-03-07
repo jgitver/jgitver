@@ -68,9 +68,26 @@ public enum Metadatas {
      */
     HEAD_LIGHTWEIGHT_TAGS, 
     /**
+     * Corresponds to the list of tags, eligible as version, associated with the current HEAD.
+     */
+    HEAD_VERSION_TAGS,
+    /**
+     * Corresponds to the list of annotated tags, eligible as version, associated with the current HEAD.
+     */
+    HEAD_VERSION_ANNOTATED_TAGS,
+    /**
+     * Corresponds to the list of light tags, eligible as version, associated with the current HEAD.
+     */
+    HEAD_VERSION_LIGHTWEIGHT_TAGS,
+    /**
      * Corresponds to the base tag that was used for the version calculation.
      */
     BASE_TAG,
+    /**
+     * Corresponds to the type of tag that was used for the version calculation.
+     * Value taken from {@link TagType}.
+     */
+    BASE_TAG_TYPE,
     /**
      * Corresponds to the whole list of tags of the current repository.
      */
@@ -94,6 +111,22 @@ public enum Metadatas {
     /**
      * Corresponds to the whole list of light tags of the current repository that can serve for version calculation.
      */
-    ALL_VERSION_LIGHTWEIGHT_TAGS, 
+    ALL_VERSION_LIGHTWEIGHT_TAGS,
+    /**
+     * Exposes the next calculated version by adding one to the major digit of the current retained version.
+     */
+    NEXT_MAJOR_VERSION,
+    /**
+     * Exposes the next calculated version by adding one to the minor digit of the current retained version.
+     */
+    NEXT_MINOR_VERSION,
+    /**
+     * Exposes the next calculated version by adding one to the patch digit of the current retained version.
+     */
+    NEXT_PATCH_VERSION,
+    /**
+     * Exposes the version used to base the calculation on for the retained version.
+     */
+    BASE_VERSION
     ;
 }

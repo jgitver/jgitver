@@ -29,34 +29,64 @@ public class Version {
     public static final Version NOT_GIT_VERSION = DEFAULT_VERSION.addQualifier("NOT_A_GIT_REPOSITORY");
     
     private final int major;
+
     private final int minor;
+
     private final int patch;
     private final String stringRepresentation;
     private final List<String> qualifiers;
-    
+
+    public Version(Version other) {
+        this(other.major, other.minor, other.patch, other.qualifiers);
+    }
+
     public Version(int major, int minor, int patch, String...qualifiers) {
         this(major, minor, patch, Arrays.asList(qualifiers));
     }
-    
+
     private Version(int major, int minor, int patch, List<String> qualifiers) {
         this.major = major;
         this.minor = minor;
         this.patch = patch;
-        this.qualifiers = qualifiers!=null ? new ArrayList<>(qualifiers):Collections.emptyList();
-        
+        this.qualifiers = (qualifiers != null) ? new ArrayList<>(qualifiers) : Collections.emptyList();
+
         StringBuilder sb = new StringBuilder();
         sb.append(String.format("%d.%d.%d", major, minor, patch));
-        
+
         this.qualifiers.forEach(q -> sb.append('-').append(q));
         this.stringRepresentation = sb.toString();
     }
-    
-    
+
+    /**
+     * Retrieves the MAJOR part of the version object.
+     * @return the number for the major version
+     */
+    public int getMajor() {
+        return major;
+    }
+
+    /**
+     * Retrieves the MINOR part of the version object.
+     * @return the number for the minor version
+     */
+    public int getMinor() {
+        return minor;
+    }
+
+    /**
+     * Retrieves the PATCH part of the version object.
+     * @return the number for the patch version
+     */
+    public int getPatch() {
+        return patch;
+    }
+
+
     @Override
     public String toString() {
         return stringRepresentation;
     }
-    
+
     /**
      * Creates a new Version object from the current one, but append a new qualifier to it.
      * @param qualifier the qualifier to be added
@@ -116,10 +146,41 @@ public class Version {
         throw new IllegalStateException("cannot parse " + versionAsString + " as a semver compatible version");
     }
 
-    public Version increasePatch() {
+
+    /**
+     * return a new Version object that is a copy of this one where the patch number is incremented by one.
+     * @return a new Version object with incremented patch number
+     */
+    public Version incrementPatch() {
         return new Version(major, minor, patch + 1, qualifiers);
     }
-    
+
+    /**
+     * return a new Version object that is a copy of this one where the minor number is incremented by one ; patch version is set to 0.
+     * @return a new Version object with incremented patch number and 0 for patch number
+     */
+    public Version incrementMinor() {
+        return new Version(major, minor + 1, 0, qualifiers);
+    }
+
+    /**
+     * return a new Version object that is a copy of this one where the major number is incremented by one,
+     * the minor and patch are set to 0.
+     * @return a new Version object with incremented major number and 0 for minor and patch numbers
+     */
+    public Version incrementMajor() {
+        return new Version(major + 1, 0, 0, qualifiers);
+    }
+
+    /**
+     * return a new Version object that is a copy of this one where the patch number is incremented by one.
+     * @return a new Version object with incremented patch number
+     * @deprecated use {@link #incrementPatch()}
+     */
+    public Version increasePatch() {
+        return incrementPatch();
+    }
+
     public boolean isSnapshot() {
         return qualifiers.stream().anyMatch("SNAPSHOT"::equals);
     }
@@ -129,6 +190,7 @@ public class Version {
     }
 
     @Override
+    @SuppressWarnings("checkstyle:needbraces")
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

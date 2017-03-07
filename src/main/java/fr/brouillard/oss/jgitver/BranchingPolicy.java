@@ -39,6 +39,16 @@ public class BranchingPolicy {
                     BranchNameTransformations.LOWERCASE_EN.name())
             );
 
+    /**
+     * Builds a BranchingPolicy object using the given pattern as a recognition {@link Pattern}.
+     * Some default branches transformations will be applied:
+     * <ul>
+     *     <li>{@link BranchNameTransformations#REPLACE_UNEXPECTED_CHARS_UNDERSCORE}</li>
+     *     <li>{@link BranchNameTransformations#LOWERCASE_EN}</li>
+     * </ul>
+     * @param recognitionPattern the string representing a {@link Pattern} used to isolate the name to use from the branch.
+     *                           The pattern MUST contains at least one capture group.
+     */
     public BranchingPolicy(String recognitionPattern) {
         this(recognitionPattern, Arrays.asList(
                 BranchNameTransformations.REPLACE_UNEXPECTED_CHARS_UNDERSCORE.name(),
@@ -46,21 +56,44 @@ public class BranchingPolicy {
         );
     }
 
+    /**
+     * Builds a BranchingPolicy object using the given pattern as a recognition {@link Pattern}and the given branches transformations
+     * @param recognitionPattern the string representing a {@link Pattern} used to isolate the name to use from the branch.
+     *                           The pattern MUST contains at least one capture group.
+     * @param transformationsNames the non null list of transformations to apply to the extracted name
+     */
     public BranchingPolicy(String recognitionPattern, List<String> transformationsNames) {
         this.recognitionPattern = Pattern.compile(recognitionPattern);
         transformations = transformationsNames.stream().map(BranchNameTransformations::valueOf).collect(Collectors.toList());
     }
 
+    /**
+     * Builds a BranchingPolicy object that matches the given name and apply the given transformations.
+     * @param name the exact name to match against the git branch
+     * @param transformations the non null list of transformations to apply to the extracted name
+     */
     public static BranchingPolicy fixedBranchName(String name, List<String> transformations) {
         BranchingPolicy bp = new BranchingPolicy(rememberWhole(Pattern.quote(name)), transformations);
         return bp;
     }
 
+    /**
+     * Builds a BranchingPolicy object that matches the given name and apply the default transformations.
+     * <ul>
+     *     <li>{@link BranchNameTransformations#REPLACE_UNEXPECTED_CHARS_UNDERSCORE}</li>
+     *     <li>{@link BranchNameTransformations#LOWERCASE_EN}</li>
+     * </ul>
+     * @param name the exact name to match against the git branch
+     */
     public static BranchingPolicy fixedBranchName(String name) {
         BranchingPolicy bp = new BranchingPolicy(rememberWhole(Pattern.quote(name)));
         return bp;
     }
 
+    /**
+     * Builds a BranchingPolicy object that matches the given name for which the recognized branch name has not to be used, ie ignored.
+     * @param name the exact name to match against the git branch to ignore
+     */
     public static BranchingPolicy ignoreBranchName(String name) {
         BranchingPolicy bp = new BranchingPolicy(rememberWhole(Pattern.quote(name)),
                 Collections.singletonList(BranchNameTransformations.IGNORE.name()));
