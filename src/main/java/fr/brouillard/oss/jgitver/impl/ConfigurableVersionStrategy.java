@@ -33,7 +33,8 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
     private boolean useGitCommitId = false;
     private int gitCommitIdLength = 8;
     private boolean useDirty = false;
-    
+    private boolean useLongFormat;
+
     public ConfigurableVersionStrategy(VersionNamingConfiguration vnc, Repository repository, Git git, MetadataRegistrar metadatas) {
         super(vnc, repository, git, metadatas);
     }
@@ -60,6 +61,11 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
 
     public ConfigurableVersionStrategy setUseDirty(boolean useDirty) {
         this.useDirty = useDirty;
+        return this;
+    }
+
+    public ConfigurableVersionStrategy setUseLongFormat(boolean useLongFormat) {
+        this.useLongFormat = useLongFormat;
         return this;
     }
 
@@ -93,7 +99,7 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
             
             final boolean useSnapshot = baseVersion.isSnapshot();
             
-            if (!isBaseCommitOnHead(head, base) && autoIncrementPatch) {
+            if (!isBaseCommitOnHead(head, base) && autoIncrementPatch && !useLongFormat) {
                 // we are not on head
                 if (GitUtils.isAnnotated(tagToUse)) {
                     // found tag to use was an annotated one, lets' increment the version automatically
@@ -101,21 +107,23 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
                 }
             }
             
-            if (useDistance && !useSnapshot) {
+            if ((useDistance || useLongFormat) && !useSnapshot) {
                 if (tagToUse == null) {
                     // no tag was found, let's count from initial commit
                     baseVersion = baseVersion.addQualifier("" + base.getHeadDistance());
                 } else {
-                    // use distance when not on head
+                    // use distance when long format is asked
+                    // or not on head
                     // or if on head with a light tag
-                    if (!isBaseCommitOnHead(head, base) || !GitUtils.isAnnotated(tagToUse)) {
+                    if (useLongFormat ||!isBaseCommitOnHead(head, base) || !GitUtils.isAnnotated(tagToUse)) {
                         baseVersion = baseVersion.addQualifier("" + base.getHeadDistance());
                     }
                 }
             }
             
-            if (useGitCommitId && !isBaseCommitOnHead(head, base)) {
-                baseVersion = baseVersion.addQualifier(head.getGitObject().getName().substring(0, gitCommitIdLength));
+            if (useLongFormat || (useGitCommitId && !isBaseCommitOnHead(head, base))) {
+                String commitIdQualifier = (useLongFormat?"g":"") + head.getGitObject().getName().substring(0, useLongFormat?8:gitCommitIdLength);
+                baseVersion = baseVersion.addQualifier(commitIdQualifier);
             }
             
             if (!GitUtils.isDetachedHead(getRepository())) {

@@ -59,6 +59,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     private boolean useDistance = true;
     private boolean useGitCommitId = false;
     private boolean useDirty = false;
+    private boolean useLongFormat = false;
     private int gitCommitIdLength = 8;
     private List<BranchingPolicy> qualifierBranchingPolicies;
     private boolean useDefaultBranchingPolicy = true;
@@ -133,6 +134,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
                 cvs.setUseDirty(useDirty);
                 cvs.setUseGitCommitId(useGitCommitId);
                 cvs.setGitCommitIdLength(gitCommitIdLength);
+                cvs.setUseLongFormat(useLongFormat);
                 strategy = cvs;
             }
 
@@ -351,6 +353,16 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
      */
     public GitVersionCalculator setUseDirty(boolean useDirty) {
         this.useDirty = useDirty;
+        return this;
+    }
+
+    /**
+     * When true describes commits hash with long format pattern, ie preceded with the letter 'g'
+     * @param useLongFormat if true and useGitCommitId, then commitId will be prepended with a 'g' to be compliant with `git describe --long` format
+     * @return itself to chain settings
+     */
+    public GitVersionCalculator setUseLongFormat(boolean useLongFormat) {
+        this.useLongFormat = useLongFormat;
         return this;
     }
 
