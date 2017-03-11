@@ -31,8 +31,8 @@ public class Version {
     private final int major;
     private final int minor;
     private final int patch;
-    private String stringRepresentation;
-    private List<String> qualifiers;
+    private final String stringRepresentation;
+    private final List<String> qualifiers;
     
     public Version(int major, int minor, int patch, String...qualifiers) {
         this(major, minor, patch, Arrays.asList(qualifiers));
@@ -42,7 +42,7 @@ public class Version {
         this.major = major;
         this.minor = minor;
         this.patch = patch;
-        this.qualifiers = qualifiers;
+        this.qualifiers = qualifiers!=null ? new ArrayList<>(qualifiers):Collections.emptyList();
         
         StringBuilder sb = new StringBuilder();
         sb.append(String.format("%d.%d.%d", major, minor, patch));
@@ -126,5 +126,29 @@ public class Version {
     
     public boolean isQualified() {
         return qualifiers.size() > 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Version version = (Version) o;
+
+        if (major != version.major) return false;
+        if (minor != version.minor) return false;
+        if (patch != version.patch) return false;
+        if (!stringRepresentation.equals(version.stringRepresentation)) return false;
+        return qualifiers != null ? qualifiers.equals(version.qualifiers) : version.qualifiers == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = major;
+        result = 31 * result + minor;
+        result = 31 * result + patch;
+        result = 31 * result + stringRepresentation.hashCode();
+        result = 31 * result + (qualifiers != null ? qualifiers.hashCode() : 0);
+        return result;
     }
 }

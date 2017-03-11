@@ -121,7 +121,7 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
                 }
             }
             
-            if (useLongFormat || (useGitCommitId && !isBaseCommitOnHead(head, base))) {
+            if (useLongFormat || (useGitCommitId && !(isBaseCommitOnHead(head, base) && !baseVersion.noQualifier().equals(Version.DEFAULT_VERSION)))) {
                 String commitIdQualifier = (useLongFormat?"g":"") + head.getGitObject().getName().substring(0, useLongFormat?8:gitCommitIdLength);
                 baseVersion = baseVersion.addQualifier(commitIdQualifier);
             }

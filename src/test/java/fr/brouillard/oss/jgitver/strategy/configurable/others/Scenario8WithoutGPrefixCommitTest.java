@@ -153,7 +153,7 @@ public class Scenario8WithoutGPrefixCommitTest {
 
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName(fCommit.name()).call());
-        assertThat(versionCalculator.getVersion(), is("1.0.2" + "-" + fCommit.name().substring(0,8)));
+        assertThat(versionCalculator.getVersion(), is("1.0.1" + "-" + fCommit.name().substring(0,8)));
     }
 
     @Test
@@ -179,6 +179,6 @@ public class Scenario8WithoutGPrefixCommitTest {
     public void version_of_branch_issue_10() {
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName("issue-10").call());
-        assertThat(versionCalculator.getVersion(), is("1.0.2"+ "-" + scenario.getCommits().get("F").name().substring(0,8) + "-issue_10"));
+        assertThat(versionCalculator.getVersion(), is("1.0.1"+ "-" + scenario.getCommits().get("F").name().substring(0,8) + "-issue_10"));
     }
 }
