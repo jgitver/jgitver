@@ -30,7 +30,11 @@ public enum Metadatas {
     /**
      * Is the repository dirty. 
      */
-    DIRTY, 
+    DIRTY,
+    /**
+     * Is the repository not dirty.
+     */
+    NOT_DIRTY,
     /**
      * Name of the commiter of HEAD commit. 
      */

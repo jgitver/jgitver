@@ -171,6 +171,7 @@ public class Scenario12WithDefaultsTest {
         assertThat(versionCalculator.meta(Metadatas.BRANCH_NAME).get(), is("master"));
         assertThat(versionCalculator.meta(Metadatas.BASE_TAG).get(), is("1.0.0"));
         assertThat(versionCalculator.meta(Metadatas.DIRTY).get(), is("false"));
+        assertThat(versionCalculator.meta(Metadatas.NOT_DIRTY).get(), is("true"));
 
         // TODO open a defect in jgit, order of tags is not respected between v1.0.0 & 1.0.0
         // assertThat(versionCalculator.meta(Metadatas.ALL_TAGS).get(), is("v2.0.0,1.0.0,1.0.0-rc02,1.0.0-rc01,v1.0.0"));
@@ -201,6 +202,7 @@ public class Scenario12WithDefaultsTest {
             dirtyFile = scenario.makeDirty();
             assertThat(versionCalculator.getVersion(), is("2.0.0-SNAPSHOT"));
             assertThat(versionCalculator.meta(Metadatas.DIRTY).get(), is("true"));
+            assertThat(versionCalculator.meta(Metadatas.NOT_DIRTY).get(), is("false"));
         } finally {
             if (dirtyFile != null) {
                 dirtyFile.delete();

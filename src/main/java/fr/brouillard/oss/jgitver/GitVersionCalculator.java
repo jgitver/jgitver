@@ -205,6 +205,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
         try {
             //
             metadatas.registerMetadata(Metadatas.DIRTY, "" + GitUtils.isDirty(git));
+            metadatas.registerMetadata(Metadatas.NOT_DIRTY, "" + !GitUtils.isDirty(git));
             
             // retrieve all tags matching a version, and get all info for each of them
             List<Ref> allTags = git.tagList().call().stream().map(this::peel)
