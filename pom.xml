@@ -300,6 +300,8 @@
                                     <goal>sign</goal>
                                 </goals>
                                 <configuration>
+                                    <executable>gpg</executable>
+                                    <useAgent>false</useAgent>
                                     <!-- instructions from https://maven.apache.org/plugins/maven-gpg-plugin/usage.html -->
                                     <keyname>${gpg.keyname}</keyname>
                                     <passphraseServerId>${gpg.keyname}</passphraseServerId>
