@@ -15,12 +15,18 @@
  */
 package fr.brouillard.oss.jgitver.impl;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
 
 import fr.brouillard.oss.jgitver.Version;
 import fr.brouillard.oss.jgitver.VersionCalculationException;
@@ -31,6 +37,7 @@ import fr.brouillard.oss.jgitver.metadata.TagType;
 public class ConfigurableVersionStrategy extends VersionStrategy {
     private boolean autoIncrementPatch = false;
     private boolean useDistance = true;
+    private boolean useCommitTimestamp = false;
     private boolean useGitCommitId = false;
     private int gitCommitIdLength = 8;
     private boolean useDirty = false;
@@ -50,6 +57,11 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
         return this;
     }
 
+    public ConfigurableVersionStrategy setUseCommitTimestamp(boolean useCommitTimestamp) {
+        this.useCommitTimestamp = useCommitTimestamp;
+        return this;
+    }
+    
     public ConfigurableVersionStrategy setUseGitCommitId(boolean useGitCommitId) {
         this.useGitCommitId = useGitCommitId;
         return this;
@@ -125,10 +137,20 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
                 }
             }
 
+            boolean needsCommitTimestamp = useCommitTimestamp && !useSnapshot;
+            
+            if (needsCommitTimestamp) {
+                try (RevWalk walk = new RevWalk(getRepository())) {
+                    RevCommit rc = walk.parseCommit(head.getGitObject());
+                    String timestampQualifier = getTimestamp(rc.getAuthorIdent().getWhen().toInstant());
+                    baseVersion = baseVersion.addQualifier(timestampQualifier);
+                }
+            }
+            
             boolean needsCommitId = useGitCommitId
                     && !(isBaseCommitOnHead(head, base)
                     && !baseVersion.noQualifier().equals(Version.DEFAULT_VERSION));
-
+            
             if (useLongFormat || needsCommitId) {
                 String commitIdQualifier =
                         (useLongFormat ? "g" : "") + head.getGitObject().getName().substring(0, useLongFormat ? 8 : gitCommitIdLength);
@@ -153,5 +175,19 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
         } catch (Exception ex) {
             throw new VersionCalculationException("cannot compute version", ex);
         }
+    }
+
+    /**
+     * Builds a string representing the given instant interpolated in the current system timezone
+     * @param commitInstant commit time as an Instant
+     * @return a string representing the commit time
+     */
+    public static String getTimestamp(Instant commitInstant) {
+        LocalDateTime commitDateTime = LocalDateTime.ofInstant(commitInstant, ZoneId.systemDefault());
+        String isoDateTime = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(commitDateTime);
+        return isoDateTime
+                .replace("-", "")
+                .replace(":", "")
+                .replace("T", "");
     }
 }

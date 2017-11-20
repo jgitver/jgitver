@@ -142,6 +142,7 @@ Then depending on the configuration it will also:
 - `GitVersionCalculator#setUseDirty(boolean)`: add "dirty" as a qualifier if the repository is stale (uncommited changes, new files, ...), default is _false_
 - `GitVersionCalculator#setUseGitCommitId(boolean)`: add git commit HEAD SHA1 as a qualifier, default is _false_
 - `GitVersionCalculator#setGitCommitIdLength(int)`: truncate the previous qualifier to the given length. Valid value must be between 8 & 40, default is _8_ 
+- `GitVersionCalculator#setUseGitCommitTimestamp(boolean)`: add git HEAD commit timestamp as a qualifier, default is _false_. Date is extracted from the author information, not from committer information. _Difference between both is explained [here](https://stackoverflow.com/a/11857467/81668)_.
 
 ### Versions naming & extraction
 

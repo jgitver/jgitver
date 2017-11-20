@@ -59,6 +59,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     private boolean autoIncrementPatch = false;
     private boolean useDistance = true;
     private boolean useGitCommitId = false;
+    private boolean useGitCommitTimestamp = false;
     private boolean useDirty = false;
     private boolean useLongFormat = false;
     private int gitCommitIdLength = 8;
@@ -135,6 +136,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
                 cvs.setUseDirty(useDirty);
                 cvs.setUseGitCommitId(useGitCommitId);
                 cvs.setGitCommitIdLength(gitCommitIdLength);
+                cvs.setUseCommitTimestamp(useGitCommitTimestamp);
                 cvs.setUseLongFormat(useLongFormat);
                 strategy = cvs;
             }
@@ -438,6 +440,18 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
      */
     public GitVersionCalculator setUseGitCommitId(boolean useGitCommitId) {
         this.useGitCommitId = useGitCommitId;
+        return this;
+    }
+
+    /**
+     * When true, append the git commit timestampt to the version. This qualifier is not used if the SNAPSHOT qualifier
+     * is used.
+     * 
+     * @param useGitCommitTimestamp if true, a qualifier with git commit timestamp will be used, default false
+     * @return itself to chain settings
+     */
+    public GitVersionCalculator setUseGitCommitTimestamp(boolean useGitCommitTimestamp) {
+        this.useGitCommitTimestamp = useGitCommitTimestamp;
         return this;
     }
     
