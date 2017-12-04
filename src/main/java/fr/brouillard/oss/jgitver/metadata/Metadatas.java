@@ -127,6 +127,10 @@ public enum Metadatas {
     /**
      * Exposes the version used to base the calculation on for the retained version.
      */
-    BASE_VERSION
+    BASE_VERSION,
+    /**
+     * Exposes the commit distance from the base tag used for the version computation.
+     */
+    COMMIT_DISTANCE
     ;
 }

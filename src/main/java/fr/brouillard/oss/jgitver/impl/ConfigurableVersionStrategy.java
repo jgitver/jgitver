@@ -137,6 +137,8 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
                 }
             }
 
+            getRegistrar().registerMetadata(Metadatas.COMMIT_DISTANCE, "" + base.getHeadDistance());
+
             boolean needsCommitTimestamp = useCommitTimestamp && !useSnapshot;
             
             if (needsCommitTimestamp) {
