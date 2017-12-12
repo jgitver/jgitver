@@ -21,6 +21,8 @@ import java.util.Optional;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
 
 import fr.brouillard.oss.jgitver.Version;
 import fr.brouillard.oss.jgitver.VersionCalculationException;
@@ -86,12 +88,19 @@ public class MavenVersionStrategy extends VersionStrategy {
                 // let's add a branch qualifier if one is computed
                 Optional<String> branchQualifier = getVersionNamingConfiguration().branchQualifier(getRepository().getBranch());
                 if (branchQualifier.isPresent()) {
+                    getRegistrar().registerMetadata(Metadatas.QUALIFIED_BRANCH_NAME, branchQualifier.get());
                     baseVersion = baseVersion.addQualifier(branchQualifier.get());
                 }
             }
             
             if (useDirty && GitUtils.isDirty(getGit())) {
                 baseVersion = baseVersion.addQualifier("dirty");
+            }
+
+            try (RevWalk walk = new RevWalk(getRepository())) {
+                RevCommit rc = walk.parseCommit(head.getGitObject());
+                String commitTimestamp = GitUtils.getTimestamp(rc.getAuthorIdent().getWhen().toInstant());
+                getRegistrar().registerMetadata(Metadatas.COMMIT_TIMESTAMP, commitTimestamp);
             }
 
             return needSnapshot ? baseVersion.removeQualifier("SNAPSHOT").addQualifier("SNAPSHOT") : baseVersion;

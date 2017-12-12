@@ -15,10 +15,6 @@
  */
 package fr.brouillard.oss.jgitver.impl;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -141,11 +137,12 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
 
             boolean needsCommitTimestamp = useCommitTimestamp && !useSnapshot;
             
-            if (needsCommitTimestamp) {
-                try (RevWalk walk = new RevWalk(getRepository())) {
-                    RevCommit rc = walk.parseCommit(head.getGitObject());
-                    String timestampQualifier = getTimestamp(rc.getAuthorIdent().getWhen().toInstant());
-                    baseVersion = baseVersion.addQualifier(timestampQualifier);
+            try (RevWalk walk = new RevWalk(getRepository())) {
+                RevCommit rc = walk.parseCommit(head.getGitObject());
+                String commitTimestamp = GitUtils.getTimestamp(rc.getAuthorIdent().getWhen().toInstant());
+                getRegistrar().registerMetadata(Metadatas.COMMIT_TIMESTAMP, commitTimestamp);
+                if (needsCommitTimestamp) {
+                    baseVersion = baseVersion.addQualifier(commitTimestamp);
                 }
             }
             
@@ -165,6 +162,7 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
                 // let's add a branch qualifier if one is computed
                 Optional<String> branchQualifier = getVersionNamingConfiguration().branchQualifier(getRepository().getBranch());
                 if (branchQualifier.isPresent()) {
+                    getRegistrar().registerMetadata(Metadatas.QUALIFIED_BRANCH_NAME, branchQualifier.get());
                     baseVersion = baseVersion.addQualifier(branchQualifier.get());
                 }
             }
@@ -179,17 +177,4 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
         }
     }
 
-    /**
-     * Builds a string representing the given instant interpolated in the current system timezone
-     * @param commitInstant commit time as an Instant
-     * @return a string representing the commit time
-     */
-    public static String getTimestamp(Instant commitInstant) {
-        LocalDateTime commitDateTime = LocalDateTime.ofInstant(commitInstant, ZoneId.systemDefault());
-        String isoDateTime = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(commitDateTime);
-        return isoDateTime
-                .replace("-", "")
-                .replace(":", "")
-                .replace("T", "");
-    }
 }

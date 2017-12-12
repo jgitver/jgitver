@@ -18,6 +18,7 @@ package fr.brouillard.oss.jgitver.strategy.maven.defaults;
 import static fr.brouillard.oss.jgitver.Lambdas.mute;
 import static fr.brouillard.oss.jgitver.Lambdas.unchecked;
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -161,7 +162,15 @@ public class Scenario5WithDefaultsTest {
         unchecked(() -> git.checkout().setName("int").call());
         assertThat(versionCalculator.getVersion(), is("1.0.1-int-SNAPSHOT"));
     }
-    
+
+    @Test
+    public void issue35_meta_contain_qualified_branch_name() {
+        // checkout the commit in scenario
+        unchecked(() -> git.checkout().setName("int").call());
+        assertNotNull(versionCalculator.getVersionObject());
+        assertThat(versionCalculator.meta(Metadatas.QUALIFIED_BRANCH_NAME).get(), is("int"));
+    }
+
     @Test
     public void version_of_branch_dev() {
         // checkout the commit in scenario

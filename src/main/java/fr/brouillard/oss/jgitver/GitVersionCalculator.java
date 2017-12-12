@@ -444,7 +444,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     }
 
     /**
-     * When true, append the git commit timestampt to the version. This qualifier is not used if the SNAPSHOT qualifier
+     * When true, append the git commit timestamp to the version. This qualifier is not used if the SNAPSHOT qualifier
      * is used.
      * 
      * @param useGitCommitTimestamp if true, a qualifier with git commit timestamp will be used, default false

@@ -16,6 +16,10 @@
 package fr.brouillard.oss.jgitver.impl;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
@@ -50,5 +54,19 @@ public class GitUtils {
     public static boolean isDirty(Git git) throws NoWorkTreeException, GitAPIException {
         Status status = git.status().call();
         return !status.isClean();
+    }
+
+    /**
+     * Builds a string representing the given instant interpolated in the current system timezone
+     * @param commitInstant commit time as an Instant
+     * @return a string representing the commit time
+     */
+    public static String getTimestamp(Instant commitInstant) {
+        LocalDateTime commitDateTime = LocalDateTime.ofInstant(commitInstant, ZoneId.systemDefault());
+        String isoDateTime = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(commitDateTime);
+        return isoDateTime
+                .replace("-", "")
+                .replace(":", "")
+                .replace("T", "");
     }
 }

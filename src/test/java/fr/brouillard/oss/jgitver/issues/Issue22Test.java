@@ -41,7 +41,7 @@ import fr.brouillard.oss.jgitver.GitVersionCalculator;
 import fr.brouillard.oss.jgitver.Misc;
 import fr.brouillard.oss.jgitver.Scenarios.Scenario;
 import fr.brouillard.oss.jgitver.Scenarios.ScenarioBuilder;
-import fr.brouillard.oss.jgitver.impl.ConfigurableVersionStrategy;
+import fr.brouillard.oss.jgitver.impl.GitUtils;
 
 public class Issue22Test {
     private static Scenario scenario;
@@ -88,7 +88,7 @@ public class Issue22Test {
 
         try (RevWalk walk = new RevWalk(repository)) {
             RevCommit rc = walk.parseCommit(scenario.getCommits().get("B"));
-            String expectedHeadTimestampQualifier = ConfigurableVersionStrategy.getTimestamp(rc.getAuthorIdent().getWhen().toInstant());
+            String expectedHeadTimestampQualifier = GitUtils.getTimestamp(rc.getAuthorIdent().getWhen().toInstant());
             Assert.assertThat(versionCalculator.getVersion(), containsString(expectedHeadTimestampQualifier));
         }
     }
@@ -101,7 +101,7 @@ public class Issue22Test {
 
         try (RevWalk walk = new RevWalk(repository)) {
             RevCommit rc = walk.parseCommit(scenario.getCommits().get("A"));
-            String expectedHeadTimestampQualifier = ConfigurableVersionStrategy.getTimestamp(rc.getAuthorIdent().getWhen().toInstant());
+            String expectedHeadTimestampQualifier = GitUtils.getTimestamp(rc.getAuthorIdent().getWhen().toInstant());
             Assert.assertThat(versionCalculator.getVersion(), containsString(expectedHeadTimestampQualifier));
         }
     }    

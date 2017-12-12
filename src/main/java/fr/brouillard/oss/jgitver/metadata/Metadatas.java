@@ -56,6 +56,10 @@ public enum Metadatas {
      */
     BRANCH_NAME,
     /**
+     * Branch name used as a qualifier if any. 
+     */
+    QUALIFIED_BRANCH_NAME,
+    /**
      * Corresponds to the list of tags, associated with the current HEAD.
      */
     HEAD_TAGS, 
@@ -131,6 +135,11 @@ public enum Metadatas {
     /**
      * Exposes the commit distance from the base tag used for the version computation.
      */
-    COMMIT_DISTANCE
+    COMMIT_DISTANCE,
+    /**
+     * Exposes the commit timestamp instant in the current system timezone using
+     * a simplified DateTimeFormatter.ISO_LOCAL_DATE_TIME
+     */
+    COMMIT_TIMESTAMP
     ;
 }
