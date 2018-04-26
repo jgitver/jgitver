@@ -83,13 +83,13 @@ public class MavenVersionStrategy extends VersionStrategy {
             }
 
             if (!GitUtils.isDetachedHead(getRepository())) {
-                getRegistrar().registerMetadata(Metadatas.BRANCH_NAME, getRepository().getBranch());
-                
-                // let's add a branch qualifier if one is computed
-                Optional<String> branchQualifier = getVersionNamingConfiguration().branchQualifier(getRepository().getBranch());
-                if (branchQualifier.isPresent()) {
-                    getRegistrar().registerMetadata(Metadatas.QUALIFIED_BRANCH_NAME, branchQualifier.get());
-                    baseVersion = baseVersion.addQualifier(branchQualifier.get());
+                String branch = getRepository().getBranch();
+                baseVersion = enhanceVersionWithBranch(baseVersion, branch);
+            } else {
+                // ugly syntax to bypass the final/effectively final pb to access vraiable in lambda
+                Optional<String> externalyProvidedBranchName = GitUtils.providedBranchName();
+                if (externalyProvidedBranchName.isPresent()) {
+                    baseVersion = enhanceVersionWithBranch(baseVersion, externalyProvidedBranchName.get());
                 }
             }
             

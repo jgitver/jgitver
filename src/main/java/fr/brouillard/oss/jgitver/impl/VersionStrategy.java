@@ -16,7 +16,9 @@
 package fr.brouillard.oss.jgitver.impl;
 
 import java.util.List;
+import java.util.Optional;
 
+import fr.brouillard.oss.jgitver.metadata.Metadatas;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
@@ -122,5 +124,17 @@ public abstract class VersionStrategy {
 
     protected boolean isBaseCommitOnHead(Commit head, Commit base) {
         return head.getGitObject().name().equals(base.getGitObject().name());
+    }
+
+    protected Version enhanceVersionWithBranch(Version baseVersion, String branch) {
+        getRegistrar().registerMetadata(Metadatas.BRANCH_NAME, branch);
+
+        // let's add a branch qualifier if one is computed
+        Optional<String> branchQualifier = getVersionNamingConfiguration().branchQualifier(branch);
+        if (branchQualifier.isPresent()) {
+            getRegistrar().registerMetadata(Metadatas.QUALIFIED_BRANCH_NAME, branchQualifier.get());
+            baseVersion = baseVersion.addQualifier(branchQualifier.get());
+        }
+        return baseVersion;
     }
 }

@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
@@ -69,4 +70,20 @@ public class GitUtils {
                 .replace(":", "")
                 .replace("T", "");
     }
+
+    /**
+     * Provide the branch name externally provided in case we are building on a detached branch.
+     * It looks at:
+     * <ul>
+     *     <li>System property: `jgitver.branch`</li>
+     *     <li>Environment variable: `JGITVER_BRANCH`</li>
+     * </ul>
+     * @return the found branch name in the form of an optional.
+     */
+    public static Optional<String> providedBranchName() {
+        return Optional.ofNullable(System.getProperty(BRANCH_SYSTEM_PROPERTY, System.getenv(BRANCH_ENV_VARIABLE)));
+    }
+
+    private static final String BRANCH_SYSTEM_PROPERTY = "jgitver.branch";
+    private static final String BRANCH_ENV_VARIABLE = "JGITVER_BRANCH";
 }
