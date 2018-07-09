@@ -133,6 +133,18 @@ public enum Metadatas {
      */
     BASE_VERSION,
     /**
+     * Exposes the major version of the computed version, ie the X in X.Y.Z.
+     */
+    CURRENT_VERSION_MAJOR,
+    /**
+     * Exposes the minor version of the computed version, ie the Y in X.Y.Z.
+     */
+    CURRENT_VERSION_MINOR,
+    /**
+     * Exposes the patch version of the computed version, ie the Z in X.Y.Z.
+     */
+    CURRENT_VERSION_PATCH,
+    /**
      * Exposes the commit distance from the base tag used for the version computation.
      */
     COMMIT_DISTANCE,

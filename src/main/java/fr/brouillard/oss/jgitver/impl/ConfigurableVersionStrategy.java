@@ -108,6 +108,9 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
                         .parse(getVersionNamingConfiguration().extractVersionFrom(tagName));
             }
             getRegistrar().registerMetadata(Metadatas.BASE_VERSION, baseVersion.toString());
+            getRegistrar().registerMetadata(Metadatas.CURRENT_VERSION_MAJOR, "" + baseVersion.getMajor());
+            getRegistrar().registerMetadata(Metadatas.CURRENT_VERSION_MINOR, "" + baseVersion.getMinor());
+            getRegistrar().registerMetadata(Metadatas.CURRENT_VERSION_PATCH, "" + baseVersion.getPatch());
 
             final boolean useSnapshot = baseVersion.isSnapshot();
             

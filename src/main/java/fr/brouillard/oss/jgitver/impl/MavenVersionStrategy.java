@@ -72,6 +72,9 @@ public class MavenVersionStrategy extends VersionStrategy {
                         || !GitUtils.isAnnotated(tagToUse);
             }
             getRegistrar().registerMetadata(Metadatas.BASE_VERSION, baseVersion.toString());
+            getRegistrar().registerMetadata(Metadatas.CURRENT_VERSION_MAJOR, "" + baseVersion.getMajor());
+            getRegistrar().registerMetadata(Metadatas.CURRENT_VERSION_MINOR, "" + baseVersion.getMinor());
+            getRegistrar().registerMetadata(Metadatas.CURRENT_VERSION_PATCH, "" + baseVersion.getPatch());
 
             if (!isBaseCommitOnHead(head, base)) {
                 // we are not on head
