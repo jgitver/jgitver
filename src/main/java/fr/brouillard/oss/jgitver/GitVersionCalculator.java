@@ -55,6 +55,8 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     private List<BranchingPolicy> qualifierBranchingPolicies;
     private boolean useDefaultBranchingPolicy = true;
     private Strategies versionStrategy = null;
+    private String tagVersionPattern = null;
+    private String versionPattern = null;
 
     private File gitRepositoryLocation;
 
@@ -137,6 +139,13 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
                     cvs.setUseCommitTimestamp(useGitCommitTimestamp);
                     cvs.setUseLongFormat(useLongFormat);
                     strategy = cvs;
+                    break;
+                case PATTERN:
+                    PatternVersionStrategy pvs = new PatternVersionStrategy(vnc, repository, git, metadatas);
+                    pvs.setAutoIncrementPatch(autoIncrementPatch);
+                    pvs.setVersionPattern(versionPattern);
+                    pvs.setTagVersionPattern(tagVersionPattern);
+                    strategy = pvs;
                     break;
                 default:
                     throw new IllegalStateException("unknown strategy: " + versionStrategy);
@@ -524,6 +533,28 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
      */
     public GitVersionCalculator setStrategy(Strategies s) {
         this.versionStrategy = Objects.requireNonNull(s, "provided strategy cannot be null");
+        return this;
+    }
+
+    /**
+     * Defines the version pattern to use in {@link Strategies#PATTERN} mode when HEAD is on an annotated tag
+     * @param pattern the pattern to use for annotated tags
+     * @return itself to chain settings
+     * @since 0.7.0
+     */
+    public GitVersionCalculator setTagVersionPattern(String pattern) {
+        this.tagVersionPattern = pattern;
+        return this;
+    }
+
+    /**
+     * Defines the version pattern to use in {@link Strategies#PATTERN} mode for normal situation (i.e. not on a tag)
+     * @param pattern the pattern to use
+     * @return itself to chain settings
+     * @since 0.7.0
+     */
+    public GitVersionCalculator setVersionPattern(String pattern) {
+        this.versionPattern = pattern;
         return this;
     }
 }
