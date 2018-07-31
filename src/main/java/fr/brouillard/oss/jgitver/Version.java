@@ -53,7 +53,12 @@ public class Version {
         StringBuilder sb = new StringBuilder();
         sb.append(String.format("%d.%d.%d", major, minor, patch));
 
-        this.qualifiers.forEach(q -> sb.append('-').append(q));
+        this.qualifiers.forEach(q -> {
+            if (!q.startsWith("-") && !q.startsWith("+")) {
+                sb.append('-');
+            }
+            sb.append(q);
+        });
         this.stringRepresentation = sb.toString();
     }
 
@@ -117,7 +122,7 @@ public class Version {
         return new Version(major, minor, patch, Collections.emptyList());
     }
     
-    private static final Pattern globalVersionPattern = Pattern.compile("^([0-9]+)(?:\\.([0-9]+))?(?:\\.([0-9]+))?(\\-[a-zA-Z0-9][a-zA-Z0-9\\-_]*)?$");
+    private static final Pattern globalVersionPattern = Pattern.compile("^([0-9]+)(?:\\.([0-9]+))?(?:\\.([0-9]+))?([\\-\\+][a-zA-Z0-9][a-zA-Z0-9\\-_\\.\\+]*)?$");
     
     /**
      * Creates a {@link Version} object by parsing the given string.
