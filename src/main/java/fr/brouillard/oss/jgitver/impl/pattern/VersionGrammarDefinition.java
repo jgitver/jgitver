@@ -32,11 +32,12 @@ public class VersionGrammarDefinition extends GrammarDefinition {
         def("sys", of("sys.").seq(ref("chars")).pick(1));
         def("env", of("env.").seq(ref("chars")).pick(1));
 
+        def("full_version", of('v'));
         def("major_version", of('M'));
         def("minor_version", of('m'));
         def("patch_version", of('p'));
 
-        def("inner_placeholder", ref("meta").or(ref("sys"), ref("env"), ref("major_version"), ref("minor_version"), ref("patch_version")));
+        def("inner_placeholder", ref("meta").or(ref("sys"), ref("env"), ref("full_version"), ref("major_version"), ref("minor_version"), ref("patch_version")));
     }
 
 }

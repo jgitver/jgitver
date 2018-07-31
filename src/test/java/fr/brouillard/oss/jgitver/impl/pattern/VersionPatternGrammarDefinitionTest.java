@@ -62,7 +62,7 @@ public class VersionPatternGrammarDefinitionTest {
     }
 
     @Test
-    public void recognizeFullVersion() {
+    public void recognizeFullVersionUsingDetailledVersionsPatterns() {
         Function<Metadatas, Optional<String>> metaProvider = (m) -> Optional.of("M_" + m.name());
         Function<String, Optional<String>> systemProvider = (s) -> Optional.of("S_" + s);
         Function<String, Optional<String>> envProvider = (s) -> Optional.of("E_" + s);
@@ -73,6 +73,29 @@ public class VersionPatternGrammarDefinitionTest {
 
         assertThat(p, notNullValue());
         Result result = p.parse("${M}${<m}${<p}");
+        assertThat(result, notNullValue());
+        assertTrue(result.isSuccess());
+
+        Version computedVersion = result.get();
+        assertThat(computedVersion, notNullValue());
+        assertThat(computedVersion.getMajor(), is(1));
+        assertThat(computedVersion.getMinor(), is(2));
+        assertThat(computedVersion.getPatch(), is(3));
+        assertFalse(computedVersion.isQualified());
+    }
+
+    @Test
+    public void recognizeFullVersion() {
+        Function<Metadatas, Optional<String>> metaProvider = (m) -> Optional.of("M_" + m.name());
+        Function<String, Optional<String>> systemProvider = (s) -> Optional.of("S_" + s);
+        Function<String, Optional<String>> envProvider = (s) -> Optional.of("E_" + s);
+
+        VersionGrammarDefinition g = new VersionPatternGrammarDefinition(Version.parse("1.2.3"), envProvider, systemProvider, metaProvider);
+
+        Parser p = g.build();
+
+        assertThat(p, notNullValue());
+        Result result = p.parse("${v}");
         assertThat(result, notNullValue());
         assertTrue(result.isSuccess());
 
@@ -266,6 +289,7 @@ public class VersionPatternGrammarDefinitionTest {
         assertTrue(computedVersion.isQualified());
         assertThat(computedVersion.toString(), is("1.2.3-E_E1"));
     }
+
     @Test
     public void useAutoPrefixWithEmptyValueAndTwoNonEmptyValues() {
         Function<Metadatas, Optional<String>> metaProvider = (m) -> Optional.of("M_" + m.name());

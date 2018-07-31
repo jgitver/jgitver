@@ -58,6 +58,13 @@ public class VersionPatternGrammarDefinition extends VersionGrammarDefinition {
         });
         action("sys", (String s) -> sys.apply(s));
         action("env", (String s) -> env.apply(s));
+        action("full_version", (o) -> {
+            getSeparatorProvider().major();
+            getSeparatorProvider().minor();
+            getSeparatorProvider().patch();
+            getSeparatorProvider().next();
+            return Optional.of(String.format("%s.%s.%s", version.getMajor(), version.getMinor(), version.getPatch()));
+        });
         action("major_version", (o) -> {
             getSeparatorProvider().major();
             return Optional.of("" + version.getMajor());
