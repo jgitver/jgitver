@@ -20,16 +20,11 @@ import static fr.brouillard.oss.jgitver.Lambdas.as;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import fr.brouillard.oss.jgitver.impl.*;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.PersonIdent;
@@ -40,12 +35,6 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 
 import fr.brouillard.oss.jgitver.BranchingPolicy.BranchNameTransformations;
-import fr.brouillard.oss.jgitver.impl.Commit;
-import fr.brouillard.oss.jgitver.impl.ConfigurableVersionStrategy;
-import fr.brouillard.oss.jgitver.impl.GitUtils;
-import fr.brouillard.oss.jgitver.impl.MavenVersionStrategy;
-import fr.brouillard.oss.jgitver.impl.VersionNamingConfiguration;
-import fr.brouillard.oss.jgitver.impl.VersionStrategy;
 import fr.brouillard.oss.jgitver.impl.VersionStrategy.StrategySearchMode;
 import fr.brouillard.oss.jgitver.metadata.MetadataHolder;
 import fr.brouillard.oss.jgitver.metadata.MetadataProvider;
@@ -65,6 +54,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     private int gitCommitIdLength = 8;
     private List<BranchingPolicy> qualifierBranchingPolicies;
     private boolean useDefaultBranchingPolicy = true;
+    private Strategies versionStrategy = null;
 
     private File gitRepositoryLocation;
 
@@ -125,20 +115,31 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
                     policiesToUse.toArray(new BranchingPolicy[policiesToUse.size()])
             );
 
-            if (mavenLike) {
-                final MavenVersionStrategy mavenStrategy = new MavenVersionStrategy(vnc, repository, git, metadatas);
-                mavenStrategy.setUseDirty(useDirty);
-                strategy = mavenStrategy;
-            } else {
-                ConfigurableVersionStrategy cvs = new ConfigurableVersionStrategy(vnc, repository, git, metadatas);
-                cvs.setAutoIncrementPatch(autoIncrementPatch);
-                cvs.setUseDistance(useDistance);
-                cvs.setUseDirty(useDirty);
-                cvs.setUseGitCommitId(useGitCommitId);
-                cvs.setGitCommitIdLength(gitCommitIdLength);
-                cvs.setUseCommitTimestamp(useGitCommitTimestamp);
-                cvs.setUseLongFormat(useLongFormat);
-                strategy = cvs;
+            if (versionStrategy == null) {
+                // no versionStrategy defined yet
+                // we use historical mavenLike for compatibility purposes
+                versionStrategy = mavenLike ? Strategies.MAVEN : Strategies.CONFIGURABLE;
+            }
+
+            switch (versionStrategy) {
+                case MAVEN:
+                    final MavenVersionStrategy mavenStrategy = new MavenVersionStrategy(vnc, repository, git, metadatas);
+                    mavenStrategy.setUseDirty(useDirty);
+                    strategy = mavenStrategy;
+                    break;
+                case CONFIGURABLE:
+                    ConfigurableVersionStrategy cvs = new ConfigurableVersionStrategy(vnc, repository, git, metadatas);
+                    cvs.setAutoIncrementPatch(autoIncrementPatch);
+                    cvs.setUseDistance(useDistance);
+                    cvs.setUseDirty(useDirty);
+                    cvs.setUseGitCommitId(useGitCommitId);
+                    cvs.setGitCommitIdLength(gitCommitIdLength);
+                    cvs.setUseCommitTimestamp(useGitCommitTimestamp);
+                    cvs.setUseLongFormat(useLongFormat);
+                    strategy = cvs;
+                    break;
+                default:
+                    throw new IllegalStateException("unknown strategy: " + versionStrategy);
             }
 
             Version calculatedVersion = buildVersion(git, strategy);
@@ -487,6 +488,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
      * 
      * @param mavenLike true to activate maven like mode
      * @return itself to chain settings
+     * @deprecated since 0.7.0, use {@link #setStrategy(Strategies)} instead
      */
     public GitVersionCalculator setMavenLike(boolean mavenLike) {
         this.mavenLike = mavenLike;
@@ -512,5 +514,16 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
             getVersion();
         }
         return metadatas.meta(meta);
+    }
+
+    /**
+     * Defines the strategy to use.
+     * @param s the non null strategy to use as a {@link Strategies} enum value
+     * @return itself to chain settings
+     * @since 0.7.0
+     */
+    public GitVersionCalculator setStrategy(Strategies s) {
+        this.versionStrategy = Objects.requireNonNull(s, "provided strategy cannot be null");
+        return this;
     }
 }
