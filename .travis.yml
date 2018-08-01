@@ -1,5 +1,8 @@
 language: java
 
+before_script:
+  - ./travis-set-branch.sh
+
 script:
   - mvn clean install
 
