@@ -161,6 +161,15 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>2.17</version>
+                <configuration>
+                    <propertiesLocation>${project.basedir}/src/quality/checkstyle/checkstyle_maven.properties</propertiesLocation>
+                    <configLocation>${project.basedir}/src/quality/checkstyle/checks.xml</configLocation>
+                    <encoding>UTF-8</encoding>
+                    <consoleOutput>true</consoleOutput>
+                    <failsOnError>true</failsOnError>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    <excludes>**/*Test.java</excludes>
+                </configuration>
                 <dependencies>
                     <dependency>
                         <groupId>com.puppycrawl.tools</groupId>
@@ -172,15 +181,6 @@
                     <execution>
                         <id>validate</id>
                         <phase>verify</phase>
-                        <configuration>
-        					<propertiesLocation>${project.basedir}/src/quality/checkstyle/checkstyle_maven.properties</propertiesLocation>
-                            <configLocation>${project.basedir}/src/quality/checkstyle/checks.xml</configLocation>
-                            <encoding>UTF-8</encoding>
-                            <consoleOutput>true</consoleOutput>
-                            <failsOnError>true</failsOnError>
-                            <includeTestSourceDirectory>true</includeTestSourceDirectory>
-                            <excludes>**/*Test.java</excludes>
-                        </configuration>
                         <goals>
                             <goal>check</goal>
                         </goals>

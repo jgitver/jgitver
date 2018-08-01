@@ -15,6 +15,9 @@
  */
 package fr.brouillard.oss.jgitver.impl.pattern;
 
+/**
+ * Computes the separator to use for a semver compatible version pattern.
+ */
 public class AutoSeparatorProvider {
     private String current;
     private boolean versionEnded = false;
@@ -24,18 +27,37 @@ public class AutoSeparatorProvider {
         this.current = ".";
     }
 
+    /**
+     * to be called when major version is processed.
+     */
     public void major() {
     }
+
+    /**
+     * to be called when minor version is processed.
+     */
     public void minor() {
     }
+
+    /**
+     * to be called when patch version is processed.
+     */
     public void patch() {
         endVersion();
     }
+
+    /**
+     * to be called when version is finished to be processed.
+     */
     public void endVersion() {
         if (!this.versionEnded) {
             this.versionEnded = true;
         }
     }
+
+    /**
+     * Call this each time a separator has been used.
+     */
     public void next() {
         if (!versionEnded) {
             this.current = ".";
@@ -49,6 +71,9 @@ public class AutoSeparatorProvider {
         }
     }
 
+    /**
+     * Retrieve the current separator that should be used.
+     */
     public String currentSeparator() {
         return this.current;
     }

@@ -35,12 +35,12 @@ public class Scenarios {
     /**
      * Builds the following repository
      * <pre>
-$ git log --graph --abbrev-commit --decorate --format=format:'%h - (%ar) %s - %an %d'
-** 80eee6d - (18 seconds ago) content E - Matthieu Brouillard (HEAD -> master)
-** 98358d0 - (18 seconds ago) content D - Matthieu Brouillard (tag: 2.0.0)
-** 00a993e - (18 seconds ago) content C - Matthieu Brouillard
-** 183ccc6 - (18 seconds ago) content B - Matthieu Brouillard (tag: 1.0.0)
-** b048402 - (18 seconds ago) content A - Matthieu Brouillard
+     * $ git log --graph --abbrev-commit --decorate --format=format:'%h - (%ar) %s - %an %d'
+     * * 80eee6d - (18 seconds ago) content E - Matthieu Brouillard (HEAD -> master)
+     * * 98358d0 - (18 seconds ago) content D - Matthieu Brouillard (tag: 2.0.0)
+     * * 00a993e - (18 seconds ago) content C - Matthieu Brouillard
+     * * 183ccc6 - (18 seconds ago) content B - Matthieu Brouillard (tag: 1.0.0)
+     * * b048402 - (18 seconds ago) content A - Matthieu Brouillard
      * </pre>
      * @return the scenario object corresponding to the above git repository
      */
@@ -60,12 +60,12 @@ $ git log --graph --abbrev-commit --decorate --format=format:'%h - (%ar) %s - %a
     /**
      * Builds the following repository, tag 1.1.0 is a lightweight one, others are annotated ones
      * <pre>
-$ git log --graph --abbrev-commit --decorate --format=format:'%h - (%ar) %s - %an %d'
-** 47eb212 - (60 seconds ago) content E - Matthieu Brouillard  (HEAD -> master)
-** 01ee9e7 - (60 seconds ago) content D - Matthieu Brouillard  (tag: 2.0.0)
-** 84afe52 - (60 seconds ago) content C - Matthieu Brouillard
-** 6b4a7d2 - (60 seconds ago) content B - Matthieu Brouillard  (tag: 1.1.0, tag: 1.0.0)
-** 368516a - (60 seconds ago) content A - Matthieu Brouillard
+     * $ git log --graph --abbrev-commit --decorate --format=format:'%h - (%ar) %s - %an %d'
+     * * 47eb212 - (60 seconds ago) content E - Matthieu Brouillard  (HEAD -> master)
+     * * 01ee9e7 - (60 seconds ago) content D - Matthieu Brouillard  (tag: 2.0.0)
+     * * 84afe52 - (60 seconds ago) content C - Matthieu Brouillard
+     * * 6b4a7d2 - (60 seconds ago) content B - Matthieu Brouillard  (tag: 1.1.0, tag: 1.0.0)
+     * * 368516a - (60 seconds ago) content A - Matthieu Brouillard
      * </pre>
      * @return the scenario object corresponding to the above git repository
      */
@@ -86,13 +86,13 @@ $ git log --graph --abbrev-commit --decorate --format=format:'%h - (%ar) %s - %a
     /**
      * Builds the following repository, tags 1.1.0-SNAPSHOT &amp; 3.0.0-SNAPSHOT are lightweight ones, others are annotated ones
      * <pre>
-$ git log --graph --abbrev-commit --decorate --format=format:'%h - (%ar) %s - %an %d'
-** 64a5bf6 - (60 seconds ago) content F - Matthieu Brouillard  (HEAD -> master)
-** 47eb212 - (60 seconds ago) content E - Matthieu Brouillard  
-** 01ee9e7 - (60 seconds ago) content D - Matthieu Brouillard  (tag: 3.0.0-SNAPSHOT, 2.0.0)
-** 84afe52 - (60 seconds ago) content C - Matthieu Brouillard
-** 6b4a7d2 - (60 seconds ago) content B - Matthieu Brouillard  (tag: 1.1.0-SNAPSHOT, tag: 1.0.0)
-** 368516a - (60 seconds ago) content A - Matthieu Brouillard
+     * $ git log --graph --abbrev-commit --decorate --format=format:'%h - (%ar) %s - %an %d'
+     * * 64a5bf6 - (60 seconds ago) content F - Matthieu Brouillard  (HEAD -> master)
+     * * 47eb212 - (60 seconds ago) content E - Matthieu Brouillard
+     * * 01ee9e7 - (60 seconds ago) content D - Matthieu Brouillard  (tag: 3.0.0-SNAPSHOT, 2.0.0)
+     * * 84afe52 - (60 seconds ago) content C - Matthieu Brouillard
+     * * 6b4a7d2 - (60 seconds ago) content B - Matthieu Brouillard  (tag: 1.1.0-SNAPSHOT, tag: 1.0.0)
+     * * 368516a - (60 seconds ago) content A - Matthieu Brouillard
      * </pre>
      * @return the scenario object corresponding to the above git repository
      */
@@ -114,16 +114,16 @@ $ git log --graph --abbrev-commit --decorate --format=format:'%h - (%ar) %s - %a
     
     /**
      * Builds the following repository
-     * <pre> 
-$ git lg
-** 7454c23 - (23 seconds ago) content G - Matthieu Brouillard (issue-10)
-** 17716f2 - (23 seconds ago) content F - Matthieu Brouillard
-| * 6769dbc - (23 seconds ago) content E - Matthieu Brouillard (HEAD -> master)
-| * e5c7b86 - (23 seconds ago) content D - Matthieu Brouillard (tag: 2.0.0)
-|/
-** 4640726 - (23 seconds ago) content C - Matthieu Brouillard
-** e6231b0 - (23 seconds ago) content B - Matthieu Brouillard (tag: 1.0.0)
-** b4e3196 - (23 seconds ago) content A - Matthieu Brouillard
+     * <pre>
+     * $ git lg
+     * * 7454c23 - (23 seconds ago) content G - Matthieu Brouillard (issue-10)
+     * * 17716f2 - (23 seconds ago) content F - Matthieu Brouillard
+     * | * 6769dbc - (23 seconds ago) content E - Matthieu Brouillard (HEAD -> master)
+     * | * e5c7b86 - (23 seconds ago) content D - Matthieu Brouillard (tag: 2.0.0)
+     * |/
+     * * 4640726 - (23 seconds ago) content C - Matthieu Brouillard
+     * * e6231b0 - (23 seconds ago) content B - Matthieu Brouillard (tag: 1.0.0)
+     * * b4e3196 - (23 seconds ago) content A - Matthieu Brouillard
     </pre>
      * @return the scenario object corresponding to the above git repository
      */
@@ -146,13 +146,13 @@ $ git lg
     /**
      * Builds the following repository
      * <pre>
-$ git lg
-** 1b48dc9 - (19 seconds ago) content D - Matthieu Brouillard (dev)
-| * 1e563e6 - (19 seconds ago) content C - Matthieu Brouillard (int)
-|/
-| * 5a7d916 - (19 seconds ago) content B - Matthieu Brouillard (HEAD -> master)
-|/
-** 338e4e2 - (19 seconds ago) content A - Matthieu Brouillard (tag: 1.0.0)
+     * $ git lg
+     * * 1b48dc9 - (19 seconds ago) content D - Matthieu Brouillard (dev)
+     * | * 1e563e6 - (19 seconds ago) content C - Matthieu Brouillard (int)
+     * |/
+     * | * 5a7d916 - (19 seconds ago) content B - Matthieu Brouillard (HEAD -> master)
+     * |/
+     * * 338e4e2 - (19 seconds ago) content A - Matthieu Brouillard (tag: 1.0.0)
      * </pre> 
      * @return the scenario object corresponding to the above git repository
      */
@@ -172,12 +172,12 @@ $ git lg
     /**
      * Builds the following repository
      * <pre>
-$ git log --graph --abbrev-commit --decorate --format=format:'%h - (%ar) %s - %an %d'
-** 2edd5f0 - (23 seconds ago) content E - Matthieu Brouillard  (HEAD -> master)
-** 1fd4fc5 - (23 seconds ago) content D - Matthieu Brouillard  (tag: dummy)
-** 8b7702c - (23 seconds ago) content C - Matthieu Brouillard  (tag: a3.0)
-** bf740e5 - (23 seconds ago) content B - Matthieu Brouillard  (tag: v2.0)
-** 7166362 - (23 seconds ago) content A - Matthieu Brouillard  (tag: 1.0)
+     * $ git log --graph --abbrev-commit --decorate --format=format:'%h - (%ar) %s - %an %d'
+     * * 2edd5f0 - (23 seconds ago) content E - Matthieu Brouillard  (HEAD -> master)
+     * * 1fd4fc5 - (23 seconds ago) content D - Matthieu Brouillard  (tag: dummy)
+     * * 8b7702c - (23 seconds ago) content C - Matthieu Brouillard  (tag: a3.0)
+     * * bf740e5 - (23 seconds ago) content B - Matthieu Brouillard  (tag: v2.0)
+     * * 7166362 - (23 seconds ago) content A - Matthieu Brouillard  (tag: 1.0)
      * </pre>
      * @return the scenario object corresponding to the above git repository
      */
@@ -199,14 +199,14 @@ $ git log --graph --abbrev-commit --decorate --format=format:'%h - (%ar) %s - %a
     /**
      * Builds the following repository.
      * <pre>
-$ git lg
-** ba58bfe - (4 minutes ago) content F - Matthieu Brouillard (issue-10)
-| * f79c238 - (4 minutes ago) content E - Matthieu Brouillard (HEAD -> master)
-| * c8a6fb0 - (4 minutes ago) content D - Matthieu Brouillard (tag: 1.1.0)
-|/
-** 2a5bc65 - (4 minutes ago) content C - Matthieu Brouillard
-** 3466319 - (4 minutes ago) content B - Matthieu Brouillard (tag: 1.0.0)
-** d43eee1 - (4 minutes ago) content A - Matthieu Brouillard
+     * $ git lg
+     * * ba58bfe - (4 minutes ago) content F - Matthieu Brouillard (issue-10)
+     * | * f79c238 - (4 minutes ago) content E - Matthieu Brouillard (HEAD -> master)
+     * | * c8a6fb0 - (4 minutes ago) content D - Matthieu Brouillard (tag: 1.1.0)
+     * |/
+     * * 2a5bc65 - (4 minutes ago) content C - Matthieu Brouillard
+     * * 3466319 - (4 minutes ago) content B - Matthieu Brouillard (tag: 1.0.0)
+     * * d43eee1 - (4 minutes ago) content A - Matthieu Brouillard
      * </pre>
      * @return the scenario object corresponding to the above git repository
      */
@@ -237,8 +237,8 @@ $ git lg
     /**
      * Builds a one commit git repository.
      * <pre>
-$ git lg
-** ee22e69 - (26 seconds ago) content A - Matthieu Brouillard (HEAD -> master)
+     * $ git lg
+     * * ee22e69 - (26 seconds ago) content A - Matthieu Brouillard (HEAD -> master)
      * </pre>
      * @return the scenario object corresponding to the above git repository
      */
@@ -252,10 +252,10 @@ $ git lg
     /**
      * Builds a linear repository with no tags.
      * <pre>
-$ git lg
-** abeca86 - (22 seconds ago) content C - Matthieu Brouillard (HEAD -> master)
-** 877b5e1 - (22 seconds ago) content B - Matthieu Brouillard
-** c487e67 - (22 seconds ago) content A - Matthieu Brouillard
+     * $ git lg
+     * * abeca86 - (22 seconds ago) content C - Matthieu Brouillard (HEAD -> master)
+     * * 877b5e1 - (22 seconds ago) content B - Matthieu Brouillard
+     * * c487e67 - (22 seconds ago) content A - Matthieu Brouillard
      * </pre>
      * @return the scenario object corresponding to the above git repository
      */
@@ -271,14 +271,14 @@ $ git lg
     /**
      * Builds a linear repository with RC tags.
      * <pre>
-$ git lg
-** 3c6bad0 - (13 seconds ago) content G - Matthieu Brouillard (HEAD -> master, tag: v2.0.0, tag: 1.0.0)
-** 54662c0 - (13 seconds ago) content F - Matthieu Brouillard
-** 1374ed9 - (13 seconds ago) content E - Matthieu Brouillard (tag: 1.0.0-rc02)
-** a35958a - (13 seconds ago) content D - Matthieu Brouillard
-** e892883 - (13 seconds ago) content C - Matthieu Brouillard (tag: 1.0.0-rc01)
-** 0954efd - (13 seconds ago) content B - Matthieu Brouillard
-** 7510ee8 - (13 seconds ago) content A - Matthieu Brouillard (tag: v1.0.0)
+     * $ git lg
+     * * 3c6bad0 - (13 seconds ago) content G - Matthieu Brouillard (HEAD -> master, tag: v2.0.0, tag: 1.0.0)
+     * * 54662c0 - (13 seconds ago) content F - Matthieu Brouillard
+     * * 1374ed9 - (13 seconds ago) content E - Matthieu Brouillard (tag: 1.0.0-rc02)
+     * * a35958a - (13 seconds ago) content D - Matthieu Brouillard
+     * * e892883 - (13 seconds ago) content C - Matthieu Brouillard (tag: 1.0.0-rc01)
+     * * 0954efd - (13 seconds ago) content B - Matthieu Brouillard
+     * * 7510ee8 - (13 seconds ago) content A - Matthieu Brouillard (tag: v1.0.0)
      * </pre>
      * @return the scenario object corresponding to the above git repository
      */
@@ -301,23 +301,24 @@ $ git lg
     }
 
     /**
-     * Builds a repository with branches name like gitflow
+     * Builds a repository with branches name like gitflow.
      * <pre>
-** 8c102d4 - (develop) content H (33 seconds ago) <Matthieu Brouillard>
-*| * e42d934 - (feature/add-sso) content G (33 seconds ago) <Matthieu Brouillard>
-*|/
-*| * c426c65 - (HEAD, tag: 3.0.0, master) content D (33 seconds ago) <Matthieu Brouillard>
-*| | * d8893cc - (release/1.x) content E (33 seconds ago) <Matthieu Brouillard>
-*| |/
-*|/|
-*| | * 29d7fe2 - (release/2.x) content F (33 seconds ago) <Matthieu Brouillard>
-*| |/
-*| * fdbe434 - (tag: v2.0.0) content C (33 seconds ago) <Matthieu Brouillard>
-*|/
-** ef278a5 - content B (33 seconds ago) <Matthieu Brouillard>
-** fb1f2d9 - (tag: 1.0.0) content A (33 seconds ago) <Matthieu Brouillard>
+     * $ git lg
+     * * * 8c102d4 - (develop) content H (33 seconds ago) <Matthieu Brouillard>
+     * * * *| * e42d934 - (feature/add-sso) content G (33 seconds ago) <Matthieu Brouillard>
+     * *|/
+     * *| * c426c65 - (HEAD, tag: 3.0.0, master) content D (33 seconds ago) <Matthieu Brouillard>
+     * *| | * d8893cc - (release/1.x) content E (33 seconds ago) <Matthieu Brouillard>
+     * *| |/
+     * *|/|
+     * *| | * 29d7fe2 - (release/2.x) content F (33 seconds ago) <Matthieu Brouillard>
+     * *| |/
+     * *| * fdbe434 - (tag: v2.0.0) content C (33 seconds ago) <Matthieu Brouillard>
+     * *|/
+     * * ef278a5 - content B (33 seconds ago) <Matthieu Brouillard>
+     * * fb1f2d9 - (tag: 1.0.0) content A (33 seconds ago) <Matthieu Brouillard>
      * </pre>
-     * @return
+     * @return the scenario object corresponding to the above git repository
      */
     public static Scenario s13_gitflow() {
         return new ScenarioBuilder()

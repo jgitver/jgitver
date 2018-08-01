@@ -19,9 +19,16 @@ import org.petitparser.context.Context;
 import org.petitparser.context.Result;
 import org.petitparser.tools.GrammarParser;
 
+/**
+ * Parser to use to recognize a version using a {@link VersionPatternGrammarDefinition} grammar.
+ */
 public class VersionGrammarParser extends GrammarParser {
     private VersionPatternGrammarDefinition definition;
 
+    /**
+     * Constructor with given grammar.
+     * @param definition the grammar to use
+     */
     public VersionGrammarParser(VersionPatternGrammarDefinition definition) {
         super(definition);
         this.definition = definition;

@@ -16,25 +16,24 @@
 package fr.brouillard.oss.jgitver.impl;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 
-import fr.brouillard.oss.jgitver.impl.pattern.VersionGrammarParser;
-import fr.brouillard.oss.jgitver.impl.pattern.VersionPatternGrammarDefinition;
-import fr.brouillard.oss.jgitver.metadata.TagType;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
-
-import fr.brouillard.oss.jgitver.Version;
-import fr.brouillard.oss.jgitver.VersionCalculationException;
-import fr.brouillard.oss.jgitver.metadata.MetadataProvider;
-import fr.brouillard.oss.jgitver.metadata.MetadataRegistrar;
-import fr.brouillard.oss.jgitver.metadata.Metadatas;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.petitparser.context.Result;
 
-import java.util.Optional;
-import java.util.function.Function;
+import fr.brouillard.oss.jgitver.Version;
+import fr.brouillard.oss.jgitver.VersionCalculationException;
+import fr.brouillard.oss.jgitver.impl.pattern.VersionGrammarParser;
+import fr.brouillard.oss.jgitver.impl.pattern.VersionPatternGrammarDefinition;
+import fr.brouillard.oss.jgitver.metadata.MetadataProvider;
+import fr.brouillard.oss.jgitver.metadata.MetadataRegistrar;
+import fr.brouillard.oss.jgitver.metadata.Metadatas;
+import fr.brouillard.oss.jgitver.metadata.TagType;
 
 public class PatternVersionStrategy extends VersionStrategy {
     public static final String DEFAULT_VERSION_PATTERN = "${v}${<meta.QUALIFIED_BRANCH_NAME}${<meta.COMMIT_DISTANCE}";
@@ -136,9 +135,9 @@ public class PatternVersionStrategy extends VersionStrategy {
             if (parseResult.isSuccess()) {
                 return parseResult.get();
             } else {
-                String msg = String.format("cannot parse version using pattern: %s\nparsing failure: %s"
-                        , versionPattern
-                        , parseResult.getMessage()
+                String msg = String.format("cannot parse version using pattern: %s\nparsing failure: %s",
+                        versionPattern,
+                        parseResult.getMessage()
                 );
                 throw new VersionCalculationException(msg);
             }
@@ -148,7 +147,7 @@ public class PatternVersionStrategy extends VersionStrategy {
     }
     
     /**
-     * Set the version pattern to use to compute the final version
+     * Set the version pattern to use to compute the final version.
      * @param versionPattern a non null string describing the pattern
      */
     public PatternVersionStrategy setVersionPattern(String versionPattern) {
@@ -157,7 +156,7 @@ public class PatternVersionStrategy extends VersionStrategy {
     }
 
     /**
-     * Set the version pattern to use to compute the final version when HEAD is on a commit with an annotated tag
+     * Set the version pattern to use to compute the final version when HEAD is on a commit with an annotated tag.
      * @param tagVersionPattern a non null string describing the pattern
      */
     public PatternVersionStrategy setTagVersionPattern(String tagVersionPattern) {
@@ -165,6 +164,11 @@ public class PatternVersionStrategy extends VersionStrategy {
         return this;
     }
 
+    /**
+     * Set the parameter to increment automatically patch number for standard versions coming from annotated tag.
+     * @param autoIncrementPatch true to increment the patch number, false otherwise
+     * @return itself for chaining
+     */
     public PatternVersionStrategy setAutoIncrementPatch(boolean autoIncrementPatch) {
         this.autoIncrementPatch = autoIncrementPatch;
         return this;

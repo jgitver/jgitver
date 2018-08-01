@@ -58,7 +58,7 @@ public class GitUtils {
     }
 
     /**
-     * Builds a string representing the given instant interpolated in the current system timezone
+     * Builds a string representing the given instant interpolated in the current system timezone.
      * @param commitInstant commit time as an Instant
      * @return a string representing the commit time
      */

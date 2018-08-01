@@ -15,20 +15,35 @@
  */
 package fr.brouillard.oss.jgitver.impl.pattern;
 
-import fr.brouillard.oss.jgitver.Version;
-import fr.brouillard.oss.jgitver.metadata.Metadatas;
-import org.petitparser.parser.Parser;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class VersionPatternGrammarDefinition extends VersionGrammarDefinition {
+import org.petitparser.parser.Parser;
 
+import fr.brouillard.oss.jgitver.Version;
+import fr.brouillard.oss.jgitver.metadata.Metadatas;
+
+/**
+ * Extension of the {@link VersionGrammarDefinition} defining the actions to realize on rules detection.
+ */
+public class VersionPatternGrammarDefinition extends VersionGrammarDefinition {
     private AutoSeparatorProvider separatorProvider;
 
-    public VersionPatternGrammarDefinition(Version version, Function<String, Optional<String>> env, Function<String, Optional<String>> sys, Function<Metadatas, Optional<String>> meta) {
+    /**
+     * Constructor is given the necessary elements to transform the recognized elements.
+     * @param version the base version to use (normally coming from a tag)
+     * @param env provider of environment variables values
+     * @param sys provider of system properties values
+     * @param meta provider of computed {@link Metadatas}
+     */
+    public VersionPatternGrammarDefinition(
+            Version version,
+            Function<String, Optional<String>> env,
+            Function<String, Optional<String>> sys,
+            Function<Metadatas, Optional<String>> meta
+    ) {
         super();
         resetSeparatorProvider();
 
@@ -60,7 +75,6 @@ public class VersionPatternGrammarDefinition extends VersionGrammarDefinition {
         action("mandatory_prefix_placeholder", (o) -> o);
         action("optional_prefix_placeholder",      (o) -> o);
         action("auto_prefix_placeholder", (ignore) -> {
-//            getSeparatorProvider().next();
             return new Prefix(Mode.OPTIONAL, () -> this.getSeparatorProvider().currentSeparator());
         });
         action("meta", (String s) -> {
@@ -102,6 +116,10 @@ public class VersionPatternGrammarDefinition extends VersionGrammarDefinition {
         return super.build();
     }
 
+    /**
+     * Allow to reset the automatic computation of the separator to use during detection.
+     * Must be called before each pattern matching and version recognition.
+     */
     public void resetSeparatorProvider() {
         separatorProvider = new AutoSeparatorProvider();
     }

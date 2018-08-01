@@ -18,7 +18,6 @@ package fr.brouillard.oss.jgitver.impl;
 import java.util.List;
 import java.util.Optional;
 
-import fr.brouillard.oss.jgitver.metadata.Metadatas;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
@@ -26,6 +25,7 @@ import org.eclipse.jgit.lib.Repository;
 import fr.brouillard.oss.jgitver.Version;
 import fr.brouillard.oss.jgitver.VersionCalculationException;
 import fr.brouillard.oss.jgitver.metadata.MetadataRegistrar;
+import fr.brouillard.oss.jgitver.metadata.Metadatas;
 import fr.brouillard.oss.jgitver.metadata.TagType;
 
 public abstract class VersionStrategy {
