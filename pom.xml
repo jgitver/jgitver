@@ -228,6 +228,11 @@
                         </lifecycleMappingMetadata>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.sonatype.ossindex.maven</groupId>
+                    <artifactId>ossindex-maven-plugin</artifactId>
+                    <version>3.0.0</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -260,6 +265,19 @@
                                     </rules>
                                     <fail>true</fail>
                                 </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.ossindex.maven</groupId>
+                        <artifactId>ossindex-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>audit-dependencies</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>audit</goal>
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>
