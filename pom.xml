@@ -146,6 +146,9 @@
                         <exclude>src/quality/**</exclude>
                         <exclude>src/test/resources/**</exclude>
                         <exclude>src/main/resources/**</exclude>
+						<exclude>mvnw</exclude>
+						<exclude>mvnw.cmd</exclude>
+						<exclude>.mvn/wrapper/*</exclude>
                     </excludes>
                 </configuration>
                 <executions>
