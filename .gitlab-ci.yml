@@ -1,0 +1,10 @@
+image: java:8
+
+stages:
+  - build
+
+build and tests:
+  stage: build
+  script:
+    - if [ -z "$CI_COMMIT_TAG" ]; then git checkout -B $CI_COMMIT_REF_NAME $CI_COMMIT_SHA; fi
+    - ./mvnw package
