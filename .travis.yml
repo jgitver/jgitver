@@ -4,7 +4,7 @@ before_script:
   - ./travis-set-branch.sh
 
 script:
-  - mvn clean install
+  - ./mvnw clean install
 
 install: /bin/true
 
