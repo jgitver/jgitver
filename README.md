@@ -1,5 +1,4 @@
-# jgitver: git versioning library [![Build Status](https://travis-ci.org/jgitver/jgitver.svg)](https://travis-ci.org/jgitver/jgitver) [![Discuss](https://badges.gitter.im/jgitver/jgitver.svg)](https://gitter.im/jgitver/Lobby)
-
+# jgitver: git versioning library [![pipeline status](https://gitlab.com/jgitver/jgitver/badges/master/pipeline.svg)](https://gitlab.com/jgitver/jgitver/commits/master)                                   [![Build Status](https://travis-ci.org/jgitver/jgitver.svg)](https://travis-ci.org/jgitver/jgitver)                                   [![Discuss](https://badges.gitter.im/jgitver/jgitver.svg)](https://gitter.im/jgitver/Lobby)
 
 The goal of `jgitver` is to provide a standardized way, via a library, to calculate a project [semver](http://semver.org) compatible version from a git repository and its content: `tags`, `branches`, `HEAD`, ...  
 
