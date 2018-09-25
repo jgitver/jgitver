@@ -123,6 +123,8 @@
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
                         <manifestEntries>
+                            <Automatic-Module-Name>fr.brouillard.oss.jgitver.library</Automatic-Module-Name>
+                            <X-Maven-Coordinates>${project.groupId}:${project.artifactId}:${project.version}</X-Maven-Coordinates>
                             <X-Git-CommitId>${jgitver.git_sha1_full}</X-Git-CommitId>
                         </manifestEntries>
                     </archive>
@@ -186,6 +188,19 @@
                         <phase>verify</phase>
                         <goals>
                             <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.22.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
                         </goals>
                     </execution>
                 </executions>
