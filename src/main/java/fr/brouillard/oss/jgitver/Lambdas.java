@@ -99,4 +99,26 @@ public final class Lambdas {
             throw new RuntimeException(caught);
         }
     }
+
+
+    @FunctionalInterface
+    public interface CheckedFunction<T, R, EX extends Throwable> {
+        R apply(T attr) throws EX;
+    }
+
+    public static <T, R> Function<T, R> unchecked(CheckedFunction<T, R, Throwable> function) {
+        return element -> {
+            try {
+                return function.apply(element);
+            } catch (Throwable ex) {
+                return sneakyThrow(ex);
+            }
+        };
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <E extends Throwable, T> T sneakyThrow(Throwable t) throws E {
+        throw (E) t;
+    }
+
 }

@@ -15,6 +15,7 @@
  */
 package fr.brouillard.oss.jgitver.impl;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +25,7 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 
+import fr.brouillard.oss.jgitver.Lambdas;
 import fr.brouillard.oss.jgitver.Version;
 import fr.brouillard.oss.jgitver.VersionCalculationException;
 import fr.brouillard.oss.jgitver.metadata.MetadataRegistrar;
@@ -38,11 +40,13 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
     private int gitCommitIdLength = 8;
     private boolean useDirty = false;
     private boolean useLongFormat;
+    private boolean useMaxVersion;
+    private int maxVersionSearchDepth = 1000;
 
     public ConfigurableVersionStrategy(VersionNamingConfiguration vnc, Repository repository, Git git, MetadataRegistrar metadatas) {
         super(vnc, repository, git, metadatas);
     }
-    
+
     public ConfigurableVersionStrategy setAutoIncrementPatch(boolean autoIncrementPatch) {
         this.autoIncrementPatch = autoIncrementPatch;
         return this;
@@ -57,7 +61,7 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
         this.useCommitTimestamp = useCommitTimestamp;
         return this;
     }
-    
+
     public ConfigurableVersionStrategy setUseGitCommitId(boolean useGitCommitId) {
         this.useGitCommitId = useGitCommitId;
         return this;
@@ -78,34 +82,39 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
         return this;
     }
 
+    public ConfigurableVersionStrategy setUseMaxVersion(boolean useMaxVersion) {
+        this.useMaxVersion = useMaxVersion;
+        return this;
+    }
+
+    public ConfigurableVersionStrategy setMaxVersionSearchDepth(int maxVersionSearchDepth) {
+        this.maxVersionSearchDepth = maxVersionSearchDepth;
+        return this;
+    }
+
+    @Override
+    public StrategySearchMode searchMode() {
+        return useMaxVersion ? StrategySearchMode.DEPTH : StrategySearchMode.STOP_AT_FIRST;
+    }
+
+    @Override
+    public int searchDepthLimit() {
+        return maxVersionSearchDepth;
+    }
+
     @Override
     public Version build(Commit head, List<Commit> parents) throws VersionCalculationException {
         try {
-            Commit base = parents.get(0);
-            Ref tagToUse;
-            
-            if (isBaseCommitOnHead(head, base) && !GitUtils.isDirty(getGit())) {
-                // consider first the annotated tags
-                tagToUse = base.getAnnotatedTags().stream().findFirst()
-                        .orElseGet(() -> base.getLightTags().stream().findFirst().orElse(null));
-            } else {
-                // consider first the light tags
-                tagToUse = base.getLightTags().stream().findFirst()
-                        .orElseGet(() -> base.getAnnotatedTags().stream().findFirst().orElse(null));
-            }
-            
-            Version baseVersion;
-            
-            if (tagToUse == null) {
-                // we have reach the initial commit of the repository
-                baseVersion = Version.DEFAULT_VERSION;
-            } else {
+            Commit base = findVersionCommit(head, parents);
+            Ref tagToUse = findTagToUse(head, base);
+            Version baseVersion = Version.DEFAULT_VERSION;
+
+            if (tagToUse != null) {
                 String tagName = GitUtils.tagNameFromRef(tagToUse);
                 TagType tagType = computeTagType(tagToUse, base.getAnnotatedTags().stream().findFirst().orElse(null));
                 getRegistrar().registerMetadata(Metadatas.BASE_TAG_TYPE, tagType.name());
                 getRegistrar().registerMetadata(Metadatas.BASE_TAG, tagName);
-                baseVersion = Version
-                        .parse(getVersionNamingConfiguration().extractVersionFrom(tagName));
+                baseVersion = tagToVersion(tagName);
             }
             getRegistrar().registerMetadata(Metadatas.BASE_VERSION, baseVersion.toString());
             getRegistrar().registerMetadata(Metadatas.CURRENT_VERSION_MAJOR, "" + baseVersion.getMajor());
@@ -113,7 +122,7 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
             getRegistrar().registerMetadata(Metadatas.CURRENT_VERSION_PATCH, "" + baseVersion.getPatch());
 
             final boolean useSnapshot = baseVersion.isSnapshot();
-            
+
             if (!isBaseCommitOnHead(head, base) && autoIncrementPatch && !useLongFormat) {
                 // we are not on head
                 if (GitUtils.isAnnotated(tagToUse)) {
@@ -121,7 +130,7 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
                     baseVersion = baseVersion.incrementPatch();
                 }
             }
-            
+
             if ((useDistance || useLongFormat) && !useSnapshot) {
                 if (tagToUse == null) {
                     // no tag was found, let's count from initial commit
@@ -139,7 +148,7 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
             getRegistrar().registerMetadata(Metadatas.COMMIT_DISTANCE, "" + base.getHeadDistance());
 
             boolean needsCommitTimestamp = useCommitTimestamp && !useSnapshot;
-            
+
             try (RevWalk walk = new RevWalk(getRepository())) {
                 RevCommit rc = walk.parseCommit(head.getGitObject());
                 String commitTimestamp = GitUtils.getTimestamp(rc.getAuthorIdent().getWhen().toInstant());
@@ -148,17 +157,17 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
                     baseVersion = baseVersion.addQualifier(commitTimestamp);
                 }
             }
-            
+
             boolean needsCommitId = useGitCommitId
                     && !(isBaseCommitOnHead(head, base)
                     && !baseVersion.noQualifier().equals(Version.DEFAULT_VERSION));
-            
+
             if (useLongFormat || needsCommitId) {
                 String commitIdQualifier =
                         (useLongFormat ? "g" : "") + head.getGitObject().getName().substring(0, useLongFormat ? 8 : gitCommitIdLength);
                 baseVersion = baseVersion.addQualifier(commitIdQualifier);
             }
-            
+
             if (!GitUtils.isDetachedHead(getRepository())) {
                 String branch = getRepository().getBranch();
                 baseVersion = enhanceVersionWithBranch(baseVersion, branch);
@@ -170,13 +179,85 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
                 }
             }
 
-            if (useDirty && GitUtils.isDirty(getGit())) {
+            if (useDirty && isGitDirty()) {
                 baseVersion = baseVersion.addQualifier("dirty");
             }
-            
+
             return useSnapshot ? baseVersion.removeQualifier("SNAPSHOT").addQualifier("SNAPSHOT") : baseVersion;
         } catch (Exception ex) {
             throw new VersionCalculationException("cannot compute version", ex);
+        }
+    }
+
+    private Version tagToVersion(String tagName) {
+        return Version.parse(getVersionNamingConfiguration().extractVersionFrom(tagName));
+    }
+
+    private boolean isGitDirty() {
+        return Lambdas.unchecked(GitUtils::isDirty).apply(getGit());
+    }
+
+    private Ref findTagToUse(Commit head, Commit base) {
+        return isBaseCommitOnHead(head, base) && !isGitDirty()
+                ? maxVersionTag(base.getAnnotatedTags(), base.getLightTags())
+                : maxVersionTag(base.getLightTags(), base.getAnnotatedTags());
+    }
+
+    private Commit findVersionCommit(Commit head, List<Commit> parents) {
+        return useMaxVersion ? findMaxVersionCommit(head, parents) : parents.get(0);
+    }
+
+    private Commit findMaxVersionCommit(Commit head, List<Commit> parents) {
+        return parents.stream()
+                .limit(maxVersionSearchDepth)
+                .map(commit -> toVersionTarget(head, commit))
+                .max(Comparator.naturalOrder())
+                .map(VersionTarget::getTarget)
+                .orElse(parents.get(0));
+    }
+
+    private Ref maxVersionTag(List<Ref> primaryTags, List<Ref> secondaryTags) {
+        return maxVersionTag(primaryTags).orElseGet(() -> maxVersionTag(secondaryTags).orElse(null));
+    }
+
+    private Optional<Ref> maxVersionTag(List<Ref> tags) {
+        return tags.stream()
+                .map(this::toVersionTarget)
+                .max(Comparator.naturalOrder())
+                .map(VersionTarget::getTarget);
+    }
+
+    private VersionTarget<Ref> toVersionTarget(Ref tagRef) {
+        String tagName = GitUtils.tagNameFromRef(tagRef);
+        return new VersionTarget<>(tagToVersion(tagName), tagRef);
+    }
+
+    private VersionTarget<Commit> toVersionTarget(Commit head, Commit commit) {
+        String tagName = GitUtils.tagNameFromRef(findTagToUse(head, commit));
+        Version version = Version.parse(tagName);
+        return new VersionTarget<>(version, commit);
+    }
+
+    private static class VersionTarget<T> implements Comparable<VersionTarget<T>> {
+        private final Version version;
+        private final T target;
+
+        VersionTarget(Version version, T target) {
+            this.version = version;
+            this.target = target;
+        }
+
+        Version getVersion() {
+            return version;
+        }
+
+        T getTarget() {
+            return target;
+        }
+
+        @Override
+        public int compareTo(VersionTarget versionTarget) {
+            return this.version.compareTo(versionTarget.version);
         }
     }
 

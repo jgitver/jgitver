@@ -18,12 +18,13 @@ package fr.brouillard.oss.jgitver;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Version {
+public class Version implements Comparable<Version> {
     public static final Version DEFAULT_VERSION = new Version(0, 0, 0);
     public static final Version EMPTY_REPOSITORY_VERSION = DEFAULT_VERSION.addQualifier("EMPTY_GIT_REPOSITORY");
     public static final Version NOT_GIT_VERSION = DEFAULT_VERSION.addQualifier("NOT_A_GIT_REPOSITORY");
@@ -217,5 +218,15 @@ public class Version {
         result = 31 * result + stringRepresentation.hashCode();
         result = 31 * result + (qualifiers != null ? qualifiers.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public int compareTo(Version o) {
+        return Comparator
+                .comparingInt(Version::getMajor)
+                .thenComparingInt(Version::getMinor)
+                .thenComparingInt(Version::getPatch)
+                .thenComparing(Version::toString)
+                .compare(this, o);
     }
 }

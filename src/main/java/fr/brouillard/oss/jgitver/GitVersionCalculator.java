@@ -64,6 +64,8 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     private boolean useGitCommitTimestamp = false;
     private boolean useDirty = false;
     private boolean useLongFormat = false;
+    private boolean useMaxVersion = false;
+    private int maxVersionSearchDepth = 500;
     private int gitCommitIdLength = 8;
     private List<BranchingPolicy> qualifierBranchingPolicies;
     private boolean useDefaultBranchingPolicy = true;
@@ -151,6 +153,8 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
                     cvs.setGitCommitIdLength(gitCommitIdLength);
                     cvs.setUseCommitTimestamp(useGitCommitTimestamp);
                     cvs.setUseLongFormat(useLongFormat);
+                    cvs.setUseMaxVersion(useMaxVersion);
+                    cvs.setMaxVersionSearchDepth(maxVersionSearchDepth);
                     strategy = cvs;
                     break;
                 case PATTERN:
@@ -568,6 +572,16 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
      */
     public GitVersionCalculator setVersionPattern(String pattern) {
         this.versionPattern = pattern;
+        return this;
+    }
+
+    public GitVersionCalculator setUseMaxVersion(boolean useMaxVersion) {
+        this.useMaxVersion = useMaxVersion;
+        return this;
+    }
+
+    public GitVersionCalculator setMaxVersionSearchDepth(int maxVersionSearchDepth) {
+        this.maxVersionSearchDepth = maxVersionSearchDepth;
         return this;
     }
 }

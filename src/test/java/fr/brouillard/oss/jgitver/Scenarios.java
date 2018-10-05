@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -56,7 +57,7 @@ public class Scenarios {
             .master()
             .getScenario();
     }
-    
+
     /**
      * Builds the following repository, tag 1.1.0 is a lightweight one, others are annotated ones
      * <pre>
@@ -82,7 +83,7 @@ public class Scenarios {
             .master()
             .getScenario();
     }
-    
+
     /**
      * Builds the following repository, tags 1.1.0-SNAPSHOT &amp; 3.0.0-SNAPSHOT are lightweight ones, others are annotated ones
      * <pre>
@@ -111,7 +112,7 @@ public class Scenarios {
                 .master()
                 .getScenario();
     }
-    
+
     /**
      * Builds the following repository
      * <pre>
@@ -142,7 +143,7 @@ public class Scenarios {
             .master()
             .getScenario();
     }
-    
+
     /**
      * Builds the following repository
      * <pre>
@@ -168,7 +169,7 @@ public class Scenarios {
                 .master()
                 .getScenario();
     }
-    
+
     /**
      * Builds the following repository
      * <pre>
@@ -195,7 +196,7 @@ public class Scenarios {
             .master()
             .getScenario();
     }
-    
+
     /**
      * Builds the following repository.
      * <pre>
@@ -233,7 +234,7 @@ public class Scenarios {
         return new ScenarioBuilder()
                 .getScenario();
     }
-    
+
     /**
      * Builds a one commit git repository.
      * <pre>
@@ -248,7 +249,7 @@ public class Scenarios {
                 .master()
                 .getScenario();
     }
-    
+
     /**
      * Builds a linear repository with no tags.
      * <pre>
@@ -267,7 +268,7 @@ public class Scenarios {
                 .master()
                 .getScenario();
     }
-    
+
     /**
      * Builds a linear repository with RC tags.
      * <pre>
@@ -340,11 +341,49 @@ public class Scenarios {
                 .master()
                 .getScenario();
     }
-    
+
+    /**
+     * Builds repository witch merges H
+     * <pre>
+     * *   f581afe (HEAD -> master) merge with F G
+     * |\
+     * | * 887e3fd (tag: 1.0.1, hotfix) content F
+     * | * 2650f61 content E
+     * * | de302fa content D
+     * * | 95bd953 (tag: 1.1.1, tag: 1.1.0) content D
+     * * | 1dbae55 content C
+     * |/
+     * * ff650fe (tag: 1.0.0, tag: 0.9.1, tag: 0.9.0) content B
+     * * dfb908a (tag: 0.8.0) content A
+     * </pre>
+     * @return the scenario object corresponding to the above git repository
+     */
+    public static Scenario s14_with_merges() {
+        return new ScenarioBuilder()
+                .commit("content", "A")
+                .tag("0.8.0")
+                .commit("content", "B")
+                .tagLight("1.0.0")
+                .tagLight("0.9.0")
+                .tagLight("0.9.1")
+                .commit("content", "C")
+                .commit("content", "D")
+                .tag("1.1.0")
+                .tag("1.1.1")
+                .commit("content", "E")
+                .branchOnAppId("hotfix","B")
+                .commit("content", "F")
+                .commit("content", "G")
+                .tag("1.0.1")
+                .master()
+                .merge("G", "H")
+                .getScenario();
+    }
+
     public static class Scenario {
         private File repositoryLocation;
         private Map<String, ObjectId> commits;
-        
+
         public Scenario(File repository) {
             this.repositoryLocation = repository;
             commits = new HashMap<>();
@@ -365,7 +404,7 @@ public class Scenarios {
         public Map<String, ObjectId> getCommits() {
             return commits;
         }
-        
+
         /**
          * Creates a new file with dummy content inside the git repository to make it dirty.
          * @return the created file
@@ -380,7 +419,7 @@ public class Scenarios {
             return f;
         }
     }
-    
+
     public static class ScenarioBuilder {
         private Scenario scenario;
         private Repository repository;
@@ -412,7 +451,7 @@ public class Scenarios {
             }
             return this;
         }
-        
+
         /**
          * Creates a branch on the git commit corresponding to the given application commit id.
          * @param branchName the branch to be created
@@ -437,7 +476,7 @@ public class Scenarios {
         public ScenarioBuilder tag(String tagName) {
             return tag(tagName, false);
         }
-        
+
         private ScenarioBuilder tag(String tagName, boolean light) {
             try {
                 git.tag().setName(tagName).setAnnotated(!light).call();
@@ -446,7 +485,7 @@ public class Scenarios {
             }
             return this;
         }
-        
+
         /**
          * Creates a light tag at the current HEAD.
          * @param tagName the name of the light tag
@@ -473,6 +512,26 @@ public class Scenarios {
                 scenario.getCommits().put(id, rc.getId());
             } catch (Exception ex) {
                 throw new IllegalStateException(String.format("error creating a commit with new file %s", content), ex);
+            }
+            return this;
+        }
+
+        /**
+         * Merges commit with id given as parameter with current branch..
+         * @param sourceId the application identifier to use as merge source
+         * @param id the application identifier to use to store the git commitID of merge commit
+         * @return the builder itself to continue building the scenario
+         */
+        public ScenarioBuilder merge(String sourceId, String id) {
+            try {
+                ObjectId other = scenario.getCommits().get(sourceId);
+                MergeResult rc = git.merge()
+                        .setMessage("merge with  " + sourceId)
+                        .include(other)
+                        .call();
+                scenario.getCommits().put(id, rc.getNewHead());
+            } catch (Exception ex) {
+                throw new IllegalStateException(String.format("error merging %s", id), ex);
             }
             return this;
         }
