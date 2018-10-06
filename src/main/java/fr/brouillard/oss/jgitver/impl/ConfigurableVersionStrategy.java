@@ -111,7 +111,7 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
 
             if (tagToUse != null) {
                 String tagName = GitUtils.tagNameFromRef(tagToUse);
-                TagType tagType = computeTagType(tagToUse, base.getAnnotatedTags().stream().findFirst().orElse(null));
+                TagType tagType = computeTagType(tagToUse, maxVersionTag(base.getAnnotatedTags()).orElse(null));
                 getRegistrar().registerMetadata(Metadatas.BASE_TAG_TYPE, tagType.name());
                 getRegistrar().registerMetadata(Metadatas.BASE_TAG, tagName);
                 baseVersion = tagToVersion(tagName);
