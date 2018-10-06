@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.brouillard.oss.jgitver.strategy.configurable.others;
+package fr.brouillard.oss.jgitver.strategy.maven.others;
 
 import static fr.brouillard.oss.jgitver.Lambdas.mute;
 import static fr.brouillard.oss.jgitver.Lambdas.unchecked;
@@ -79,7 +79,8 @@ public class Scenario14WithMaxVersionTest {
         versionCalculator = GitVersionCalculator
                 .location(scenario.getRepositoryLocation())
                 .setNonQualifierBranches("master,hotfix")
-                .setUseMaxVersion(true);
+                .setUseMaxVersion(true)
+                .setMavenLike(true);
 
         // reset the head to master
         unchecked(() -> git.checkout().setName("master").call());
@@ -95,13 +96,14 @@ public class Scenario14WithMaxVersionTest {
         mute(() -> versionCalculator.close());
     }
 
+
     @Test
     public void version_of_B_commit() {
         ObjectId cCommit = scenario.getCommits().get("B");
 
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName(cCommit.name()).call());
-        assertThat(versionCalculator.getVersion(), is("1.0.0-0"));
+        assertThat(versionCalculator.getVersion(), is("1.0.0-SNAPSHOT"));
     }
 
     @Test
@@ -110,7 +112,7 @@ public class Scenario14WithMaxVersionTest {
 
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName(cCommit.name()).call());
-        assertThat(versionCalculator.getVersion(), is("1.0.0-1"));
+        assertThat(versionCalculator.getVersion(), is("1.0.0-SNAPSHOT"));
     }
 
     @Test
@@ -119,14 +121,14 @@ public class Scenario14WithMaxVersionTest {
 
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName(cCommit.name()).call());
-        assertThat(versionCalculator.getVersion(), is("1.1.1-1"));
+        assertThat(versionCalculator.getVersion(), is("1.1.2-SNAPSHOT"));
     }
 
     @Test
     public void version_of_master() {
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName("master").call());
-        assertThat(versionCalculator.getVersion(), is("1.1.1-3"));
+        assertThat(versionCalculator.getVersion(), is("1.1.2-SNAPSHOT"));
 
         assertThat(versionCalculator.meta(Metadatas.NEXT_MAJOR_VERSION).get(), is("2.0.0"));
         assertThat(versionCalculator.meta(Metadatas.NEXT_MINOR_VERSION).get(), is("1.2.0"));

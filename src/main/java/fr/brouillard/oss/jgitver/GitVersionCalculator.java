@@ -140,36 +140,36 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
 
             switch (versionStrategy) {
                 case MAVEN:
-                    final MavenVersionStrategy mavenStrategy = new MavenVersionStrategy(vnc, repository, git, metadatas);
-                    mavenStrategy.setUseDirty(useDirty);
-                    strategy = mavenStrategy;
+                    strategy = new MavenVersionStrategy(vnc, repository, git, metadatas)
+                            .setUseMaxVersion(useMaxVersion)
+                            .setMaxVersionSearchDepth(maxVersionSearchDepth)
+                            .setUseDirty(useDirty);
                     break;
                 case CONFIGURABLE:
-                    ConfigurableVersionStrategy cvs = new ConfigurableVersionStrategy(vnc, repository, git, metadatas);
-                    cvs.setAutoIncrementPatch(autoIncrementPatch);
-                    cvs.setUseDistance(useDistance);
-                    cvs.setUseDirty(useDirty);
-                    cvs.setUseGitCommitId(useGitCommitId);
-                    cvs.setGitCommitIdLength(gitCommitIdLength);
-                    cvs.setUseCommitTimestamp(useGitCommitTimestamp);
-                    cvs.setUseLongFormat(useLongFormat);
-                    cvs.setUseMaxVersion(useMaxVersion);
-                    cvs.setMaxVersionSearchDepth(maxVersionSearchDepth);
-                    strategy = cvs;
+                    strategy = new ConfigurableVersionStrategy(vnc, repository, git, metadatas)
+                            .setAutoIncrementPatch(autoIncrementPatch)
+                            .setUseDistance(useDistance)
+                            .setUseDirty(useDirty)
+                            .setUseGitCommitId(useGitCommitId)
+                            .setGitCommitIdLength(gitCommitIdLength)
+                            .setUseCommitTimestamp(useGitCommitTimestamp)
+                            .setUseLongFormat(useLongFormat)
+                            .setUseMaxVersion(useMaxVersion)
+                            .setMaxVersionSearchDepth(maxVersionSearchDepth);
                     break;
                 case PATTERN:
-                    PatternVersionStrategy pvs = new PatternVersionStrategy(vnc, repository, git, metadatas);
-                    pvs.setAutoIncrementPatch(autoIncrementPatch);
-                    pvs.setVersionPattern(versionPattern);
-                    pvs.setTagVersionPattern(tagVersionPattern);
-                    strategy = pvs;
+                    strategy = new PatternVersionStrategy(vnc, repository, git, metadatas)
+                            .setAutoIncrementPatch(autoIncrementPatch)
+                            .setVersionPattern(versionPattern)
+                            .setTagVersionPattern(tagVersionPattern)
+                            .setUseMaxVersion(useMaxVersion)
+                            .setMaxVersionSearchDepth(maxVersionSearchDepth);
                     break;
                 default:
                     throw new IllegalStateException("unknown strategy: " + versionStrategy);
             }
 
             Version calculatedVersion = buildVersion(git, strategy);
-
 
             return calculatedVersion;
         }

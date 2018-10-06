@@ -33,9 +33,8 @@ import fr.brouillard.oss.jgitver.impl.pattern.VersionPatternGrammarDefinition;
 import fr.brouillard.oss.jgitver.metadata.MetadataProvider;
 import fr.brouillard.oss.jgitver.metadata.MetadataRegistrar;
 import fr.brouillard.oss.jgitver.metadata.Metadatas;
-import fr.brouillard.oss.jgitver.metadata.TagType;
 
-public class PatternVersionStrategy extends VersionStrategy {
+public class PatternVersionStrategy extends MaxVersionStrategy<PatternVersionStrategy> {
     public static final String DEFAULT_VERSION_PATTERN = "${v}${<meta.QUALIFIED_BRANCH_NAME}${<meta.COMMIT_DISTANCE}";
     public static final String DEFAULT_TAG_VERSION_PATTERN = "${v}";
 
@@ -57,38 +56,10 @@ public class PatternVersionStrategy extends VersionStrategy {
 
     @Override
     public Version build(Commit head, List<Commit> parents) throws VersionCalculationException {
-
         try {
-            Commit base = parents.get(0);
-            Ref tagToUse;
-
-            if (isBaseCommitOnHead(head, base) && !GitUtils.isDirty(getGit())) {
-                // consider first the annotated tags
-                tagToUse = base.getAnnotatedTags().stream().findFirst()
-                        .orElseGet(() -> base.getLightTags().stream().findFirst().orElse(null));
-            } else {
-                // consider first the light tags
-                tagToUse = base.getLightTags().stream().findFirst()
-                        .orElseGet(() -> base.getAnnotatedTags().stream().findFirst().orElse(null));
-            }
-
-            Version baseVersion;
-
-            if (tagToUse == null) {
-                // we have reach the initial commit of the repository
-                baseVersion = Version.DEFAULT_VERSION;
-            } else {
-                String tagName = GitUtils.tagNameFromRef(tagToUse);
-                TagType tagType = computeTagType(tagToUse, base.getAnnotatedTags().stream().findFirst().orElse(null));
-                getRegistrar().registerMetadata(Metadatas.BASE_TAG_TYPE, tagType.name());
-                getRegistrar().registerMetadata(Metadatas.BASE_TAG, tagName);
-                baseVersion = Version
-                        .parse(getVersionNamingConfiguration().extractVersionFrom(tagName));
-            }
-            getRegistrar().registerMetadata(Metadatas.BASE_VERSION, baseVersion.toString());
-            getRegistrar().registerMetadata(Metadatas.CURRENT_VERSION_MAJOR, "" + baseVersion.getMajor());
-            getRegistrar().registerMetadata(Metadatas.CURRENT_VERSION_MINOR, "" + baseVersion.getMinor());
-            getRegistrar().registerMetadata(Metadatas.CURRENT_VERSION_PATCH, "" + baseVersion.getPatch());
+            Commit base = findVersionCommit(head, parents);
+            Ref tagToUse = findTagToUse(head, base);
+            Version baseVersion = getBaseVersionAndRegisterMetadata(base,tagToUse);
 
             final boolean useSnapshot = baseVersion.isSnapshot();
 
@@ -151,8 +122,7 @@ public class PatternVersionStrategy extends VersionStrategy {
      * @param versionPattern a non null string describing the pattern
      */
     public PatternVersionStrategy setVersionPattern(String versionPattern) {
-        this.versionPattern = versionPattern;
-        return this;
+        return runAndGetSelf(() -> this.versionPattern = versionPattern);
     }
 
     /**
@@ -160,8 +130,7 @@ public class PatternVersionStrategy extends VersionStrategy {
      * @param tagVersionPattern a non null string describing the pattern
      */
     public PatternVersionStrategy setTagVersionPattern(String tagVersionPattern) {
-        this.tagVersionPattern = tagVersionPattern;
-        return this;
+        return runAndGetSelf(() -> this.tagVersionPattern = tagVersionPattern);
     }
 
     /**
@@ -170,7 +139,7 @@ public class PatternVersionStrategy extends VersionStrategy {
      * @return itself for chaining
      */
     public PatternVersionStrategy setAutoIncrementPatch(boolean autoIncrementPatch) {
-        this.autoIncrementPatch = autoIncrementPatch;
-        return this;
+        return runAndGetSelf(() -> this.autoIncrementPatch = autoIncrementPatch);
     }
+
 }

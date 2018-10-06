@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.brouillard.oss.jgitver.strategy.configurable.others;
+package fr.brouillard.oss.jgitver.strategy.pattern.others;
 
-import static fr.brouillard.oss.jgitver.Lambdas.mute;
-import static fr.brouillard.oss.jgitver.Lambdas.unchecked;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.io.IOException;
-
+import fr.brouillard.oss.jgitver.GitVersionCalculator;
+import fr.brouillard.oss.jgitver.Misc;
+import fr.brouillard.oss.jgitver.Scenarios;
+import fr.brouillard.oss.jgitver.Scenarios.Scenario;
+import fr.brouillard.oss.jgitver.Strategies;
+import fr.brouillard.oss.jgitver.metadata.Metadatas;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
@@ -32,11 +31,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import fr.brouillard.oss.jgitver.GitVersionCalculator;
-import fr.brouillard.oss.jgitver.Misc;
-import fr.brouillard.oss.jgitver.Scenarios;
-import fr.brouillard.oss.jgitver.Scenarios.Scenario;
-import fr.brouillard.oss.jgitver.metadata.Metadatas;
+import java.io.IOException;
+
+import static fr.brouillard.oss.jgitver.Lambdas.mute;
+import static fr.brouillard.oss.jgitver.Lambdas.unchecked;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 public class Scenario14WithMaxVersionTest {
     private static Scenario scenario;
@@ -79,7 +79,8 @@ public class Scenario14WithMaxVersionTest {
         versionCalculator = GitVersionCalculator
                 .location(scenario.getRepositoryLocation())
                 .setNonQualifierBranches("master,hotfix")
-                .setUseMaxVersion(true);
+                .setUseMaxVersion(true)
+                .setStrategy(Strategies.PATTERN);
 
         // reset the head to master
         unchecked(() -> git.checkout().setName("master").call());
@@ -94,6 +95,7 @@ public class Scenario14WithMaxVersionTest {
         mute(() -> repository.close());
         mute(() -> versionCalculator.close());
     }
+
 
     @Test
     public void version_of_B_commit() {

@@ -15,7 +15,6 @@
  */
 package fr.brouillard.oss.jgitver.impl;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,14 +24,12 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 
-import fr.brouillard.oss.jgitver.Lambdas;
 import fr.brouillard.oss.jgitver.Version;
 import fr.brouillard.oss.jgitver.VersionCalculationException;
 import fr.brouillard.oss.jgitver.metadata.MetadataRegistrar;
 import fr.brouillard.oss.jgitver.metadata.Metadatas;
-import fr.brouillard.oss.jgitver.metadata.TagType;
 
-public class ConfigurableVersionStrategy extends VersionStrategy {
+public class ConfigurableVersionStrategy extends MaxVersionStrategy<ConfigurableVersionStrategy> {
     private boolean autoIncrementPatch = false;
     private boolean useDistance = true;
     private boolean useCommitTimestamp = false;
@@ -40,66 +37,9 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
     private int gitCommitIdLength = 8;
     private boolean useDirty = false;
     private boolean useLongFormat;
-    private boolean useMaxVersion;
-    private int maxVersionSearchDepth = 1000;
 
     public ConfigurableVersionStrategy(VersionNamingConfiguration vnc, Repository repository, Git git, MetadataRegistrar metadatas) {
         super(vnc, repository, git, metadatas);
-    }
-
-    public ConfigurableVersionStrategy setAutoIncrementPatch(boolean autoIncrementPatch) {
-        this.autoIncrementPatch = autoIncrementPatch;
-        return this;
-    }
-
-    public ConfigurableVersionStrategy setUseDistance(boolean useDistance) {
-        this.useDistance = useDistance;
-        return this;
-    }
-
-    public ConfigurableVersionStrategy setUseCommitTimestamp(boolean useCommitTimestamp) {
-        this.useCommitTimestamp = useCommitTimestamp;
-        return this;
-    }
-
-    public ConfigurableVersionStrategy setUseGitCommitId(boolean useGitCommitId) {
-        this.useGitCommitId = useGitCommitId;
-        return this;
-    }
-
-    public ConfigurableVersionStrategy setGitCommitIdLength(int gitCommitIdLength) {
-        this.gitCommitIdLength = gitCommitIdLength;
-        return this;
-    }
-
-    public ConfigurableVersionStrategy setUseDirty(boolean useDirty) {
-        this.useDirty = useDirty;
-        return this;
-    }
-
-    public ConfigurableVersionStrategy setUseLongFormat(boolean useLongFormat) {
-        this.useLongFormat = useLongFormat;
-        return this;
-    }
-
-    public ConfigurableVersionStrategy setUseMaxVersion(boolean useMaxVersion) {
-        this.useMaxVersion = useMaxVersion;
-        return this;
-    }
-
-    public ConfigurableVersionStrategy setMaxVersionSearchDepth(int maxVersionSearchDepth) {
-        this.maxVersionSearchDepth = maxVersionSearchDepth;
-        return this;
-    }
-
-    @Override
-    public StrategySearchMode searchMode() {
-        return useMaxVersion ? StrategySearchMode.DEPTH : StrategySearchMode.STOP_AT_FIRST;
-    }
-
-    @Override
-    public int searchDepthLimit() {
-        return maxVersionSearchDepth;
     }
 
     @Override
@@ -107,19 +47,7 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
         try {
             Commit base = findVersionCommit(head, parents);
             Ref tagToUse = findTagToUse(head, base);
-            Version baseVersion = Version.DEFAULT_VERSION;
-
-            if (tagToUse != null) {
-                String tagName = GitUtils.tagNameFromRef(tagToUse);
-                TagType tagType = computeTagType(tagToUse, maxVersionTag(base.getAnnotatedTags()).orElse(null));
-                getRegistrar().registerMetadata(Metadatas.BASE_TAG_TYPE, tagType.name());
-                getRegistrar().registerMetadata(Metadatas.BASE_TAG, tagName);
-                baseVersion = tagToVersion(tagName);
-            }
-            getRegistrar().registerMetadata(Metadatas.BASE_VERSION, baseVersion.toString());
-            getRegistrar().registerMetadata(Metadatas.CURRENT_VERSION_MAJOR, "" + baseVersion.getMajor());
-            getRegistrar().registerMetadata(Metadatas.CURRENT_VERSION_MINOR, "" + baseVersion.getMinor());
-            getRegistrar().registerMetadata(Metadatas.CURRENT_VERSION_PATCH, "" + baseVersion.getPatch());
+            Version baseVersion = getBaseVersionAndRegisterMetadata(base,tagToUse);
 
             final boolean useSnapshot = baseVersion.isSnapshot();
 
@@ -189,76 +117,32 @@ public class ConfigurableVersionStrategy extends VersionStrategy {
         }
     }
 
-    private Version tagToVersion(String tagName) {
-        return Version.parse(getVersionNamingConfiguration().extractVersionFrom(tagName));
+    public ConfigurableVersionStrategy setAutoIncrementPatch(boolean autoIncrementPatch) {
+        return runAndGetSelf(() -> this.autoIncrementPatch = autoIncrementPatch);
     }
 
-    private boolean isGitDirty() {
-        return Lambdas.unchecked(GitUtils::isDirty).apply(getGit());
+    public ConfigurableVersionStrategy setUseDistance(boolean useDistance) {
+        return runAndGetSelf(() -> this.useDistance = useDistance);
     }
 
-    private Ref findTagToUse(Commit head, Commit base) {
-        return isBaseCommitOnHead(head, base) && !isGitDirty()
-                ? maxVersionTag(base.getAnnotatedTags(), base.getLightTags())
-                : maxVersionTag(base.getLightTags(), base.getAnnotatedTags());
+    public ConfigurableVersionStrategy setUseCommitTimestamp(boolean useCommitTimestamp) {
+        return runAndGetSelf(() -> this.useCommitTimestamp = useCommitTimestamp);
     }
 
-    private Commit findVersionCommit(Commit head, List<Commit> parents) {
-        return useMaxVersion ? findMaxVersionCommit(head, parents) : parents.get(0);
+    public ConfigurableVersionStrategy setUseGitCommitId(boolean useGitCommitId) {
+        return runAndGetSelf(() -> this.useGitCommitId = useGitCommitId);
     }
 
-    private Commit findMaxVersionCommit(Commit head, List<Commit> parents) {
-        return parents.stream()
-                .limit(maxVersionSearchDepth)
-                .map(commit -> toVersionTarget(head, commit))
-                .max(Comparator.naturalOrder())
-                .map(VersionTarget::getTarget)
-                .orElse(parents.get(0));
+    public ConfigurableVersionStrategy setGitCommitIdLength(int gitCommitIdLength) {
+        return runAndGetSelf(() -> this.gitCommitIdLength = gitCommitIdLength);
     }
 
-    private Ref maxVersionTag(List<Ref> primaryTags, List<Ref> secondaryTags) {
-        return maxVersionTag(primaryTags).orElseGet(() -> maxVersionTag(secondaryTags).orElse(null));
+    public ConfigurableVersionStrategy setUseDirty(boolean useDirty) {
+        return runAndGetSelf(() -> this.useDirty = useDirty);
     }
 
-    private Optional<Ref> maxVersionTag(List<Ref> tags) {
-        return tags.stream()
-                .map(this::toVersionTarget)
-                .max(Comparator.naturalOrder())
-                .map(VersionTarget::getTarget);
-    }
-
-    private VersionTarget<Ref> toVersionTarget(Ref tagRef) {
-        String tagName = GitUtils.tagNameFromRef(tagRef);
-        return new VersionTarget<>(tagToVersion(tagName), tagRef);
-    }
-
-    private VersionTarget<Commit> toVersionTarget(Commit head, Commit commit) {
-        String tagName = GitUtils.tagNameFromRef(findTagToUse(head, commit));
-        Version version = Version.parse(tagName);
-        return new VersionTarget<>(version, commit);
-    }
-
-    private static class VersionTarget<T> implements Comparable<VersionTarget<T>> {
-        private final Version version;
-        private final T target;
-
-        VersionTarget(Version version, T target) {
-            this.version = version;
-            this.target = target;
-        }
-
-        Version getVersion() {
-            return version;
-        }
-
-        T getTarget() {
-            return target;
-        }
-
-        @Override
-        public int compareTo(VersionTarget versionTarget) {
-            return this.version.compareTo(versionTarget.version);
-        }
+    public ConfigurableVersionStrategy setUseLongFormat(boolean useLongFormat) {
+        return runAndGetSelf(() -> this.useLongFormat = useLongFormat);
     }
 
 }
