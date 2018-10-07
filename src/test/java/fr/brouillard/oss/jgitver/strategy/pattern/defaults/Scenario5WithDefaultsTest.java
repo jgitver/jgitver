@@ -15,80 +15,27 @@
  */
 package fr.brouillard.oss.jgitver.strategy.pattern.defaults;
 
-import fr.brouillard.oss.jgitver.GitVersionCalculator;
-import fr.brouillard.oss.jgitver.Misc;
-import fr.brouillard.oss.jgitver.Scenarios;
-import fr.brouillard.oss.jgitver.Scenarios.Scenario;
-import fr.brouillard.oss.jgitver.Strategies;
-import fr.brouillard.oss.jgitver.metadata.Metadatas;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import org.junit.*;
-
-import java.io.IOException;
-import java.util.Arrays;
-
-import static fr.brouillard.oss.jgitver.Lambdas.mute;
 import static fr.brouillard.oss.jgitver.Lambdas.unchecked;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
-public class Scenario5WithDefaultsTest {
-    private static Scenario scenario;
-    private Repository repository;
-    private Git git;
-    private GitVersionCalculator versionCalculator;
+import java.util.Arrays;
 
-    /**
-     * Initialiaze the whole junit class tests ; creates the git scenario.
-     */
-    @BeforeClass
-    public static void initClass() {
-        scenario = Scenarios.s5_several_branches();
-        if (Misc.isDebugMode()) {
-            System.out.println("git repository created under: " + scenario.getRepositoryLocation());
-        }
-    }
+import org.eclipse.jgit.lib.ObjectId;
+import org.junit.Test;
 
-    /**
-     * Cleanup the whole junit scenario ; deletes the created git repository.
-     */
-    @AfterClass
-    public static void cleanupClass() {
-        try {
-            Misc.deleteDirectorySimple(scenario.getRepositoryLocation());
-        } catch (Exception ignore) {
-            System.err.println("cannot remove " + scenario.getRepositoryLocation());
-        }
-    }
+import fr.brouillard.oss.jgitver.Scenarios;
+import fr.brouillard.oss.jgitver.Strategies;
+import fr.brouillard.oss.jgitver.metadata.Metadatas;
+import fr.brouillard.oss.jgitver.strategy.ScenarioTest;
 
-    /**
-     * Prepare common variables to access the git repository.
-     * 
-     * @throws IOException if a disk error occurred
-     */
-    @Before
-    public void init() throws IOException {
-        repository = new FileRepositoryBuilder().setGitDir(scenario.getRepositoryLocation()).build();
-        git = new Git(repository);
-        versionCalculator = GitVersionCalculator.location(scenario.getRepositoryLocation())
-                .setStrategy(Strategies.PATTERN);
+public class Scenario5WithDefaultsTest extends ScenarioTest {
 
-        // reset the head to master
-        unchecked(() -> git.checkout().setName("master").call());
-    }
-
-    /**
-     * Cleanups after each tests.
-     */
-    @After
-    public void clean() {
-        mute(() -> git.close());
-        mute(() -> repository.close());
-        mute(() -> versionCalculator.close());
+    public Scenario5WithDefaultsTest() {
+        super(
+                Scenarios::s5_several_branches,
+                calculator -> calculator.setStrategy(Strategies.PATTERN));
     }
 
     @Test
@@ -141,7 +88,7 @@ public class Scenario5WithDefaultsTest {
             assertThat(versionCalculator.getVersion(), is(tag));
         });
     }
-    
+
     @Test
     public void version_of_master() {
         // checkout the commit in scenario
@@ -152,14 +99,14 @@ public class Scenario5WithDefaultsTest {
         assertThat(versionCalculator.meta(Metadatas.NEXT_MINOR_VERSION).get(), is("1.1.0"));
         assertThat(versionCalculator.meta(Metadatas.NEXT_PATCH_VERSION).get(), is("1.0.1"));
     }
-    
+
     @Test
     public void version_of_branch_int() {
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName("int").call());
         assertThat(versionCalculator.getVersion(), is("1.0.0-int.1"));
     }
-    
+
     @Test
     public void issue35_meta_contain_qualified_branch_name() {
         // checkout the commit in scenario
@@ -167,7 +114,7 @@ public class Scenario5WithDefaultsTest {
         assertNotNull(versionCalculator.getVersionObject());
         assertThat(versionCalculator.meta(Metadatas.QUALIFIED_BRANCH_NAME).get(), is("int"));
     }
-    
+
     @Test
     public void version_of_branch_dev() {
         // checkout the commit in scenario

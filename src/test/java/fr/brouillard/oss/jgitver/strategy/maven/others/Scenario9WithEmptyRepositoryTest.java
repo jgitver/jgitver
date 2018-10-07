@@ -15,76 +15,22 @@
  */
 package fr.brouillard.oss.jgitver.strategy.maven.others;
 
-import static fr.brouillard.oss.jgitver.Lambdas.mute;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-import java.io.IOException;
-
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import fr.brouillard.oss.jgitver.GitVersionCalculator;
-import fr.brouillard.oss.jgitver.Misc;
 import fr.brouillard.oss.jgitver.Scenarios;
-import fr.brouillard.oss.jgitver.Scenarios.Scenario;
+import fr.brouillard.oss.jgitver.Strategies;
 import fr.brouillard.oss.jgitver.Version;
+import fr.brouillard.oss.jgitver.strategy.ScenarioTest;
 
-public class Scenario9WithEmptyRepositoryTest {
-    private static Scenario scenario;
-    private Repository repository;
-    private Git git;
-    private GitVersionCalculator versionCalculator;
+public class Scenario9WithEmptyRepositoryTest extends ScenarioTest {
 
-    /**
-     * Initialiaze the whole junit class tests ; creates the git scenario.
-     */
-    @BeforeClass
-    public static void initClass() {
-        scenario = Scenarios.s9_empty_repository();
-        if (Misc.isDebugMode()) {
-            System.out.println("git repository created under: " + scenario.getRepositoryLocation());
-        }
-    }
-
-    /**
-     * Cleanup the whole junit scenario ; deletes the created git repository.
-     */
-    @AfterClass
-    public static void cleanupClass() {
-        try {
-            Misc.deleteDirectorySimple(scenario.getRepositoryLocation());
-        } catch (Exception ignore) {
-            System.err.println("cannot remove " + scenario.getRepositoryLocation());
-        }
-    }
-
-    /**
-     * Prepare common variables to access the git repository.
-     * 
-     * @throws IOException if a disk error occurred
-     */
-    @Before
-    public void init() throws IOException {
-        repository = new FileRepositoryBuilder().setGitDir(scenario.getRepositoryLocation()).build();
-        git = new Git(repository);
-        versionCalculator = GitVersionCalculator.location(scenario.getRepositoryLocation()).setMavenLike(true);
-    }
-
-    /**
-     * Cleanups after each tests.
-     */
-    @After
-    public void clean() {
-        mute(() -> git.close());
-        mute(() -> repository.close());
-        mute(() -> versionCalculator.close());
+    public Scenario9WithEmptyRepositoryTest() {
+        super(
+                Scenarios::s9_empty_repository,
+                calculator -> calculator.setStrategy(Strategies.MAVEN));
     }
 
     @Test
