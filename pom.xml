@@ -69,6 +69,39 @@
                 <role>project creator</role>
             </roles>
         </developer>
+        <developer>
+            <id>djarosz</id>
+            <name>Dawid Jarosz</name>
+            <url>https://github.com/djarosz</url>
+            <organizationUrl>https://itmagination.com</organizationUrl>
+            <roles>
+                <role>contributor</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>MSaguer</id>
+            <name>Marc Saguer</name>
+            <url>https://github.com/MSaguer</url>
+            <roles>
+                <role>contributor</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>eduardozamin</id>
+            <name>Eduardo Zamin</name>
+            <url>https://github.com/eduardozamin</url>
+            <roles>
+                <role>contributor</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>vromero</id>
+            <name>Victor Romero</name>
+            <url>https://github.com/vromero</url>
+            <roles>
+                <role>contributor</role>
+            </roles>
+        </developer>
     </developers>
 
     <dependencies>
