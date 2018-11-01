@@ -67,6 +67,7 @@ public class JarManifestEntriesTestIT {
                 }
             }
         } catch (IOException ignore) {
+            // expected
         }
         return new Manifest();
     }

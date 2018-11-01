@@ -101,10 +101,18 @@ public final class Lambdas {
     }
 
     @FunctionalInterface
-    public interface CheckedFunction<T, R, EX extends Throwable> {
-        R apply(T attr) throws EX;
+    public interface CheckedFunction<T, R, E extends Throwable> {
+        R apply(T attr) throws E;
     }
 
+    /**
+     * Transforms a function throwing a checked exception into an equivalent
+     * throwing a {@link RuntimeException} wrapping the checked one.
+     * @param function the given function to wrap
+     * @param <T> the type of the function input
+     * @param <R> the type of the return value of the function
+     * @return a new function wrapping the given one
+     */
     public static <T, R> Function<T, R> unchecked(CheckedFunction<T, R, Throwable> function) {
         return element -> {
             try {

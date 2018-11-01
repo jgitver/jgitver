@@ -24,12 +24,23 @@ public class LambdasTests {
     static class IllegalLengthStringException extends Exception{
     }
 
+    /**
+     * Checks given input string is 4 chars long.
+     * @param input the string to check
+     * @throws IllegalLengthStringException in case string length is not 4
+     */
     public static void ensureInputIs4CharsLong(String input) throws IllegalLengthStringException {
         if (input.length() == 4) {
             throw new IllegalLengthStringException();
         }
     }
 
+    /**
+     * Uppercase input string except if it is 4 chars long.
+     * @param input the string to transform
+     * @return an uppercase string
+     * @throws IllegalLengthStringException in case the string is 4 chars long
+     */
     public static String uppercaseFailingForLength4(String input) throws IllegalLengthStringException {
         if (input.length() == 4) {
             throw new IllegalLengthStringException();
