@@ -304,8 +304,9 @@ public class Scenarios {
     /**
      * Builds a repository with branches name like gitflow.
      * <pre>
+     * {@code
      * $ git lg
-     * * * 8c102d4 - (develop) content H (33 seconds ago) <Matthieu Brouillard>
+     * * * * 8c102d4 - (develop) content H (33 seconds ago) <Matthieu Brouillard>
      * * * *| * e42d934 - (feature/add-sso) content G (33 seconds ago) <Matthieu Brouillard>
      * *|/
      * *| * c426c65 - (HEAD, tag: 3.0.0, master) content D (33 seconds ago) <Matthieu Brouillard>
@@ -318,6 +319,7 @@ public class Scenarios {
      * *|/
      * * ef278a5 - content B (33 seconds ago) <Matthieu Brouillard>
      * * fb1f2d9 - (tag: 1.0.0) content A (33 seconds ago) <Matthieu Brouillard>
+     * }
      * </pre>
      * @return the scenario object corresponding to the above git repository
      */
