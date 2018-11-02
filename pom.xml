@@ -184,6 +184,7 @@
 						<exclude>mvnw</exclude>
 						<exclude>mvnw.cmd</exclude>
 						<exclude>.mvn/wrapper/*</exclude>
+						<exclude>.mvn/jvm.config</exclude>
                     </excludes>
                 </configuration>
                 <executions>
