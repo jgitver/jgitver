@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.brouillard.oss.jgitver.strategy.pattern.others;
+package fr.brouillard.oss.jgitver.strategy.configurable.others;
 
 import static fr.brouillard.oss.jgitver.Lambdas.unchecked;
 import static org.hamcrest.CoreMatchers.is;
@@ -27,14 +27,14 @@ import fr.brouillard.oss.jgitver.Strategies;
 import fr.brouillard.oss.jgitver.metadata.Metadatas;
 import fr.brouillard.oss.jgitver.strategy.ScenarioTest;
 
-public class Scenario14WithMaxVersionTest extends ScenarioTest {
+public class Scenario15WithMaxVersionTest extends ScenarioTest {
 
-    public Scenario14WithMaxVersionTest() {
+    public Scenario15WithMaxVersionTest() {
         super(
-                Scenarios::s14_with_merges,
+                Scenarios::s15_complex_merges,
                 calculator -> calculator
-                        .setStrategy(Strategies.PATTERN)
-                        .setNonQualifierBranches("master,hotfix")
+                        .setStrategy(Strategies.CONFIGURABLE)
+                        .setNonQualifierBranches("master,b1,b2")
                         .setUseMaxVersion(true));
     }
 
@@ -44,7 +44,7 @@ public class Scenario14WithMaxVersionTest extends ScenarioTest {
 
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName(cCommit.name()).call());
-        assertThat(versionCalculator.getVersion(), is("1.0.0-0"));
+        assertThat(versionCalculator.getVersion(), is("1.0.0"));
     }
 
     @Test
@@ -53,7 +53,7 @@ public class Scenario14WithMaxVersionTest extends ScenarioTest {
 
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName(cCommit.name()).call());
-        assertThat(versionCalculator.getVersion(), is("1.0.0-1"));
+        assertThat(versionCalculator.getVersion(), is("4.0.0"));
     }
 
     @Test
@@ -62,24 +62,31 @@ public class Scenario14WithMaxVersionTest extends ScenarioTest {
 
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName(cCommit.name()).call());
-        assertThat(versionCalculator.getVersion(), is("1.1.1-1"));
+        assertThat(versionCalculator.getVersion(), is("4.0.0-2"));
     }
 
     @Test
     public void version_of_master() {
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName("master").call());
-        assertThat(versionCalculator.getVersion(), is("1.1.1-2"));
+        assertThat(versionCalculator.getVersion(), is("4.0.0-4"));
 
-        assertThat(versionCalculator.meta(Metadatas.NEXT_MAJOR_VERSION).get(), is("2.0.0"));
-        assertThat(versionCalculator.meta(Metadatas.NEXT_MINOR_VERSION).get(), is("1.2.0"));
-        assertThat(versionCalculator.meta(Metadatas.NEXT_PATCH_VERSION).get(), is("1.1.2"));
+        assertThat(versionCalculator.meta(Metadatas.NEXT_MAJOR_VERSION).get(), is("5.0.0"));
+        assertThat(versionCalculator.meta(Metadatas.NEXT_MINOR_VERSION).get(), is("4.1.0"));
+        assertThat(versionCalculator.meta(Metadatas.NEXT_PATCH_VERSION).get(), is("4.0.1"));
     }
 
     @Test
-    public void version_of_branch_hotfix() {
+    public void version_of_branch_b1() {
         // checkout the commit in scenario
-        unchecked(() -> git.checkout().setName("hotfix").call());
-        assertThat(versionCalculator.getVersion(), is("1.0.1"));
+        unchecked(() -> git.checkout().setName("b1").call());
+        assertThat(versionCalculator.getVersion(), is("2.0.0"));
+    }
+
+    @Test
+    public void version_of_branch_b2() {
+        // checkout the commit in scenario
+        unchecked(() -> git.checkout().setName("b2").call());
+        assertThat(versionCalculator.getVersion(), is("3.0.0"));
     }
 }

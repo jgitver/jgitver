@@ -69,7 +69,7 @@ public class Scenario14WithMaxVersionTest extends ScenarioTest {
     public void version_of_master() {
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName("master").call());
-        assertThat(versionCalculator.getVersion(), is("1.1.1-3"));
+        assertThat(versionCalculator.getVersion(), is("1.1.1-2"));
 
         assertThat(versionCalculator.meta(Metadatas.NEXT_MAJOR_VERSION).get(), is("2.0.0"));
         assertThat(versionCalculator.meta(Metadatas.NEXT_MINOR_VERSION).get(), is("1.2.0"));

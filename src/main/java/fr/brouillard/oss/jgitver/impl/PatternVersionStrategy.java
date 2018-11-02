@@ -15,6 +15,7 @@
  */
 package fr.brouillard.oss.jgitver.impl;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -71,7 +72,8 @@ public class PatternVersionStrategy extends MaxVersionStrategy<PatternVersionStr
                 }
             }
 
-            getRegistrar().registerMetadata(Metadatas.COMMIT_DISTANCE, "" + base.getHeadDistance());
+            int headDistance = computeSmallestDistance(head, base);
+            getRegistrar().registerMetadata(Metadatas.COMMIT_DISTANCE, "" + headDistance);
 
             try (RevWalk walk = new RevWalk(getRepository())) {
                 RevCommit rc = walk.parseCommit(head.getGitObject());
@@ -116,7 +118,7 @@ public class PatternVersionStrategy extends MaxVersionStrategy<PatternVersionStr
             throw new VersionCalculationException("cannot compute version", ex);
         }
     }
-    
+
     /**
      * Set the version pattern to use to compute the final version.
      * @param versionPattern a non null string describing the pattern

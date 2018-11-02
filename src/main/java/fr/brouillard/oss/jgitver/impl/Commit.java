@@ -57,6 +57,10 @@ public class Commit {
         return lightTags;
     }
 
+    @Deprecated
+    /**
+     * @deprecated head distance is not accurate
+     */
     public int getHeadDistance() {
         return headDistance;
     }

@@ -59,21 +59,23 @@ public class ConfigurableVersionStrategy extends MaxVersionStrategy<Configurable
                 }
             }
 
+            int headDistance = computeSmallestDistance(head, base);
+
             if ((useDistance || useLongFormat) && !useSnapshot) {
                 if (tagToUse == null) {
                     // no tag was found, let's count from initial commit
-                    baseVersion = baseVersion.addQualifier("" + base.getHeadDistance());
+                    baseVersion = baseVersion.addQualifier("" + headDistance);
                 } else {
                     // use distance when long format is asked
                     // or not on head
                     // or if on head with a light tag
                     if (useLongFormat || !isBaseCommitOnHead(head, base) || !GitUtils.isAnnotated(tagToUse)) {
-                        baseVersion = baseVersion.addQualifier("" + base.getHeadDistance());
+                        baseVersion = baseVersion.addQualifier("" + headDistance);
                     }
                 }
             }
 
-            getRegistrar().registerMetadata(Metadatas.COMMIT_DISTANCE, "" + base.getHeadDistance());
+            getRegistrar().registerMetadata(Metadatas.COMMIT_DISTANCE, "" + headDistance);
 
             boolean needsCommitTimestamp = useCommitTimestamp && !useSnapshot;
 

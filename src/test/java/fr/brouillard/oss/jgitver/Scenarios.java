@@ -20,10 +20,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeResult;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -382,6 +384,48 @@ public class Scenarios {
                 .getScenario();
     }
 
+    /**
+     * Builds repository with complex two branches merge
+     * <pre>
+     * {@code
+     * *   e8a122b (HEAD -> master) I :: merge G into H
+     * |\
+     * | * 7bae650 (tag: 3.0.0, b2) content G
+     * * |   92c9286 H :: merge F into E
+     * |\ \
+     * | * | 5a75a7a (tag: 2.0.0, b1) content F
+     * | |/
+     * * | 7da2d41 content E
+     * * | d3782b7 content D
+     * * | 788dc0e (tag: 4.0.0) content C
+     * |/
+     * * fe4577e (tag: 1.0.0) content B
+     * * 60a8e27 content A
+     * }
+     * </pre>
+     * @return the scenario object corresponding to the above git repository
+     */
+    public static Scenario s15_complex_merges() {
+        return new ScenarioBuilder()
+                .commit("content", "A")
+                .commit("content", "B")
+                .tag("1.0.0")
+                .commit("content", "C")
+                .tag("4.0.0")
+                .commit("content", "D")
+                .commit("content", "E")
+                .branchOnAppId("b1","B")
+                .commit("content", "F")
+                .tag("2.0.0")
+                .branchOnAppId("b2","B")
+                .commit("content", "G")
+                .tag("3.0.0")
+                .master()
+                .merge("F", "H")
+                .merge("G", "I")
+                .getScenario();
+    }
+
     public static class Scenario {
         private File repositoryLocation;
         private Map<String, ObjectId> commits;
@@ -405,6 +449,21 @@ public class Scenarios {
          */
         public Map<String, ObjectId> getCommits() {
             return commits;
+        }
+
+        /**
+         * Retrieves the name a given commit has been registered with.
+         * @param id the identifier of the commit to retrieve the name for
+         * @return the name of the id or null if not present
+         */
+        public String nameOf(final ObjectId id) {
+            Predicate<Map.Entry<String, ObjectId>> hasGivenCommit = e -> e.getValue().getName().equals(id.getName());
+            return commits.entrySet()
+                    .stream()
+                    .filter(hasGivenCommit)
+                    .findFirst()
+                    .map(Map.Entry::getKey)
+                    .orElseThrow(() -> new IllegalStateException("cannot find given commit " + id));
         }
 
         /**
@@ -527,8 +586,10 @@ public class Scenarios {
         public ScenarioBuilder merge(String sourceId, String id) {
             try {
                 ObjectId other = scenario.getCommits().get(sourceId);
+                ObjectId head = repository.resolve(Constants.HEAD);
+                String nameOfHead = scenario.nameOf(head);
                 MergeResult rc = git.merge()
-                        .setMessage("merge with  " + sourceId)
+                        .setMessage(String.format("%s :: merge %s into %s", id, sourceId, nameOfHead))
                         .include(other)
                         .call();
                 scenario.getCommits().put(id, rc.getNewHead());
