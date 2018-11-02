@@ -426,6 +426,48 @@ public class Scenarios {
                 .getScenario();
     }
 
+
+    /**
+     * Builds repository with complex two branches merge
+     * <pre>
+     * {@code
+     * *   318c3c9 (HEAD -> master) J :: merge H into I
+     * |\
+     * | * a50dde7 (b2) content H
+     * | * 4d841f6 content G
+     * | * 368e6d8 content F
+     * * |   ed0a74c I :: merge E into B
+     * |\ \
+     * | * | 0d42532 (b1) content E
+     * | * | 4a2582a content D
+     * | * | 5fcc09c content C
+     * | |/
+     * * | fe753dd content B
+     * |/
+     * * d74b251 (tag: 1.0.0) content A
+     * }
+     * </pre>
+     * @return the scenario object corresponding to the above git repository
+     */
+    public static Scenario s16_merges_with_short_path() {
+        return new ScenarioBuilder()
+                .commit("content", "A")
+                .tag("1.0.0")
+                .commit("content", "B")
+                .branchOnAppId("b1","A")
+                .commit("content", "C")
+                .commit("content", "D")
+                .commit("content", "E")
+                .branchOnAppId("b2","A")
+                .commit("content", "F")
+                .commit("content", "G")
+                .commit("content", "H")
+                .master()
+                .merge("E", "I")
+                .merge("H", "J")
+                .getScenario();
+    }
+
     public static class Scenario {
         private File repositoryLocation;
         private Map<String, ObjectId> commits;
