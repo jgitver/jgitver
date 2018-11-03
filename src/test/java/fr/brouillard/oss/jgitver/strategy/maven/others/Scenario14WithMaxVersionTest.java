@@ -34,7 +34,6 @@ public class Scenario14WithMaxVersionTest extends ScenarioTest {
                 Scenarios::s14_with_merges,
                 calculator -> calculator
                         .setStrategy(Strategies.MAVEN)
-                        .setUseMaxVersion(true)
                         .setNonQualifierBranches("master,hotfix"));
     }
 

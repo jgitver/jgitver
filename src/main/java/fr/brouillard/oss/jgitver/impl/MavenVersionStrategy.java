@@ -29,7 +29,7 @@ import fr.brouillard.oss.jgitver.VersionCalculationException;
 import fr.brouillard.oss.jgitver.metadata.MetadataRegistrar;
 import fr.brouillard.oss.jgitver.metadata.Metadatas;
 
-public class MavenVersionStrategy extends MaxVersionStrategy<MavenVersionStrategy> {
+public class MavenVersionStrategy extends VersionStrategy<MavenVersionStrategy> {
     private boolean useDirty = false;
 
     public MavenVersionStrategy(VersionNamingConfiguration vnc, Repository repository, Git git, MetadataRegistrar metadatas) {

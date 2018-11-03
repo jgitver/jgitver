@@ -34,8 +34,7 @@ public class Scenario15WithMaxVersionTest extends ScenarioTest {
                 Scenarios::s15_complex_merges,
                 calculator -> calculator
                         .setStrategy(Strategies.CONFIGURABLE)
-                        .setNonQualifierBranches("master,b1,b2")
-                        .setUseMaxVersion(true));
+                        .setNonQualifierBranches("master,b1,b2"));
     }
 
     @Test

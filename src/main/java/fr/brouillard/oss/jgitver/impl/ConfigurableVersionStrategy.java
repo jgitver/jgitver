@@ -29,7 +29,7 @@ import fr.brouillard.oss.jgitver.VersionCalculationException;
 import fr.brouillard.oss.jgitver.metadata.MetadataRegistrar;
 import fr.brouillard.oss.jgitver.metadata.Metadatas;
 
-public class ConfigurableVersionStrategy extends MaxVersionStrategy<ConfigurableVersionStrategy> {
+public class ConfigurableVersionStrategy extends VersionStrategy<ConfigurableVersionStrategy> {
     private boolean autoIncrementPatch = false;
     private boolean useDistance = true;
     private boolean useCommitTimestamp = false;
@@ -146,5 +146,4 @@ public class ConfigurableVersionStrategy extends MaxVersionStrategy<Configurable
     public ConfigurableVersionStrategy setUseLongFormat(boolean useLongFormat) {
         return runAndGetSelf(() -> this.useLongFormat = useLongFormat);
     }
-
 }

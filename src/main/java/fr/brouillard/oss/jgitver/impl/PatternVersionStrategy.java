@@ -35,7 +35,7 @@ import fr.brouillard.oss.jgitver.metadata.MetadataProvider;
 import fr.brouillard.oss.jgitver.metadata.MetadataRegistrar;
 import fr.brouillard.oss.jgitver.metadata.Metadatas;
 
-public class PatternVersionStrategy extends MaxVersionStrategy<PatternVersionStrategy> {
+public class PatternVersionStrategy extends VersionStrategy<PatternVersionStrategy> {
     public static final String DEFAULT_VERSION_PATTERN = "${v}${<meta.QUALIFIED_BRANCH_NAME}${<meta.COMMIT_DISTANCE}";
     public static final String DEFAULT_TAG_VERSION_PATTERN = "${v}";
 

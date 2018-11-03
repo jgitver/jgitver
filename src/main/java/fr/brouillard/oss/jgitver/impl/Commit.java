@@ -64,8 +64,12 @@ public class Commit {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Commit commit = (Commit) o;
         return Objects.equals(gitObject, commit.gitObject);
     }

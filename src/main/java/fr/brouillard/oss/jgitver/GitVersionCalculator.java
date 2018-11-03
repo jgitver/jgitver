@@ -66,8 +66,6 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     private boolean useGitCommitTimestamp = false;
     private boolean useDirty = false;
     private boolean useLongFormat = false;
-    private boolean useMaxVersion = false;
-    private int maxVersionSearchDepth = 500;
     private int gitCommitIdLength = 8;
     private List<BranchingPolicy> qualifierBranchingPolicies;
     private boolean useDefaultBranchingPolicy = true;
@@ -143,8 +141,6 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
             switch (versionStrategy) {
                 case MAVEN:
                     strategy = new MavenVersionStrategy(vnc, repository, git, metadatas)
-                            .setUseMaxVersion(useMaxVersion)
-                            .setMaxVersionSearchDepth(maxVersionSearchDepth)
                             .setUseDirty(useDirty);
                     break;
                 case CONFIGURABLE:
@@ -155,17 +151,13 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
                             .setUseGitCommitId(useGitCommitId)
                             .setGitCommitIdLength(gitCommitIdLength)
                             .setUseCommitTimestamp(useGitCommitTimestamp)
-                            .setUseLongFormat(useLongFormat)
-                            .setUseMaxVersion(useMaxVersion)
-                            .setMaxVersionSearchDepth(maxVersionSearchDepth);
+                            .setUseLongFormat(useLongFormat);
                     break;
                 case PATTERN:
                     strategy = new PatternVersionStrategy(vnc, repository, git, metadatas)
                             .setAutoIncrementPatch(autoIncrementPatch)
                             .setVersionPattern(versionPattern)
-                            .setTagVersionPattern(tagVersionPattern)
-                            .setUseMaxVersion(useMaxVersion)
-                            .setMaxVersionSearchDepth(maxVersionSearchDepth);
+                            .setTagVersionPattern(tagVersionPattern);
                     break;
                 default:
                     throw new IllegalStateException("unknown strategy: " + versionStrategy);
@@ -323,7 +315,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
 
     /**
      * Navigate to reachable commits, including merged branches, from the given commit
-     * and stop each time a commit with some _version_ tags is found on the currentCommit
+     * and stop each time a commit with some _version_ tags is found on the currentCommit.
      * @param currentCommitId the commit identifier to search tags on and to navigate to parents from
      * @param depth the current depth since the HEAD
      * @param commits the accumulator set of commits
@@ -332,7 +324,14 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
      * @param revWalk the jgit walker able to parse commits
      * @return the commit with minimal depth the lookup process stopped onto
      */
-    private Commit lookupCommits(ObjectId currentCommitId, int depth, Set<Commit> commits, List<Ref> normals, List<Ref> lights, RevWalk revWalk) throws IOException {
+    private Commit lookupCommits(
+            ObjectId currentCommitId,
+            int depth,
+            Set<Commit> commits,
+            List<Ref> normals,
+            List<Ref> lights,
+            RevWalk revWalk
+    ) throws IOException {
         RevCommit currentCommit = revWalk.parseCommit(currentCommitId);
 
         List<Ref> annotatedCommitTags = tagsOf(normals, currentCommitId);
@@ -368,7 +367,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
         }
 
         return (minDepthStoppedCommit.getHeadDistance() <= parentStoppedCommit.getHeadDistance())
-            ? minDepthStoppedCommit: parentStoppedCommit;
+            ? minDepthStoppedCommit : parentStoppedCommit;
     }
 
     private List<Ref> tagsOf(List<Ref> tags, final ObjectId id) {
@@ -603,16 +602,6 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
      */
     public GitVersionCalculator setVersionPattern(String pattern) {
         this.versionPattern = pattern;
-        return this;
-    }
-
-    public GitVersionCalculator setUseMaxVersion(boolean useMaxVersion) {
-        this.useMaxVersion = useMaxVersion;
-        return this;
-    }
-
-    public GitVersionCalculator setMaxVersionSearchDepth(int maxVersionSearchDepth) {
-        this.maxVersionSearchDepth = maxVersionSearchDepth;
         return this;
     }
 }
