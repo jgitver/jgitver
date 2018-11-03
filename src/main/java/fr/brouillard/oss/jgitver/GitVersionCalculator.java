@@ -23,11 +23,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -292,42 +294,21 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
             metadatas.registerMetadata(Metadatas.GIT_SHA1_8, rootId.getName().substring(0, 8));
             
             Commit head = new Commit(rootId, 0, tagsOf(normals, rootId), tagsOf(lights, rootId));
-            List<Commit> commits = new LinkedList<>();
+
+            // a set is used so that only one commit is kept for commits
+            // reachable by 2 different paths
+            Set<Commit> commits = new LinkedHashSet<>();
 
             try (RevWalk revWalk = new RevWalk(repository)) {
-                revWalk.markStart(revWalk.parseCommit(rootId));
-
-                int depth = 0;
-                ObjectId id = null;
-                for (RevCommit rc : revWalk) {
-                    id = rc.getId();
-
-                    List<Ref> annotatedCommitTags = tagsOf(normals, id);
-                    List<Ref> lightCommitTags = tagsOf(lights, id);
-
-                    if (annotatedCommitTags.size() > 0 || lightCommitTags.size() > 0) {
-                        // we found a commit with version tags
-                        Commit c = new Commit(id, depth, annotatedCommitTags, lightCommitTags);
-                        commits.add(c);
-
-                        // shall we stop searching for commits
-                        if (StrategySearchMode.STOP_AT_FIRST.equals(strategy.searchMode())) {
-                            break; // let's stop
-                        } else if (depth >= strategy.searchDepthLimit()) {
-                            break; // let's stop
-                        }
-                    }
-
-                    depth++;
-                }
-
-                // handle the case where we reached the first commit without finding anything
-                if (commits.size() == 0) {
-                    commits.add(new Commit(id, depth - 1, Collections.emptyList(), Collections.emptyList()));
+                Commit stoppedCommit = lookupCommits(rootId, 0, commits, normals, lights, revWalk);
+                if (commits.isEmpty()) {
+                    // need at least the deepest commit (ie the first of the repo)
+                    // if no commit with version tag could be found
+                    commits.add(stoppedCommit);
                 }
             }
 
-            Version calculatedVersion = strategy.build(head, commits);
+            Version calculatedVersion = strategy.build(head, new ArrayList<>(commits));
             metadatas.registerMetadata(Metadatas.CALCULATED_VERSION, calculatedVersion.toString());
 
             // Calculated version could have the patch already incremented under conditions
@@ -338,6 +319,56 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
         } catch (Exception ex) {
             throw new IllegalStateException("failure calculating version", ex);
         }
+    }
+
+    /**
+     * Navigate to reachable commits, including merged branches, from the given commit
+     * and stop each time a commit with some _version_ tags is found on the currentCommit
+     * @param currentCommitId the commit identifier to search tags on and to navigate to parents from
+     * @param depth the current depth since the HEAD
+     * @param commits the accumulator set of commits
+     * @param normals list of all annotated tags of this git repo
+     * @param lights list of all lightweight tags of this git repo
+     * @param revWalk the jgit walker able to parse commits
+     * @return the commit with minimal depth the lookup process stopped onto
+     */
+    private Commit lookupCommits(ObjectId currentCommitId, int depth, Set<Commit> commits, List<Ref> normals, List<Ref> lights, RevWalk revWalk) throws IOException {
+        RevCommit currentCommit = revWalk.parseCommit(currentCommitId);
+
+        List<Ref> annotatedCommitTags = tagsOf(normals, currentCommitId);
+        List<Ref> lightCommitTags = tagsOf(lights, currentCommitId);
+
+        if (annotatedCommitTags.size() > 0 || lightCommitTags.size() > 0) {
+            // we found a commit with version tags
+            Commit c = new Commit(currentCommitId, depth, annotatedCommitTags, lightCommitTags);
+            commits.add(c);
+            return c;
+        }
+
+        RevCommit[] parents = currentCommit.getParents();
+        if (parents.length == 0) {
+            return new Commit(currentCommit, depth, Collections.emptyList(), Collections.emptyList());
+        } else {
+            Commit minDepthStoppedCommit = null;
+
+            for (RevCommit parent: parents) {
+                Commit parentStoppedCommit = lookupCommits(parent.getId(), depth + 1, commits, normals, lights, revWalk);
+                minDepthStoppedCommit = keepNearest(minDepthStoppedCommit, parentStoppedCommit);
+            }
+            if (minDepthStoppedCommit == null) {
+                return new Commit(currentCommit, depth, Collections.emptyList(), Collections.emptyList());
+            }
+            return minDepthStoppedCommit;
+        }
+    }
+
+    private Commit keepNearest(Commit minDepthStoppedCommit, Commit parentStoppedCommit) {
+        if (minDepthStoppedCommit == null) {
+            return parentStoppedCommit;
+        }
+
+        return (minDepthStoppedCommit.getHeadDistance() <= parentStoppedCommit.getHeadDistance())
+            ? minDepthStoppedCommit: parentStoppedCommit;
     }
 
     private List<Ref> tagsOf(List<Ref> tags, final ObjectId id) {

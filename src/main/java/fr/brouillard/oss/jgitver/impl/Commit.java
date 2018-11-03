@@ -16,6 +16,7 @@
 package fr.brouillard.oss.jgitver.impl;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
@@ -57,11 +58,20 @@ public class Commit {
         return lightTags;
     }
 
-    @Deprecated
-    /**
-     * @deprecated head distance is not accurate
-     */
     public int getHeadDistance() {
         return headDistance;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Commit commit = (Commit) o;
+        return Objects.equals(gitObject, commit.gitObject);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(gitObject);
     }
 }

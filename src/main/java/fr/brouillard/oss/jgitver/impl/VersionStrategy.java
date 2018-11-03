@@ -102,39 +102,6 @@ public abstract class VersionStrategy {
         return TagType.LIGHTWEIGHT;
     }
 
-    /**
-     * Computes the distance between head commit and base commit following all possible parents.
-     * It retains only the smallest path length between those 2 commits.
-     * base commit must be reachable from the head one.
-     * @param head the commit to start from
-     * @param base the commit to reach
-     * @return the computed distance, 0 in case head and base are the same
-     * @throws IOException if there is a failure while parsing the git log
-     */
-    protected int computeSmallestDistance(Commit head, Commit base) throws IOException {
-        try (RevWalk revWalk = new RevWalk(getRepository())) {
-            RevCommit headCommit = revWalk.parseCommit(head.getGitObject());
-            return computeMinimalDistance(revWalk, 0, headCommit, base.getGitObject());
-        }
-    }
-
-    private int computeMinimalDistance(RevWalk revWalk, int currentDistance, RevCommit current, ObjectId toReach) throws IOException {
-        RevCommit currentParsedCommit = revWalk.parseCommit(current.getId());   // parse required so that getParents() is filled
-
-        if (currentParsedCommit.getId().getName().equals(toReach.getName())) {
-            return currentDistance;
-        }
-
-        int minimalSubDistance = Integer.MAX_VALUE;
-
-        for (RevCommit parent:currentParsedCommit.getParents()) {
-            int withParentDistance = computeMinimalDistance(revWalk, currentDistance + 1, parent, toReach);
-            minimalSubDistance = Math.min(minimalSubDistance, withParentDistance);
-        }
-
-        return minimalSubDistance;
-    }
-
     public static enum StrategySearchMode {
         /**
          * Search will stop on first commit having at least one tag with version information.

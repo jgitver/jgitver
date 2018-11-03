@@ -72,7 +72,7 @@ public class PatternVersionStrategy extends MaxVersionStrategy<PatternVersionStr
                 }
             }
 
-            int headDistance = computeSmallestDistance(head, base);
+            int headDistance = base.getHeadDistance();
             getRegistrar().registerMetadata(Metadatas.COMMIT_DISTANCE, "" + headDistance);
 
             try (RevWalk walk = new RevWalk(getRepository())) {

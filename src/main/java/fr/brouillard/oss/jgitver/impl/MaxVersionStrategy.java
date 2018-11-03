@@ -99,7 +99,7 @@ public abstract class MaxVersionStrategy<T extends MaxVersionStrategy> extends V
     }
 
     protected Commit findVersionCommit(Commit head, List<Commit> parents) {
-        return useMaxVersion ? findMaxVersionCommit(head, parents) : parents.get(0);
+        return parents.size() > 1 ? findMaxVersionCommit(head, parents) : parents.get(0);
     }
 
     protected Commit findMaxVersionCommit(Commit head, List<Commit> parents) {

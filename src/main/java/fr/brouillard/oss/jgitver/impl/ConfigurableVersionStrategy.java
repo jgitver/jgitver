@@ -59,7 +59,7 @@ public class ConfigurableVersionStrategy extends MaxVersionStrategy<Configurable
                 }
             }
 
-            int headDistance = computeSmallestDistance(head, base);
+            int headDistance = base.getHeadDistance();
 
             if ((useDistance || useLongFormat) && !useSnapshot) {
                 if (tagToUse == null) {
