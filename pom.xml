@@ -358,6 +358,16 @@
                                         <requireJavaVersion>
                                             <version>[1.8.0, 9)</version>
                                         </requireJavaVersion>
+                                        <requireProperty>
+                                            <property>jgitver.dirty</property>
+                                            <regex>false</regex>
+                                            <regexMessage>You cannot release in a dirty state</regexMessage>
+                                        </requireProperty>
+                                        <requireProperty>
+                                            <property>jgitver.branch_name</property>
+                                            <regex>^$|master</regex>
+                                            <regexMessage>You must release from master or from a detached HEAD, current branch is '${jgitver.branch_name}'</regexMessage>
+                                        </requireProperty>
                                     </rules>
                                     <fail>true</fail>
                                 </configuration>
