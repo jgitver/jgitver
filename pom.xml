@@ -297,6 +297,47 @@
     </repositories>
     <profiles>
         <profile>
+            <id>info</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <echo>used version: ${jgitver.used_version}</echo>
+                                        <echo>version calculated: ${jgitver.calculated_version}</echo>
+                                        <echo>dirty: ${jgitver.dirty}</echo>
+                                        <echo>head_committer_name: ${jgitver.head_committer_name}</echo>
+                                        <echo>head_commiter_email: ${jgitver.head_commiter_email}</echo>
+                                        <echo>head_commit_datetime: ${jgitver.head_commit_datetime}</echo>
+                                        <echo>git_sha1_full: ${jgitver.git_sha1_full}</echo>
+                                        <echo>git_sha1_8: ${jgitver.git_sha1_8}</echo>
+                                        <echo>branch_name: ${jgitver.branch_name}</echo>
+                                        <echo>head_tags: ${jgitver.head_tags}</echo>
+                                        <echo>head_annotated_tags: ${jgitver.head_annotated_tags}</echo>
+                                        <echo>head_lightweight_tags: ${jgitver.head_lightweight_tags}</echo>
+                                        <echo>base_tag: ${jgitver.base_tag}</echo>
+                                        <echo>all_tags: ${jgitver.all_tags}</echo>
+                                        <echo>all_annotated_tags: ${jgitver.all_annotated_tags}</echo>
+                                        <echo>all_lightweight_tags: ${jgitver.all_lightweight_tags}</echo>
+                                        <echo>all_version_tags: ${jgitver.all_version_tags}</echo>
+                                        <echo>all_version_annotated_tags: ${jgitver.all_version_annotated_tags}</echo>
+                                        <echo>all_version_lightweight_tags: ${jgitver.all_version_lightweight_tags}</echo>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
             <id>release</id>
             <build>
                 <plugins>
@@ -314,6 +355,9 @@
                                     <rules>
                                         <requireReleaseDeps />
                                         <requireReleaseVersion />
+                                        <requireJavaVersion>
+                                            <version>[1.8.0, 9)</version>
+                                        </requireJavaVersion>
                                     </rules>
                                     <fail>true</fail>
                                 </configuration>
