@@ -1,5 +1,8 @@
 language: java
 
+git:
+  depth: false
+
 before_script:
   - ./travis-set-branch.sh
 
