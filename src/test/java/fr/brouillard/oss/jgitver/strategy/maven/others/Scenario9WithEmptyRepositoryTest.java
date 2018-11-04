@@ -23,7 +23,7 @@ import org.junit.Test;
 import fr.brouillard.oss.jgitver.Scenarios;
 import fr.brouillard.oss.jgitver.Strategies;
 import fr.brouillard.oss.jgitver.Version;
-import fr.brouillard.oss.jgitver.strategy.ScenarioTest;
+import fr.brouillard.oss.jgitver.ScenarioTest;
 
 public class Scenario9WithEmptyRepositoryTest extends ScenarioTest {
 

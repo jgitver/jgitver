@@ -29,7 +29,7 @@ import fr.brouillard.oss.jgitver.BranchingPolicy.BranchNameTransformations;
 import fr.brouillard.oss.jgitver.Scenarios;
 import fr.brouillard.oss.jgitver.Strategies;
 import fr.brouillard.oss.jgitver.metadata.Metadatas;
-import fr.brouillard.oss.jgitver.strategy.ScenarioTest;
+import fr.brouillard.oss.jgitver.ScenarioTest;
 
 public class Scenario13GitflowWithNonQualifierAndPartialNameTest extends ScenarioTest {
 

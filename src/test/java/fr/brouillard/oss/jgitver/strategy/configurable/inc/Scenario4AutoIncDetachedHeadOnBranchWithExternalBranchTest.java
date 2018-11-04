@@ -29,7 +29,7 @@ import org.junit.Test;
 import fr.brouillard.oss.jgitver.Scenarios;
 import fr.brouillard.oss.jgitver.Strategies;
 import fr.brouillard.oss.jgitver.impl.GitUtils;
-import fr.brouillard.oss.jgitver.strategy.ScenarioTest;
+import fr.brouillard.oss.jgitver.ScenarioTest;
 
 public class Scenario4AutoIncDetachedHeadOnBranchWithExternalBranchTest extends ScenarioTest {
 

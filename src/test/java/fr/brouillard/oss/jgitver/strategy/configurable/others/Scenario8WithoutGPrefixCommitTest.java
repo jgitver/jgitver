@@ -23,7 +23,7 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.junit.Test;
 
 import fr.brouillard.oss.jgitver.Scenarios;
-import fr.brouillard.oss.jgitver.strategy.ScenarioTest;
+import fr.brouillard.oss.jgitver.ScenarioTest;
 
 public class Scenario8WithoutGPrefixCommitTest extends ScenarioTest {
 

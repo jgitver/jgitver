@@ -27,7 +27,7 @@ import org.junit.Test;
 import fr.brouillard.oss.jgitver.Scenarios;
 import fr.brouillard.oss.jgitver.Strategies;
 import fr.brouillard.oss.jgitver.metadata.Metadatas;
-import fr.brouillard.oss.jgitver.strategy.ScenarioTest;
+import fr.brouillard.oss.jgitver.ScenarioTest;
 
 public class Scenario5WithNoDefaultQualiferNoNonQualiferTest extends ScenarioTest {
 
