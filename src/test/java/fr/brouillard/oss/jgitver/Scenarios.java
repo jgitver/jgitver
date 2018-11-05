@@ -365,6 +365,44 @@ public class Scenarios {
     public static Scenario s14_with_merges() {
         return new ScenarioBuilder()
                 .commit("content", "A")
+                .tag("0.8.0")
+                .commit("content", "B")
+                .tagLight("1.0.0")
+                .tagLight("0.9.0")
+                .tagLight("0.9.1")
+                .commit("content", "C")
+                .commit("content", "D")
+                .tag("1.1.0")
+                .tag("1.1.1")
+                .commit("content", "E")
+                .branchOnAppId("hotfix","B")
+                .commit("content", "F")
+                .commit("content", "G")
+                .tag("1.0.1")
+                .master()
+                .merge("G", "H")
+                .getScenario();
+    }
+
+    /**
+     * Builds repository witch merges H
+     * <pre>
+     * *   f581afe (HEAD -> master) merge with F G
+     * |\
+     * | * 887e3fd (tag: v1.0.1, hotfix) content F
+     * | * 2650f61 content E
+     * * | de302fa content D
+     * * | 95bd953 (tag: v1.1.1, tag: v1.1.0) content D
+     * * | 1dbae55 content C
+     * |/
+     * * ff650fe (tag: v1.0.0, tag: v0.9.1, tag: v0.9.0) content B
+     * * dfb908a (tag: v0.8.0) content A
+     * </pre>
+     * @return the scenario object corresponding to the above git repository
+     */
+    public static Scenario s14_with_merges_tag_prefixed() {
+        return new ScenarioBuilder()
+                .commit("content", "A")
                 .tag("v0.8.0")
                 .commit("content", "B")
                 .tagLight("v1.0.0")

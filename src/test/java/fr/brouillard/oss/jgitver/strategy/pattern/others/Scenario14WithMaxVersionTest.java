@@ -31,7 +31,7 @@ public class Scenario14WithMaxVersionTest extends ScenarioTest {
 
     public Scenario14WithMaxVersionTest() {
         super(
-                Scenarios::s14_with_merges,
+                Scenarios::s14_with_merges_tag_prefixed,
                 calculator -> calculator
                         .setStrategy(Strategies.PATTERN)
                         .setNonQualifierBranches("master,hotfix"));
