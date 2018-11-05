@@ -111,9 +111,9 @@
             <version>4.9.1.201712030800-r</version>
         </dependency>
         <dependency>
-            <groupId>com.github.petitparser.java-petitparser</groupId>
+            <groupId>fr.brouillard.oss.com.github.petitparser</groupId>
             <artifactId>petitparser-core</artifactId>
-            <version>2.1.0</version>
+            <version>2.1.0-jgitver</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -291,8 +291,8 @@
 
     <repositories>
         <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
+            <id>sonatype</id>
+            <url>https://oss.sonatype.org/content/groups/public</url>
         </repository>
     </repositories>
     <profiles>
