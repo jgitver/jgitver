@@ -47,7 +47,7 @@ Most of the time you will want to use `jgitver` via one of its extensions/plugin
       <extension>
         <groupId>fr.brouillard.oss</groupId>
         <artifactId>jgitver-maven-plugin</artifactId>
-        <version>0.3.0</version>
+        <version>1.4.2</version>
       </extension>
     </extensions>
     ```
