@@ -15,17 +15,13 @@
  */
 package fr.brouillard.oss.jgitver.impl;
 
-import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevWalk;
 
 import fr.brouillard.oss.jgitver.Lambdas;
 import fr.brouillard.oss.jgitver.Version;
@@ -177,11 +173,10 @@ public abstract class VersionStrategy<T extends VersionStrategy> {
 
     protected VersionTarget<Commit> toVersionTarget(Commit head, Commit commit) {
         String tagName = GitUtils.tagNameFromRef(findTagToUse(head, commit));
-        Version version = Version.parse(tagName);
-        return new VersionTarget<>(version, commit);
+        return new VersionTarget<>(tagToVersion(tagName), commit);
     }
 
-    public static enum StrategySearchMode {
+    public enum StrategySearchMode {
         /**
          * Search will stop on first commit having at least one tag with version information.
          */
