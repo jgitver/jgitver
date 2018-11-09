@@ -40,7 +40,7 @@ Before going into deep explanations & documentation let's first show what you wi
 
 Most of the time you will want to use `jgitver` via one of its extensions/plugins:
 
-- [jgitver maven plugin](http://www.github.com/jgitver/jgitver-maven-plugin), which can be used as a core aven extension by creating a file `YOUR_PROJECT/.mvn/extensions.xml`:
+- [jgitver maven plugin](http://www.github.com/jgitver/jgitver-maven-plugin), which can be used as a core maven extension by creating a file `YOUR_PROJECT/.mvn/extensions.xml`:
     ```
     <extensions xmlns="http://maven.apache.org/EXTENSIONS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="http://maven.apache.org/EXTENSIONS/1.0.0 http://maven.apache.org/xsd/core-extensions-1.0.0.xsd">
@@ -172,7 +172,7 @@ You can query `GitVersionCalculator#meta(Metadatas)` in order to retrieve the da
 
 - `mvn -Poss clean install`: this will simulate a full build for oss delivery (javadoc, source attachement, GPG signature, ...)
 - `git tag -a -s -m "release X.Y.Z, additionnal reason" X.Y.Z`: tag the current HEAD with the given tag name. The tag is signed by the author of the release. Adapt with gpg key of maintainer.
-    - Matthieu Brouillard command:  `git tag -a -s -u 2AB5F258 -m "release X.Y.Z, additionnal reason" X.Y.Z`
+    - Matthieu Brouillard command:  `git tag -a -s -u 2AB5F258 -m "release X.Y.Z, additional reason" X.Y.Z`
     - Matthieu Brouillard [public key](https://sks-keyservers.net/pks/lookup?op=get&search=0x8139E8632AB5F258)
 - `mvn -Poss,release -DskipTests deploy`
 - `git push --follow-tags origin master`
