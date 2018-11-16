@@ -325,39 +325,52 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
      * @return the commit with minimal depth the lookup process stopped onto
      */
     private Commit lookupCommits(
-            ObjectId currentCommitId,
-            int depth,
-            Set<Commit> commits,
-            List<Ref> normals,
-            List<Ref> lights,
-            RevWalk revWalk
+            final ObjectId currentCommitId,
+            final int depth,
+            final Set<Commit> commits,
+            final List<Ref> normals,
+            final List<Ref> lights,
+            final RevWalk revWalk
     ) throws IOException {
-        RevCommit currentCommit = revWalk.parseCommit(currentCommitId);
+        ObjectId id = currentCommitId;
+        int currentDepth = depth;
 
-        List<Ref> annotatedCommitTags = tagsOf(normals, currentCommitId);
-        List<Ref> lightCommitTags = tagsOf(lights, currentCommitId);
+        while (true) {
+            RevCommit currentCommit = revWalk.parseCommit(id);
+            RevCommit[] parents = currentCommit.getParents();
 
-        if (annotatedCommitTags.size() > 0 || lightCommitTags.size() > 0) {
-            // we found a commit with version tags
-            Commit c = new Commit(currentCommitId, depth, annotatedCommitTags, lightCommitTags);
-            commits.add(c);
-            return c;
-        }
+            List<Ref> annotatedCommitTags = tagsOf(normals, id);
+            List<Ref> lightCommitTags = tagsOf(lights, id);
 
-        RevCommit[] parents = currentCommit.getParents();
-        if (parents.length == 0) {
-            return new Commit(currentCommit, depth, Collections.emptyList(), Collections.emptyList());
-        } else {
-            Commit minDepthStoppedCommit = null;
-
-            for (RevCommit parent: parents) {
-                Commit parentStoppedCommit = lookupCommits(parent.getId(), depth + 1, commits, normals, lights, revWalk);
-                minDepthStoppedCommit = keepNearest(minDepthStoppedCommit, parentStoppedCommit);
+            if (annotatedCommitTags.size() > 0 || lightCommitTags.size() > 0) {
+                // we found a commit with version tags
+                Commit c = new Commit(id, currentDepth, annotatedCommitTags, lightCommitTags);
+                commits.add(c);
+                return c;
             }
-            if (minDepthStoppedCommit == null) {
-                return new Commit(currentCommit, depth, Collections.emptyList(), Collections.emptyList());
+
+            if (parents.length == 0) {
+                return new Commit(currentCommit, currentDepth, Collections.emptyList(), Collections.emptyList());
+            } else if (parents.length > 1) {
+                // multiple parents, we're on a merged commmit
+                // let's recurse on the parents
+                Commit minDepthStoppedCommit = null;
+
+                for (RevCommit parent: parents) {
+                    Commit parentStoppedCommit = lookupCommits(parent.getId(), currentDepth + 1, commits, normals, lights, revWalk);
+                    minDepthStoppedCommit = keepNearest(minDepthStoppedCommit, parentStoppedCommit);
+                }
+                if (minDepthStoppedCommit == null) {
+                    return new Commit(currentCommit, currentDepth, Collections.emptyList(), Collections.emptyList());
+                }
+                return minDepthStoppedCommit;
+            } else {
+                // we're on a commit without version tag and have only one parent
+                // let's just loop to it
+                RevCommit parent = parents[0];
+                id = parent.getId();
+                currentDepth++;
             }
-            return minDepthStoppedCommit;
         }
     }
 
