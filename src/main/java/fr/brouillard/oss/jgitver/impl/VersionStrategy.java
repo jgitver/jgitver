@@ -35,6 +35,7 @@ public abstract class VersionStrategy<T extends VersionStrategy> {
     private Repository repository;
     private Git git;
     private MetadataRegistrar registrar;
+    private int searchDepthLimit = Integer.MAX_VALUE;
 
     protected MetadataRegistrar getRegistrar() {
         return registrar;
@@ -75,7 +76,16 @@ public abstract class VersionStrategy<T extends VersionStrategy> {
      * @return a strict positive integer representing the depth until which the search will stop.
      */
     public int searchDepthLimit() {
-        return Integer.MAX_VALUE;
+        return searchDepthLimit;
+    }
+
+    /**
+     * Sets a limit to the depth of lookup for base version tags.
+     * @param newLimit a positive value or 0 if the given value is negative
+     * @return self instance of the strategy object to allow method chaining
+     */
+    public T setSearchDepthLimit(int newLimit) {
+        return runAndGetSelf(() -> searchDepthLimit = (newLimit > 0) ? newLimit : 0);
     }
     
     public boolean considerTagAsAVersionOne(Ref tag) {

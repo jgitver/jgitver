@@ -67,6 +67,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     private boolean useDirty = false;
     private boolean useLongFormat = false;
     private int gitCommitIdLength = 8;
+    private int maxDepth = Integer.MAX_VALUE;
     private List<BranchingPolicy> qualifierBranchingPolicies;
     private boolean useDefaultBranchingPolicy = true;
     private Strategies versionStrategy = null;
@@ -163,7 +164,8 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
                     throw new IllegalStateException("unknown strategy: " + versionStrategy);
             }
 
-            Version calculatedVersion = buildVersion(git, strategy);
+            strategy.setSearchDepthLimit(maxDepth);
+Version calculatedVersion = buildVersion(git, strategy);
 
             return calculatedVersion;
         }
@@ -292,7 +294,8 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
             Set<Commit> commits = new LinkedHashSet<>();
 
             try (RevWalk revWalk = new RevWalk(repository)) {
-                Commit stoppedCommit = lookupCommits(rootId, 0, commits, normals, lights, revWalk);
+                int maxDepth = strategy.searchDepthLimit();
+                Commit stoppedCommit = lookupCommits(rootId, 0, maxDepth, commits, normals, lights, revWalk);
                 if (commits.isEmpty()) {
                     // need at least the deepest commit (ie the first of the repo)
                     // if no commit with version tag could be found
@@ -318,6 +321,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
      * and stop each time a commit with some _version_ tags is found on the currentCommit.
      * @param currentCommitId the commit identifier to search tags on and to navigate to parents from
      * @param depth the current depth since the HEAD
+     * @param maxDepth the maximum depth at which we stop searching
      * @param commits the accumulator set of commits
      * @param normals list of all annotated tags of this git repo
      * @param lights list of all lightweight tags of this git repo
@@ -327,6 +331,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     private Commit lookupCommits(
             final ObjectId currentCommitId,
             final int depth,
+            final int maxDepth,
             final Set<Commit> commits,
             final List<Ref> normals,
             final List<Ref> lights,
@@ -349,7 +354,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
                 return c;
             }
 
-            if (parents.length == 0) {
+            if (parents.length == 0 || currentDepth >= maxDepth) {
                 return new Commit(currentCommit, currentDepth, Collections.emptyList(), Collections.emptyList());
             } else if (parents.length > 1) {
                 // multiple parents, we're on a merged commmit
@@ -357,7 +362,15 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
                 Commit minDepthStoppedCommit = null;
 
                 for (RevCommit parent: parents) {
-                    Commit parentStoppedCommit = lookupCommits(parent.getId(), currentDepth + 1, commits, normals, lights, revWalk);
+                    Commit parentStoppedCommit = lookupCommits(
+                            parent.getId(),
+                            currentDepth + 1,
+                            maxDepth,
+                            commits,
+                            normals,
+                            lights,
+                            revWalk
+                    );
                     minDepthStoppedCommit = keepNearest(minDepthStoppedCommit, parentStoppedCommit);
                 }
                 if (minDepthStoppedCommit == null) {
@@ -615,6 +628,17 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
      */
     public GitVersionCalculator setVersionPattern(String pattern) {
         this.versionPattern = pattern;
+        return this;
+    }
+
+    /**
+     * Defines max depth to look for version tags, defaults to Integer.MAX_VALUE.
+     * @param maxDepth the maximum depth to reach to lookup for version tags
+     * @return itself to chain settings
+     * @since 0.8.6
+     */
+    public GitVersionCalculator setMaxDepth(int maxDepth) {
+        this.maxDepth = maxDepth;
         return this;
     }
 }

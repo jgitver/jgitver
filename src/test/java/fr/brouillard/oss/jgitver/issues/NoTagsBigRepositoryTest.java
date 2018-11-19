@@ -64,4 +64,11 @@ public class NoTagsBigRepositoryTest extends ScenarioTest {
     public void can_compute_version() {
         assertThat(versionCalculator.getVersion(), is("0.0.0-" + NB_COMMITS));
     }
+
+    @Test
+    public void can_compute_version_width_max_depth() {
+        int maxDepth = 10;
+        versionCalculator.setMaxDepth(maxDepth);
+        assertThat(versionCalculator.getVersion(), is("0.0.0-" + maxDepth));
+    }
 }
