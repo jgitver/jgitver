@@ -165,7 +165,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
             }
 
             strategy.setSearchDepthLimit(maxDepth);
-Version calculatedVersion = buildVersion(git, strategy);
+            Version calculatedVersion = buildVersion(git, strategy);
 
             return calculatedVersion;
         }
