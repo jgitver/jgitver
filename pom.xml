@@ -57,6 +57,25 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- runtime dependencies -->
+        <org.eclipse.jgit.version>4.9.1.201712030800-r</org.eclipse.jgit.version>
+        <petitparser-core.version>2.2.0</petitparser-core.version>
+
+        <!-- test dependencies -->
+        <junit.version>4.12</junit.version>
+        <java-hamcrest.version>2.0.0.0</java-hamcrest.version>
+        <guava.version>19.0</guava.version>
+
+        <!-- plugins versions -->
+        <ossindex-maven-plugin.version>3.0.1</ossindex-maven-plugin.version>
+        <checkstyle.version>7.6</checkstyle.version>
+        <maven-checkstyle-plugin.version>2.17</maven-checkstyle-plugin.version>
+        <license-maven-plugin.version>2.11</license-maven-plugin.version>
+        <maven-compiler-plugin.version>3.6.0</maven-compiler-plugin.version>
+        <maven-jar-plugin.version>2.3.2</maven-jar-plugin.version>
+        <maven-failsafe-plugin.version>2.22.0</maven-failsafe-plugin.version>
+        <maven-antrun-plugin.version>1.8</maven-antrun-plugin.version>
     </properties>
 
     <developers>
@@ -108,29 +127,29 @@
         <dependency>
             <groupId>org.eclipse.jgit</groupId>
             <artifactId>org.eclipse.jgit</artifactId>
-            <version>4.9.1.201712030800-r</version>
+            <version>${org.eclipse.jgit.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.petitparser</groupId>
             <artifactId>petitparser-core</artifactId>
-            <version>2.2.0</version>
+            <version>${petitparser-core.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>java-hamcrest</artifactId>
-            <version>2.0.0.0</version>
+            <version>${java-hamcrest.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>19.0</version>
+            <version>${guava.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -140,7 +159,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
                     <showDeprecation>true</showDeprecation>
                 </configuration>
@@ -148,7 +167,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.3.2</version>
+                <version>${maven-jar-plugin.version}</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -166,7 +185,7 @@
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-                <version>2.11</version>
+                <version>${license-maven-plugin.version}</version>
                 <configuration>
                     <header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</header>
                     <properties>
@@ -199,7 +218,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>2.17</version>
+                <version>${maven-checkstyle-plugin.version}</version>
                 <configuration>
                     <propertiesLocation>${project.basedir}/src/quality/checkstyle/checkstyle_maven.properties</propertiesLocation>
                     <configLocation>${project.basedir}/src/quality/checkstyle/checks.xml</configLocation>
@@ -213,7 +232,7 @@
                     <dependency>
                         <groupId>com.puppycrawl.tools</groupId>
                         <artifactId>checkstyle</artifactId>
-                        <version>7.6</version>
+                        <version>${checkstyle.version}</version>
                     </dependency>
                 </dependencies>
                 <executions>
@@ -229,7 +248,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>2.22.0</version>
+                <version>${maven-failsafe-plugin.version}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -283,7 +302,7 @@
                 <plugin>
                     <groupId>org.sonatype.ossindex.maven</groupId>
                     <artifactId>ossindex-maven-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>${ossindex-maven-plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -302,6 +321,7 @@
                 <plugins>
                     <plugin>
                         <artifactId>maven-antrun-plugin</artifactId>
+                        <version>${maven-antrun-plugin.version}</version>
                         <executions>
                             <execution>
                                 <phase>validate</phase>
