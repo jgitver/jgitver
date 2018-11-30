@@ -492,7 +492,7 @@
             <id>checks</id>
             <activation>
                 <property>
-                    <name>SNYK_API_TOKEN</name>
+                    <name>env.SNYK_API_TOKEN</name>
                 </property>
             </activation>
             <properties>
@@ -514,7 +514,7 @@
                             </execution>
                         </executions>
                         <configuration>
-                            <apiToken>${SNYK_API_TOKEN}</apiToken>
+                            <apiToken>${env.SNYK_API_TOKEN}</apiToken>
                             <failOnSeverity>medium</failOnSeverity>
                         </configuration>
                     </plugin>
