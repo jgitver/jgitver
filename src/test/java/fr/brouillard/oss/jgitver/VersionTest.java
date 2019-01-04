@@ -24,6 +24,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 import org.junit.Test;
@@ -145,5 +146,34 @@ public class VersionTest {
             assertThat(parsed, notNullValue());
             assertThat(parsed.toString(), is(version));
         });
+    }
+
+    @Test
+    public void can_compare_versions() {
+        List<String> versions = Arrays.asList(
+                "0.0.0",
+                "0.0.1",
+                "0.1.0",
+                "0.1.1",
+                "1.0.0-alpha",
+                "1.0.0-alpha.1",
+                "1.0.0-alpha.beta",
+                "1.0.0-beta",
+                "1.0.0-beta.2",
+                "1.0.0-rc.1",
+                "1.0.0"
+        );
+
+        Comparator<Version> versionComparator = Comparator.naturalOrder();
+
+        for (int i = 0; i < versions.size(); i++) {
+            Version baseVersion = Version.parse(versions.get(i));
+            for (int j = i + 1; j < versions.size(); j++) {
+                Version cmpVersion = Version.parse(versions.get(j));
+
+                boolean isLower = versionComparator.compare(baseVersion, cmpVersion) < 0;
+                assertTrue(String.format("%s should be lower than %s", baseVersion, cmpVersion), isLower);
+            }
+        }
     }
 }

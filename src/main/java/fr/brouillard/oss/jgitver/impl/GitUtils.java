@@ -20,12 +20,15 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 
@@ -45,7 +48,12 @@ public class GitUtils {
     public static boolean isDetachedHead(Repository repository) throws IOException {
         return repository.getFullBranch().matches("[0-9a-f]{40}");
     }
-    
+
+    public static List<Ref> tagsOf(List<Ref> tags, final ObjectId id) {
+        return tags.stream().filter(ref -> id.equals(ref.getObjectId()) || id.equals(ref.getPeeledObjectId()))
+                .collect(Collectors.toList());
+    }
+
     /**
      * Checks that underlying repository is dirty (modified with uncommitted changes).
      * @return true if the underlying repository is dirty, false otherwise

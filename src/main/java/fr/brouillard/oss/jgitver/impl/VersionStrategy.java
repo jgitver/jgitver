@@ -124,8 +124,8 @@ public abstract class VersionStrategy<T extends VersionStrategy> {
 
         if (tagToUse != null) {
             String tagName = GitUtils.tagNameFromRef(tagToUse);
+            baseVersion = versionFromTag(tagToUse);
             TagType tagType = computeTagType(tagToUse, maxVersionTag(base.getAnnotatedTags()).orElse(null));
-            baseVersion = tagToVersion(tagName);
 
             getRegistrar().registerMetadata(Metadatas.BASE_TAG_TYPE, tagType.name());
             getRegistrar().registerMetadata(Metadatas.BASE_TAG, tagName);
@@ -154,6 +154,10 @@ public abstract class VersionStrategy<T extends VersionStrategy> {
     }
 
     protected Commit findVersionCommit(Commit head, List<Commit> parents) {
+        if (!head.getAnnotatedTags().isEmpty() || !head.getLightTags().isEmpty()) {
+            return head;
+        }
+
         return parents.size() > 1 ? findMaxVersionCommit(head, parents) : parents.get(0);
     }
 
@@ -176,14 +180,22 @@ public abstract class VersionStrategy<T extends VersionStrategy> {
                 .map(VersionTarget::getTarget);
     }
 
+    /**
+     * Computes a {@link Version} object from the given tag reference using the strategy configuration.
+     * @param ref a git {@link Ref} object corresponding to the tag
+     * @return the corresponding Version object
+     */
+    public Version versionFromTag(Ref ref) {
+        return tagToVersion(GitUtils.tagNameFromRef(ref));
+    }
+
     protected VersionTarget<Ref> toVersionTarget(Ref tagRef) {
-        String tagName = GitUtils.tagNameFromRef(tagRef);
-        return new VersionTarget<>(tagToVersion(tagName), tagRef);
+        return new VersionTarget<>(versionFromTag(tagRef), tagRef);
     }
 
     protected VersionTarget<Commit> toVersionTarget(Commit head, Commit commit) {
-        String tagName = GitUtils.tagNameFromRef(findTagToUse(head, commit));
-        return new VersionTarget<>(tagToVersion(tagName), commit);
+        Ref tagToUse = findTagToUse(head, commit);
+        return new VersionTarget<>(versionFromTag(tagToUse), commit);
     }
 
     public enum StrategySearchMode {

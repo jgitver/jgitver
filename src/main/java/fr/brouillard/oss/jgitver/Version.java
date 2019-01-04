@@ -222,11 +222,39 @@ public class Version implements Comparable<Version> {
 
     @Override
     public int compareTo(Version o) {
-        return Comparator
-                .comparingInt(Version::getMajor)
-                .thenComparingInt(Version::getMinor)
-                .thenComparingInt(Version::getPatch)
-                .thenComparing(Version::toString)
-                .compare(this, o);
+        if (this == o) {
+            return 0;
+        }
+
+        int majorDiff = this.major - o.major;
+        if (majorDiff != 0) {
+            return majorDiff;
+        }
+
+        int minorDiff = this.minor - o.minor;
+        if (minorDiff != 0) {
+            return minorDiff;
+        }
+
+        int patchDiff = this.patch - o.patch;
+        if (patchDiff != 0) {
+            return patchDiff;
+        }
+
+        if (qualifiers.size() == 0) {
+            return o.qualifiers.size() == 0 ? 0 : 1;
+        }
+
+        if (o.qualifiers.size() == 0) {
+            return -1;
+        }
+
+        return this.stringRepresentation.compareTo(o.stringRepresentation);
+//        return Comparator
+//                .comparingInt(Version::getMajor)
+//                .thenComparingInt(Version::getMinor)
+//                .thenComparingInt(Version::getPatch)
+//                .thenComparing(Version::toString)
+//                .compare(this, o);
     }
 }

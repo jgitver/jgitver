@@ -23,6 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,6 +31,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -50,7 +52,6 @@ import fr.brouillard.oss.jgitver.impl.MavenVersionStrategy;
 import fr.brouillard.oss.jgitver.impl.PatternVersionStrategy;
 import fr.brouillard.oss.jgitver.impl.VersionNamingConfiguration;
 import fr.brouillard.oss.jgitver.impl.VersionStrategy;
-import fr.brouillard.oss.jgitver.impl.VersionStrategy.StrategySearchMode;
 import fr.brouillard.oss.jgitver.metadata.MetadataHolder;
 import fr.brouillard.oss.jgitver.metadata.MetadataProvider;
 import fr.brouillard.oss.jgitver.metadata.Metadatas;
@@ -228,7 +229,8 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
 
     private Version buildVersion(Git git, VersionStrategy strategy) {
         try {
-            //
+            ObjectId rootId = repository.resolve("HEAD");
+
             metadatas.registerMetadata(Metadatas.DIRTY, "" + GitUtils.isDirty(git));
             
             // retrieve all tags matching a version, and get all info for each of them
@@ -251,8 +253,6 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
             metadatas.registerMetadataTags(Metadatas.ALL_VERSION_TAGS, allVersionTags.stream());
             metadatas.registerMetadataTags(Metadatas.ALL_VERSION_ANNOTATED_TAGS, normals.stream());
             metadatas.registerMetadataTags(Metadatas.ALL_VERSION_LIGHTWEIGHT_TAGS, lights.stream());
-
-            ObjectId rootId = repository.resolve("HEAD");
 
             // handle a call on an empty git repository
             if (rootId == null) {
@@ -288,19 +288,13 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
             metadatas.registerMetadata(Metadatas.GIT_SHA1_8, rootId.getName().substring(0, 8));
             
             Commit head = new Commit(rootId, 0, tagsOf(normals, rootId), tagsOf(lights, rootId));
+            
+            Set<Commit> commits = buildCommitsSetFromReachableTags(rootId, allVersionTags, normals, lights, maxDepth, strategy);
 
-            // a set is used so that only one commit is kept for commits
-            // reachable by 2 different paths
-            Set<Commit> commits = new LinkedHashSet<>();
-
-            try (RevWalk revWalk = new RevWalk(repository)) {
-                int maxDepth = strategy.searchDepthLimit();
-                Commit stoppedCommit = lookupCommits(rootId, 0, maxDepth, commits, normals, lights, revWalk);
-                if (commits.isEmpty()) {
-                    // need at least the deepest commit (ie the first of the repo)
-                    // if no commit with version tag could be found
-                    commits.add(stoppedCommit);
-                }
+            if (commits.size() == 0) {
+                // it looks like not reachable commits from version tags were found
+                // as we need at least one commit, let's find the deepest we can
+                commits.add(deepestReachableCommit(rootId, maxDepth));
             }
 
             Version calculatedVersion = strategy.build(head, new ArrayList<>(commits));
@@ -314,6 +308,74 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
         } catch (Exception ex) {
             throw new IllegalStateException("failure calculating version", ex);
         }
+    }
+
+    private Commit deepestReachableCommit(ObjectId headId, int maxDepth) throws IOException {
+        try (RevWalk revWalk = new RevWalk(repository)) {
+            RevCommit headCommit = repository.parseCommit(headId);
+            revWalk.markStart(headCommit);
+            int depth = 0;
+            RevCommit lastCommit = headCommit;
+            Iterator<RevCommit> iterator = revWalk.iterator();
+
+            while (iterator.hasNext() && depth <= maxDepth) {
+                lastCommit = iterator.next();
+                depth++;
+            }
+
+            int retainedDepth = depth - 1;  // we do not count head
+            return new Commit(lastCommit.getId(), retainedDepth, Collections.emptyList(), Collections.emptyList());
+        }
+    }
+
+    private Set<Commit> buildCommitsSetFromReachableTags(ObjectId headId, List<Ref> allVersionTags, List<Ref> normals, List<Ref> lights, int maxDepth, VersionStrategy strategy) throws Exception {
+        List<Ref> reachableTags = filterReachableTags(headId, allVersionTags);
+
+        List<ObjectId> objectIds = new ArrayList<>();
+        reachableTags.stream()
+                .max((r1, r2) -> {
+                    Version v1 = strategy.versionFromTag(r1);
+                    Version v2 = strategy.versionFromTag(r2);
+
+                    return v1.compareTo(v2);
+                })
+                .map(r -> r.getPeeledObjectId() != null ? r.getPeeledObjectId() : r.getObjectId())
+                .ifPresent(objectIds::add);
+
+        Set<Commit> commits = new LinkedHashSet<>();
+
+        DistanceCalculator distanceCalculator = DistanceCalculator.create(headId, repository, maxDepth);
+        for (ObjectId id : objectIds) {
+            if (headId.getName().equals(id.getName())) {
+                commits.add(new Commit(id, 0, GitUtils.tagsOf(normals, id), GitUtils.tagsOf(lights, id)));
+            } else {
+                distanceCalculator.distanceTo(id).ifPresent(distance -> {
+                    commits.add(new Commit(id, distance, GitUtils.tagsOf(normals, id), GitUtils.tagsOf(lights, id)));
+                });
+            }
+        }
+
+        return commits;
+    }
+
+    /**
+     * Filters the given list of tags based on their reachability starting from the given commit.
+     * It returns a new non null List.
+     */
+    private List<Ref> filterReachableTags(ObjectId headId, List<Ref> allVersionTags) throws IOException {
+        List<Ref> filtered = new ArrayList<>();
+
+        try (RevWalk walk = new RevWalk(repository)) {
+            walk.markStart(walk.parseCommit(headId));
+
+            for (RevCommit revCommit : walk) {
+                ObjectId commitId = revCommit.getId();
+                Predicate<Ref> tagCorresponds = r -> commitId.getName().equals(r.getPeeledObjectId() != null ? r.getPeeledObjectId().getName() : r.getObjectId().getName());
+                allVersionTags.stream().filter(tagCorresponds).forEach(filtered::add);
+            }
+        }
+
+        return filtered;
     }
 
     /**
@@ -640,5 +702,100 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     public GitVersionCalculator setMaxDepth(int maxDepth) {
         this.maxDepth = maxDepth;
         return this;
+    }
+
+    public static void main(String[] args) {
+        Timer timer = new Timer();
+
+        try(GitVersionCalculator gvc = GitVersionCalculator.location(new File("D:\\dev\\projects\\oss\\spark"))) {
+            gvc.repository = gvc.openRepository();
+            try(Git git = new Git(gvc.repository)) {
+                timer.step("base objects built");
+
+                VersionNamingConfiguration vnc = new VersionNamingConfiguration(BranchingPolicy.ignoreBranchName("master"));
+                MavenVersionStrategy strategy = new MavenVersionStrategy(vnc, gvc.repository, git, new MetadataHolder());
+
+                List<Ref> allTags = git.tagList().call().stream().map(gvc::peel)
+                        .collect(Collectors.toCollection(ArrayList::new));
+                // let's have tags sorted from most recent to oldest
+                Collections.reverse(allTags);
+
+                timer.step("all tags collected -> " + allTags.size());
+
+                List<Ref> allVersionTags = allTags.stream()
+                        .filter(strategy::considerTagAsAVersionOne)
+                        .collect(Collectors.toCollection(ArrayList::new));
+
+                timer.step("version tags filtered -> " + allVersionTags.size());
+
+                List<Ref> normals = allVersionTags.stream().filter(GitUtils::isAnnotated).collect(Collectors.toList());
+                timer.step("normal version tags computed -> " + normals.size());
+                List<Ref> lights = allVersionTags.stream().filter(as(GitUtils::isAnnotated).negate()).collect(Collectors.toList());
+                timer.step("light version tags computed -> " + lights.size());
+
+                List<ObjectId> objectIds = new ArrayList<>(allTags.stream()
+                        .map(r -> r.getPeeledObjectId() != null ? r.getPeeledObjectId() : r.getObjectId())
+                        .collect(Collectors.toCollection(LinkedHashSet::new)));
+
+                timer.step("objectIds of tags computed -> " + lights.size());
+
+                ObjectId headId = gvc.repository.resolve("HEAD");
+                RevCommit headCommit = gvc.repository.parseCommit(headId);
+
+                List<Commit> commits = new ArrayList<>();
+
+                RevWalk walk = new RevWalk(gvc.repository);
+                objectIds.forEach(id -> {
+                    try {
+                        walk.reset();
+                        walk.markStart(headCommit);
+                        RevCommit commit = gvc.repository.parseCommit(id);
+                        walk.markUninteresting(commit);
+
+                        if (headId.getName().equals(id.getName())) {
+                            new Commit(id, 0, GitUtils.tagsOf(normals, id), GitUtils.tagsOf(lights, id));
+                        } else {
+                            int distance = sizeOf(walk.iterator());
+                            if (distance > 0) {
+                                commits.add(new Commit(id, distance, GitUtils.tagsOf(normals, id), GitUtils.tagsOf(lights, id)));
+                            }
+                        }
+
+                        commit.disposeBody();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+                timer.step("commits list computed -> " + commits.size());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        timer.step("end of program");
+    }
+
+    private static int sizeOf(Iterator<RevCommit> iterator) {
+        int size = 0;
+        RevCommit next = null;
+        while (iterator.hasNext()) {
+            size++;
+            next = iterator.next();
+        }
+        return size;
+    }
+
+    private static final class Timer {
+        private final long start;
+
+        Timer() {
+            this.start = System.currentTimeMillis();
+            System.out.println("timing started");
+        }
+
+        public void step(String stepName) {
+            long current = System.currentTimeMillis();
+            System.out.println(String.format("[%d] :: %s", current - start, stepName));
+        }
     }
 }
