@@ -75,7 +75,11 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     private String tagVersionPattern = null;
     private String versionPattern = null;
 
-    private File gitRepositoryLocation;
+    private final File gitRepositoryLocation;
+
+    private boolean computationRequired = true;
+    private Version computedVersion;
+    private String computedHeadSHA1;
 
     private final SimpleDateFormat dtfmt;
     private Pattern findTagVersionPattern = VersionNamingConfiguration.DEFAULT_FIND_TAG_VERSION_PATTERN;
@@ -109,21 +113,21 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     }
 
     /**
-     * Calculates the version to use for the current git repository depending on the HEAD position.
-     * 
-     * @return the calculated version object
+     * Computes the Version object and the associated metadatas.
+     * Store results in cache for later reuse.
      */
-    public Version getVersionObject() {
+    private void computeVersion() {
         metadatas = new MetadataHolder();
 
         try {
             this.repository = openRepository();
         } catch (Exception ex) {
-            return Version.NOT_GIT_VERSION;
+            setComputedVersion(Version.NOT_GIT_VERSION);
+            return;
         }
         try (Git git = new Git(repository)) {
             VersionStrategy strategy;
-            
+
             List<BranchingPolicy> policiesToUse = new LinkedList<>(qualifierBranchingPolicies);
             if (useDefaultBranchingPolicy) {
                 policiesToUse.add(BranchingPolicy.DEFAULT_FALLBACK);
@@ -168,8 +172,63 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
             strategy.setSearchDepthLimit(maxDepth);
             Version calculatedVersion = buildVersion(git, strategy);
 
-            return calculatedVersion;
+            setComputedVersion(calculatedVersion);
         }
+    }
+
+    /**
+     * Calculates the version to use for the current git repository depending on the HEAD position.
+     *
+     * @param forceComputation true to discard any previous cached result, false allow to reuse already cached values
+     * @return the version object computed
+     */
+    public Version getVersionObject(boolean forceComputation) {
+        if (forceComputation) {
+            computeVersion();
+        }
+        return getVersionObject();
+    }
+
+    /**
+     * Return the version to use for the current git repository depending on the HEAD position.
+     * Can return cached values if no parameters have changed since last computation.
+     * 
+     * @return the calculated version object
+     */
+    public Version getVersionObject() {
+        if (needToRecompute()) {
+            computeVersion();
+        }
+        return this.computedVersion;
+    }
+
+    private boolean needToRecompute() {
+        if (this.computationRequired || this.repository == null) {
+            return true;
+        }
+
+        try {
+            ObjectId head = repository.resolve("HEAD");
+            String actualHeadSHA1 = head != null ? head.getName() : "";
+            return  !actualHeadSHA1.equals(computedHeadSHA1);
+        } catch (IOException e) {
+            throw new IllegalStateException("failure to retrieve actual HEAD SHA1", e);
+        }
+    }
+
+    private void setComputedVersion(Version computedVersion) {
+        this.computedVersion = computedVersion;
+
+        try {
+            if (repository != null) {
+                ObjectId head = repository.resolve("HEAD");
+                this.computedHeadSHA1 = head != null ? head.getName() : "";
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("failure to retrieve current HEAD SHA1", e);
+        }
+
+        this.computationRequired = false;
     }
 
     private boolean hasPatchVersionBeenIncremented(VersionStrategy strategy, Version calculatedVersion) {
@@ -219,12 +278,25 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     }
 
     /**
-     * Calculates the version to use for the current git repository depending on the HEAD position.
+     * Return the version to use for the current git repository depending on the HEAD position.
+     * If the computation was already performed, ust return the last computed value.
      * 
      * @return a string representation of this version.
      */
     public String getVersion() {
-        return getVersionObject().toString();
+        return getVersion(false);
+    }
+
+    /**
+     * Calculates if necessary the version to use for the current git repository depending on the HEAD position.
+     *
+     * @param forceComputation true to force computation even if no computation parameters have changed,
+     *                         false to allow to retrieve the value from the last computed version.
+     *
+     * @return a string representation of this version.
+     */
+    public String getVersion(boolean forceComputation) {
+        return getVersionObject(forceComputation).toString();
     }
 
     private Version buildVersion(Git git, VersionStrategy strategy) {
@@ -538,6 +610,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
         if (policies != null) {
             this.qualifierBranchingPolicies = new LinkedList<>(policies);
         }
+        computationRequired = true;
         return this;
     }
 
@@ -550,6 +623,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
      */
     public GitVersionCalculator setUseDistance(boolean useDistance) {
         this.useDistance = useDistance;
+        computationRequired = true;
         return this;
     }
 
@@ -562,6 +636,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
      */
     public GitVersionCalculator setUseDirty(boolean useDirty) {
         this.useDirty = useDirty;
+        computationRequired = true;
         return this;
     }
 
@@ -573,6 +648,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
      */
     public GitVersionCalculator setUseLongFormat(boolean useLongFormat) {
         this.useLongFormat = useLongFormat;
+        computationRequired = true;
         return this;
     }
 
@@ -585,6 +661,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
      */
     public GitVersionCalculator setUseGitCommitId(boolean useGitCommitId) {
         this.useGitCommitId = useGitCommitId;
+        computationRequired = true;
         return this;
     }
 
@@ -597,6 +674,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
      */
     public GitVersionCalculator setUseGitCommitTimestamp(boolean useGitCommitTimestamp) {
         this.useGitCommitTimestamp = useGitCommitTimestamp;
+        computationRequired = true;
         return this;
     }
     
@@ -608,6 +686,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
      */
     public GitVersionCalculator setUseDefaultBranchingPolicy(boolean useDefaultBranchingPolicy) {
         this.useDefaultBranchingPolicy = useDefaultBranchingPolicy;
+        computationRequired = true;
         return this;
     }
     
@@ -624,6 +703,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
             throw new IllegalStateException("GitCommitIdLength must be between 8 & 40");
         }
         this.gitCommitIdLength = gitCommitIdLength;
+        computationRequired = true;
         return this;
     }
 
@@ -636,6 +716,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
      */
     public GitVersionCalculator setMavenLike(boolean mavenLike) {
         this.mavenLike = mavenLike;
+        computationRequired = true;
         return this;
     }
     
@@ -649,6 +730,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
      */
     public GitVersionCalculator setFindTagVersionPattern(String pattern) {
         this.findTagVersionPattern = Pattern.compile(pattern);
+        computationRequired = true;
         return this;
     }
 
@@ -668,6 +750,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
      */
     public GitVersionCalculator setStrategy(Strategies s) {
         this.versionStrategy = Objects.requireNonNull(s, "provided strategy cannot be null");
+        computationRequired = true;
         return this;
     }
 
@@ -679,6 +762,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
      */
     public GitVersionCalculator setTagVersionPattern(String pattern) {
         this.tagVersionPattern = pattern;
+        computationRequired = true;
         return this;
     }
 
@@ -690,6 +774,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
      */
     public GitVersionCalculator setVersionPattern(String pattern) {
         this.versionPattern = pattern;
+        computationRequired = true;
         return this;
     }
 
@@ -701,6 +786,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
      */
     public GitVersionCalculator setMaxDepth(int maxDepth) {
         this.maxDepth = maxDepth;
+        computationRequired = true;
         return this;
     }
 
