@@ -65,7 +65,7 @@
         <!-- test dependencies -->
         <junit.version>4.12</junit.version>
         <java-hamcrest.version>2.0.0.0</java-hamcrest.version>
-        <guava.version>19.0</guava.version>
+        <guava.version>27.0.1-jre</guava.version>
 
         <!-- plugins versions -->
         <ossindex-maven-plugin.version>3.0.1</ossindex-maven-plugin.version>
