@@ -17,6 +17,8 @@ package fr.brouillard.oss.jgitver;
 
 /**
  * Policies defining how jgitver will lookup version tags inside the repository.
+ *
+ * @see <a href="https://github.com/jgitver/jgitver/issues/70">issue-70</a> that introduced the requirement
  */
 public enum LookupPolicy {
     /**
