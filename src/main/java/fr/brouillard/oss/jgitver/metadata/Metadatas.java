@@ -15,10 +15,9 @@
  */
 package fr.brouillard.oss.jgitver.metadata;
 
-import fr.brouillard.oss.jgitver.GitVersionCalculator;
 
 /**
- * Enumeration of all the possible metadata that {@link GitVersionCalculator} can provide for a repository.
+ * Enumeration of all the possible metadata that {@link fr.brouillard.oss.jgitver.GitVersionCalculator} can provide for a repository.
  * 
  * @author Matthieu Brouillard
  */
