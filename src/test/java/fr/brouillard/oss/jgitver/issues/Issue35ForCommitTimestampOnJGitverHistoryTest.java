@@ -15,8 +15,8 @@
  */
 package fr.brouillard.oss.jgitver.issues;
 
-import static fr.brouillard.oss.jgitver.Lambdas.mute;
-import static fr.brouillard.oss.jgitver.Lambdas.unchecked;
+import static fr.brouillard.oss.jgitver.impl.Lambdas.mute;
+import static fr.brouillard.oss.jgitver.impl.Lambdas.unchecked;
 import static org.hamcrest.Matchers.is;
 
 import java.io.File;

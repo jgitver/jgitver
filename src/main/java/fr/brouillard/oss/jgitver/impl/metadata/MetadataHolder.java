@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.brouillard.oss.jgitver.metadata;
+package fr.brouillard.oss.jgitver.impl.metadata;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +24,9 @@ import java.util.stream.Stream;
 import org.eclipse.jgit.lib.Ref;
 
 import fr.brouillard.oss.jgitver.impl.GitUtils;
+import fr.brouillard.oss.jgitver.metadata.MetadataProvider;
+import fr.brouillard.oss.jgitver.metadata.MetadataRegistrar;
+import fr.brouillard.oss.jgitver.metadata.Metadatas;
 
 public class MetadataHolder implements MetadataProvider, MetadataRegistrar {
     private final Map<Metadatas, String> metadataValues = new HashMap<>();

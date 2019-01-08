@@ -29,7 +29,7 @@ import org.junit.*;
 
 import java.io.IOException;
 
-import static fr.brouillard.oss.jgitver.Lambdas.unchecked;
+import static fr.brouillard.oss.jgitver.impl.Lambdas.unchecked;
 
 public class Issue42Test {
     private static final String BRANCH_NAME = "my-branch";

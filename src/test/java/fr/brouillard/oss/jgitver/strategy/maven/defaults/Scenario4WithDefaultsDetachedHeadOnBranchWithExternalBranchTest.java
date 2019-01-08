@@ -15,7 +15,7 @@
  */
 package fr.brouillard.oss.jgitver.strategy.maven.defaults;
 
-import static fr.brouillard.oss.jgitver.Lambdas.unchecked;
+import static fr.brouillard.oss.jgitver.impl.Lambdas.unchecked;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;

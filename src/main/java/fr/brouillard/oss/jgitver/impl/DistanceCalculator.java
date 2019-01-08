@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.brouillard.oss.jgitver;
+package fr.brouillard.oss.jgitver.impl;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -23,7 +23,6 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.DepthWalk;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevWalk;
 
 /**
  * Allow to compute git depth, in term of commit distance between several commits.

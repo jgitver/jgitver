@@ -13,10 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.brouillard.oss.jgitver;
+package fr.brouillard.oss.jgitver.impl;
 
 import java.io.File;
 import java.io.IOException;
+
+import fr.brouillard.oss.jgitver.GitVersionCalculator;
+import fr.brouillard.oss.jgitver.GitVersionCalculatorBuilder;
 
 public class GitVersionCalculatorImplBuilder implements GitVersionCalculatorBuilder {
     public GitVersionCalculator build(File gitRepositoryLocation) throws IOException {

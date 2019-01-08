@@ -25,7 +25,6 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 
 import fr.brouillard.oss.jgitver.Version;
-import fr.brouillard.oss.jgitver.VersionCalculationException;
 import fr.brouillard.oss.jgitver.metadata.MetadataRegistrar;
 import fr.brouillard.oss.jgitver.metadata.Metadatas;
 

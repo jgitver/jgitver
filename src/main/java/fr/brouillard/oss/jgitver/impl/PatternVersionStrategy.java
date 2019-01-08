@@ -15,7 +15,6 @@
  */
 package fr.brouillard.oss.jgitver.impl;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -28,7 +27,6 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.petitparser.context.Result;
 
 import fr.brouillard.oss.jgitver.Version;
-import fr.brouillard.oss.jgitver.VersionCalculationException;
 import fr.brouillard.oss.jgitver.impl.pattern.VersionGrammarParser;
 import fr.brouillard.oss.jgitver.impl.pattern.VersionPatternGrammarDefinition;
 import fr.brouillard.oss.jgitver.metadata.MetadataProvider;

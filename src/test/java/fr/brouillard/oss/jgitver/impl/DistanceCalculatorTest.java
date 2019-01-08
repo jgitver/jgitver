@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.brouillard.oss.jgitver;
+package fr.brouillard.oss.jgitver.impl;
 
-import static fr.brouillard.oss.jgitver.Lambdas.unchecked;
+import static fr.brouillard.oss.jgitver.impl.Lambdas.unchecked;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertFalse;
@@ -26,6 +26,10 @@ import java.util.Optional;
 
 import org.eclipse.jgit.lib.ObjectId;
 import org.junit.Test;
+
+import fr.brouillard.oss.jgitver.ScenarioTest;
+import fr.brouillard.oss.jgitver.Scenarios;
+import fr.brouillard.oss.jgitver.Strategies;
 
 public class DistanceCalculatorTest extends ScenarioTest {
     public DistanceCalculatorTest() {

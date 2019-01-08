@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.brouillard.oss.jgitver;
+package fr.brouillard.oss.jgitver.impl;
 
-import static fr.brouillard.oss.jgitver.Lambdas.as;
+import static fr.brouillard.oss.jgitver.impl.Lambdas.as;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,15 +45,13 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 
+import fr.brouillard.oss.jgitver.BranchingPolicy;
 import fr.brouillard.oss.jgitver.BranchingPolicy.BranchNameTransformations;
-import fr.brouillard.oss.jgitver.impl.Commit;
-import fr.brouillard.oss.jgitver.impl.ConfigurableVersionStrategy;
-import fr.brouillard.oss.jgitver.impl.GitUtils;
-import fr.brouillard.oss.jgitver.impl.MavenVersionStrategy;
-import fr.brouillard.oss.jgitver.impl.PatternVersionStrategy;
-import fr.brouillard.oss.jgitver.impl.VersionNamingConfiguration;
-import fr.brouillard.oss.jgitver.impl.VersionStrategy;
-import fr.brouillard.oss.jgitver.metadata.MetadataHolder;
+import fr.brouillard.oss.jgitver.GitVersionCalculator;
+import fr.brouillard.oss.jgitver.LookupPolicy;
+import fr.brouillard.oss.jgitver.Strategies;
+import fr.brouillard.oss.jgitver.Version;
+import fr.brouillard.oss.jgitver.impl.metadata.MetadataHolder;
 import fr.brouillard.oss.jgitver.metadata.Metadatas;
 import fr.brouillard.oss.jgitver.metadata.TagType;
 
@@ -425,86 +423,6 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
         return filtered;
     }
 
-    /**
-     * Navigate to reachable commits, including merged branches, from the given commit
-     * and stop each time a commit with some _version_ tags is found on the currentCommit.
-     * @param currentCommitId the commit identifier to search tags on and to navigate to parents from
-     * @param depth the current depth since the HEAD
-     * @param maxDepth the maximum depth at which we stop searching
-     * @param commits the accumulator set of commits
-     * @param normals list of all annotated tags of this git repo
-     * @param lights list of all lightweight tags of this git repo
-     * @param revWalk the jgit walker able to parse commits
-     * @return the commit with minimal depth the lookup process stopped onto
-     */
-    private Commit lookupCommits(
-            final ObjectId currentCommitId,
-            final int depth,
-            final int maxDepth,
-            final Set<Commit> commits,
-            final List<Ref> normals,
-            final List<Ref> lights,
-            final RevWalk revWalk
-    ) throws IOException {
-        ObjectId id = currentCommitId;
-        int currentDepth = depth;
-
-        while (true) {
-            RevCommit currentCommit = revWalk.parseCommit(id);
-            RevCommit[] parents = currentCommit.getParents();
-
-            List<Ref> annotatedCommitTags = tagsOf(normals, id);
-            List<Ref> lightCommitTags = tagsOf(lights, id);
-
-            if (annotatedCommitTags.size() > 0 || lightCommitTags.size() > 0) {
-                // we found a commit with version tags
-                Commit c = new Commit(id, currentDepth, annotatedCommitTags, lightCommitTags);
-                commits.add(c);
-                return c;
-            }
-
-            if (parents.length == 0 || currentDepth >= maxDepth) {
-                return new Commit(currentCommit, currentDepth, Collections.emptyList(), Collections.emptyList());
-            } else if (parents.length > 1) {
-                // multiple parents, we're on a merged commmit
-                // let's recurse on the parents
-                Commit minDepthStoppedCommit = null;
-
-                for (RevCommit parent: parents) {
-                    Commit parentStoppedCommit = lookupCommits(
-                            parent.getId(),
-                            currentDepth + 1,
-                            maxDepth,
-                            commits,
-                            normals,
-                            lights,
-                            revWalk
-                    );
-                    minDepthStoppedCommit = keepNearest(minDepthStoppedCommit, parentStoppedCommit);
-                }
-                if (minDepthStoppedCommit == null) {
-                    return new Commit(currentCommit, currentDepth, Collections.emptyList(), Collections.emptyList());
-                }
-                return minDepthStoppedCommit;
-            } else {
-                // we're on a commit without version tag and have only one parent
-                // let's just loop to it
-                RevCommit parent = parents[0];
-                id = parent.getId();
-                currentDepth++;
-            }
-        }
-    }
-
-    private Commit keepNearest(Commit minDepthStoppedCommit, Commit parentStoppedCommit) {
-        if (minDepthStoppedCommit == null) {
-            return parentStoppedCommit;
-        }
-
-        return (minDepthStoppedCommit.getHeadDistance() <= parentStoppedCommit.getHeadDistance())
-            ? minDepthStoppedCommit : parentStoppedCommit;
-    }
-
     private List<Ref> tagsOf(List<Ref> tags, final ObjectId id) {
         return tags.stream().filter(ref -> id.equals(ref.getObjectId()) || id.equals(ref.getPeeledObjectId()))
                 .collect(Collectors.toList());
@@ -667,100 +585,5 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
         this.lookupPolicy = policy;
         this.computationRequired = true;
         return this;
-    }
-
-    public static void main(String[] args) {
-        Timer timer = new Timer();
-
-        try(GitVersionCalculatorImpl gvc = (GitVersionCalculatorImpl)GitVersionCalculator.location(new File("D:\\dev\\projects\\oss\\spark"))) {
-            gvc.repository = gvc.openRepository();
-            try(Git git = new Git(gvc.repository)) {
-                timer.step("base objects built");
-
-                VersionNamingConfiguration vnc = new VersionNamingConfiguration(BranchingPolicy.ignoreBranchName("master"));
-                MavenVersionStrategy strategy = new MavenVersionStrategy(vnc, gvc.repository, git, new MetadataHolder());
-
-                List<Ref> allTags = git.tagList().call().stream().map(gvc::peel)
-                        .collect(Collectors.toCollection(ArrayList::new));
-                // let's have tags sorted from most recent to oldest
-                Collections.reverse(allTags);
-
-                timer.step("all tags collected -> " + allTags.size());
-
-                List<Ref> allVersionTags = allTags.stream()
-                        .filter(strategy::considerTagAsAVersionOne)
-                        .collect(Collectors.toCollection(ArrayList::new));
-
-                timer.step("version tags filtered -> " + allVersionTags.size());
-
-                List<Ref> normals = allVersionTags.stream().filter(GitUtils::isAnnotated).collect(Collectors.toList());
-                timer.step("normal version tags computed -> " + normals.size());
-                List<Ref> lights = allVersionTags.stream().filter(as(GitUtils::isAnnotated).negate()).collect(Collectors.toList());
-                timer.step("light version tags computed -> " + lights.size());
-
-                List<ObjectId> objectIds = new ArrayList<>(allTags.stream()
-                        .map(r -> r.getPeeledObjectId() != null ? r.getPeeledObjectId() : r.getObjectId())
-                        .collect(Collectors.toCollection(LinkedHashSet::new)));
-
-                timer.step("objectIds of tags computed -> " + lights.size());
-
-                ObjectId headId = gvc.repository.resolve("HEAD");
-                RevCommit headCommit = gvc.repository.parseCommit(headId);
-
-                List<Commit> commits = new ArrayList<>();
-
-                RevWalk walk = new RevWalk(gvc.repository);
-                objectIds.forEach(id -> {
-                    try {
-                        walk.reset();
-                        walk.markStart(headCommit);
-                        RevCommit commit = gvc.repository.parseCommit(id);
-                        walk.markUninteresting(commit);
-
-                        if (headId.getName().equals(id.getName())) {
-                            new Commit(id, 0, GitUtils.tagsOf(normals, id), GitUtils.tagsOf(lights, id));
-                        } else {
-                            int distance = sizeOf(walk.iterator());
-                            if (distance > 0) {
-                                commits.add(new Commit(id, distance, GitUtils.tagsOf(normals, id), GitUtils.tagsOf(lights, id)));
-                            }
-                        }
-
-                        commit.disposeBody();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                });
-                timer.step("commits list computed -> " + commits.size());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        timer.step("end of program");
-    }
-
-    private static int sizeOf(Iterator<RevCommit> iterator) {
-        int size = 0;
-        RevCommit next = null;
-        while (iterator.hasNext()) {
-            size++;
-            next = iterator.next();
-        }
-        return size;
-    }
-
-    private static final class Timer {
-        private final long start;
-
-        Timer() {
-            this.start = System.currentTimeMillis();
-            System.out.println("timing started");
-        }
-
-        public void step(String stepName) {
-            long current = System.currentTimeMillis();
-            System.out.println(String.format("[%d] :: %s", current - start, stepName));
-        }
     }
 }

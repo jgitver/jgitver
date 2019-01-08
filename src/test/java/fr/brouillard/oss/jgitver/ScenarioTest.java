@@ -16,8 +16,8 @@
  */
 package fr.brouillard.oss.jgitver;
 
-import static fr.brouillard.oss.jgitver.Lambdas.mute;
-import static fr.brouillard.oss.jgitver.Lambdas.unchecked;
+import static fr.brouillard.oss.jgitver.impl.Lambdas.mute;
+import static fr.brouillard.oss.jgitver.impl.Lambdas.unchecked;
 
 import java.io.IOException;
 import java.util.function.Consumer;
@@ -30,8 +30,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 
-import fr.brouillard.oss.jgitver.GitVersionCalculator;
-import fr.brouillard.oss.jgitver.Misc;
 import fr.brouillard.oss.jgitver.Scenarios.Scenario;
 
 public class ScenarioTest {
