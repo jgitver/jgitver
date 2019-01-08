@@ -23,6 +23,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -74,6 +76,7 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     private Strategies versionStrategy = null;
     private String tagVersionPattern = null;
     private String versionPattern = null;
+    private LookupPolicy lookupPolicy = LookupPolicy.MAX;
 
     private final File gitRepositoryLocation;
 
@@ -403,31 +406,44 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     private Set<Commit> buildCommitsSetFromReachableTags(ObjectId headId, List<Ref> allVersionTags, List<Ref> normals, List<Ref> lights, int maxDepth, VersionStrategy strategy) throws Exception {
         List<Ref> reachableTags = filterReachableTags(headId, allVersionTags);
 
-        List<ObjectId> objectIds = new ArrayList<>();
-        reachableTags.stream()
-                .max((r1, r2) -> {
+        if (reachableTags.isEmpty()) {
+            return new HashSet<>();
+        }
+
+        ObjectId baseCommitId = findBaseCommitId(reachableTags, lookupPolicy, strategy);
+        Set<Commit> commits = new LinkedHashSet<>();
+
+        DistanceCalculator distanceCalculator = DistanceCalculator.create(headId, repository, maxDepth);
+        if (headId.getName().equals(baseCommitId.getName())) {
+            commits.add(new Commit(baseCommitId, 0, GitUtils.tagsOf(normals, baseCommitId), GitUtils.tagsOf(lights, baseCommitId)));
+        } else {
+            distanceCalculator.distanceTo(baseCommitId).ifPresent(distance -> {
+                commits.add(new Commit(baseCommitId, distance, GitUtils.tagsOf(normals, baseCommitId), GitUtils.tagsOf(lights, baseCommitId)));
+            });
+        }
+
+        return commits;
+    }
+
+    private ObjectId findBaseCommitId(List<Ref> reachableTags, LookupPolicy lookupPolicy, VersionStrategy strategy) {
+        switch (lookupPolicy) {
+            case MAX:
+                Comparator<Ref> versionTagComparator = (r1, r2) -> {
                     Version v1 = strategy.versionFromTag(r1);
                     Version v2 = strategy.versionFromTag(r2);
 
                     return v1.compareTo(v2);
-                })
-                .map(r -> r.getPeeledObjectId() != null ? r.getPeeledObjectId() : r.getObjectId())
-                .ifPresent(objectIds::add);
+                };
 
-        Set<Commit> commits = new LinkedHashSet<>();
-
-        DistanceCalculator distanceCalculator = DistanceCalculator.create(headId, repository, maxDepth);
-        for (ObjectId id : objectIds) {
-            if (headId.getName().equals(id.getName())) {
-                commits.add(new Commit(id, 0, GitUtils.tagsOf(normals, id), GitUtils.tagsOf(lights, id)));
-            } else {
-                distanceCalculator.distanceTo(id).ifPresent(distance -> {
-                    commits.add(new Commit(id, distance, GitUtils.tagsOf(normals, id), GitUtils.tagsOf(lights, id)));
-                });
-            }
+                return reachableTags.stream()
+                        .max(versionTagComparator)
+                        .map(r -> r.getPeeledObjectId() != null ? r.getPeeledObjectId() : r.getObjectId())
+                        .orElseThrow(() -> new IllegalStateException(String.format("could not find max version tag")));
+            case LATEST:
+            case NEAREST:
+            default:
+                throw new IllegalStateException(String.format("[%s] lookup policy is not implmented", lookupPolicy));
         }
-
-        return commits;
     }
 
     /**
@@ -787,6 +803,18 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
     public GitVersionCalculator setMaxDepth(int maxDepth) {
         this.maxDepth = maxDepth;
         computationRequired = true;
+        return this;
+    }
+
+    /**
+     * Defines the {@link LookupPolicy} to be used for the next version resolution.
+     * @param policy the policy kind, cannot be null
+     * @return itself to chain settings
+     * @since 0.10.0
+     */
+    public GitVersionCalculator setLookupPolicy(LookupPolicy policy) {
+        this.lookupPolicy = policy;
+        this.computationRequired = true;
         return this;
     }
 
