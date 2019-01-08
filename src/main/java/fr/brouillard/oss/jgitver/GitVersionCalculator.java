@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -364,15 +363,15 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
             
             Commit head = new Commit(rootId, 0, tagsOf(normals, rootId), tagsOf(lights, rootId));
             
-            Set<Commit> commits = buildCommitsSetFromReachableTags(rootId, allVersionTags, normals, lights, maxDepth, strategy);
+            Commit baseCommit = findBaseCommitFromReachableTags(rootId, allVersionTags, normals, lights, maxDepth, strategy);
 
-            if (commits.size() == 0) {
+            if (baseCommit == null) {
                 // it looks like not reachable commits from version tags were found
                 // as we need at least one commit, let's find the deepest we can
-                commits.add(deepestReachableCommit(rootId, maxDepth));
+                baseCommit = deepestReachableCommit(rootId, maxDepth);
             }
 
-            Version calculatedVersion = strategy.build(head, new ArrayList<>(commits));
+            Version calculatedVersion = strategy.build(head, Collections.singletonList(baseCommit));
             metadatas.registerMetadata(Metadatas.CALCULATED_VERSION, calculatedVersion.toString());
 
             // Calculated version could have the patch already incremented under conditions
@@ -403,11 +402,11 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
         }
     }
 
-    private Set<Commit> buildCommitsSetFromReachableTags(ObjectId headId, List<Ref> allVersionTags, List<Ref> normals, List<Ref> lights, int maxDepth, VersionStrategy strategy) throws Exception {
+    private Commit findBaseCommitFromReachableTags(ObjectId headId, List<Ref> allVersionTags, List<Ref> normals, List<Ref> lights, int maxDepth, VersionStrategy strategy) throws Exception {
         List<Ref> reachableTags = filterReachableTags(headId, allVersionTags);
 
         if (reachableTags.isEmpty()) {
-            return new HashSet<>();
+            return null;
         }
 
         ObjectId baseCommitId = findBaseCommitId(reachableTags, lookupPolicy, strategy);
@@ -415,14 +414,13 @@ public class GitVersionCalculator implements AutoCloseable, MetadataProvider {
 
         DistanceCalculator distanceCalculator = DistanceCalculator.create(headId, repository, maxDepth);
         if (headId.getName().equals(baseCommitId.getName())) {
-            commits.add(new Commit(baseCommitId, 0, GitUtils.tagsOf(normals, baseCommitId), GitUtils.tagsOf(lights, baseCommitId)));
+            return new Commit(baseCommitId, 0, GitUtils.tagsOf(normals, baseCommitId), GitUtils.tagsOf(lights, baseCommitId));
         } else {
-            distanceCalculator.distanceTo(baseCommitId).ifPresent(distance -> {
-                commits.add(new Commit(baseCommitId, distance, GitUtils.tagsOf(normals, baseCommitId), GitUtils.tagsOf(lights, baseCommitId)));
-            });
+            return distanceCalculator.distanceTo(baseCommitId)
+                    .map(distance ->
+                        new Commit(baseCommitId, distance, GitUtils.tagsOf(normals, baseCommitId), GitUtils.tagsOf(lights, baseCommitId))
+                    ).orElse(null);
         }
-
-        return commits;
     }
 
     private ObjectId findBaseCommitId(List<Ref> reachableTags, LookupPolicy lookupPolicy, VersionStrategy strategy) {
