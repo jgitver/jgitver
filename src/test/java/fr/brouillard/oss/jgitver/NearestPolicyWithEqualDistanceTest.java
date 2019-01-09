@@ -21,13 +21,15 @@ import static org.junit.Assert.assertThat;
 
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.jgit.api.MergeCommand;
 import org.junit.Test;
 
-public class LookupPolicyTest extends ScenarioTest {
-    public LookupPolicyTest() {
-        super(LookupPolicyTest::buildScenario, calculator -> {
+public class NearestPolicyWithEqualDistanceTest extends ScenarioTest {
+    public NearestPolicyWithEqualDistanceTest() {
+        super(NearestPolicyWithEqualDistanceTest::buildScenario, calculator -> {
             calculator.setLookupPolicy(LookupPolicy.LATEST)
                     .setAutoIncrementPatch(false)
+                    .setUseDistance(true)
                     .setStrategy(Strategies.CONFIGURABLE);
         });
     }
@@ -35,11 +37,13 @@ public class LookupPolicyTest extends ScenarioTest {
     /**
      * Builds the following repository.
      * <pre>
-     * * ef035fb - (HEAD -> master) content D (18 seconds ago) <Matthieu Brouillard>
-     * * 4aca435 - (tag: 1.0) content C (18 seconds ago) <Matthieu Brouillard>
-     * * 5d24c4e - (tag: 2.0) content B (18 seconds ago) <Matthieu Brouillard>
-     * * 582f1f7 - (tag: 3.0) content A (18 seconds ago) <Matthieu Brouillard>
- *     </pre>
+     * *   600a017 - (HEAD -> master) D :: merge C into B (17 seconds ago) <Matthieu Brouillard>
+     * |\
+     * | * eea9071 - (tag: 2.0, br) content C (17 seconds ago) <Matthieu Brouillard>
+     * |/
+     * * f57604c - (tag: 1.0) content B (17 seconds ago) <Matthieu Brouillard>
+     * * 0cece48 - content A (17 seconds ago) <Matthieu Brouillard>
+     * </pre>
      * @return the built scenario
      */
     private static Scenarios.Scenario buildScenario() {
@@ -47,34 +51,24 @@ public class LookupPolicyTest extends ScenarioTest {
 
         builder.commit("content", "A")
                 .commit("content", "B")
+                .branchOnAppId("br", "B")
                 .commit("content", "C")
-                .commit("content", "D");
+                .master()
+                .merge("C", "D", MergeCommand.FastForwardMode.NO_FF);
 
-        builder.tag("1.0", "C");
-        builder.tag("3.0", "A");
+        builder.tag("1.0", "B");
 
         // wait 2 seconds
         mute(() -> Thread.sleep(TimeUnit.SECONDS.toMillis(2)));
 
-        builder.tag("2.0", "B");
+        builder.tag("2.0", "C");
 
         return builder.getScenario();
     }
 
     @Test
-    public void latest_policy_took_most_recent_tag_by_date_of_tag() {
-        assertThat(versionCalculator.getVersion(), is("2.0.0-2"));
-    }
-
-    @Test
-    public void max_policy_takes_max_tag_by_date_of_tag() {
-        versionCalculator.setLookupPolicy(LookupPolicy.MAX);
-        assertThat(versionCalculator.getVersion(), is("3.0.0-3"));
-    }
-
-    @Test
-    public void nearest_policy_takes_tag_at_minimum_depth() {
+    public void nearest_policy_takes_mos_recent_tag_for_tags_at_equal_distance() {
         versionCalculator.setLookupPolicy(LookupPolicy.NEAREST);
-        assertThat(versionCalculator.getVersion(), is("1.0.0-1"));
+        assertThat(versionCalculator.getVersion(), is("2.0.0-1"));
     }
 }

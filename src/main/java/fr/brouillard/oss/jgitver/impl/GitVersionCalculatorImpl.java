@@ -30,6 +30,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -370,7 +371,7 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
             return null;
         }
 
-        ObjectId baseCommitId = findBaseCommitId(reachableTags, lookupPolicy, strategy);
+        ObjectId baseCommitId = findBaseCommitId(headId, reachableTags, lookupPolicy, strategy);
         Set<Commit> commits = new LinkedHashSet<>();
 
         DistanceCalculator distanceCalculator = DistanceCalculator.create(headId, repository, maxDepth);
@@ -384,7 +385,7 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
         }
     }
 
-    private ObjectId findBaseCommitId(List<Ref> reachableTags, LookupPolicy lookupPolicy, VersionStrategy strategy) {
+    private ObjectId findBaseCommitId(ObjectId headId, List<Ref> reachableTags, LookupPolicy lookupPolicy, VersionStrategy strategy) {
         Function<Ref, ObjectId> refToObjectIdFunction = r -> r.getPeeledObjectId() != null ? r.getPeeledObjectId() : r.getObjectId();
 
         switch (lookupPolicy) {
@@ -401,17 +402,35 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
                         .map(refToObjectIdFunction)
                         .orElseThrow(() -> new IllegalStateException(String.format("could not find max version tag")));
             case LATEST:
-                try (TagDateExtractor dateExtractor = new TagDateExtractor(repository)) {
-                    return reachableTags.stream()
-                            .map(r -> new Pair(r, dateExtractor.dateOfRef(r)))
-                            .max(Comparator.comparing(p -> ((Date) p.getRight())))
-                            .map(p -> (Ref)p.getLeft())
-                            .map(refToObjectIdFunction)
-                            .orElseThrow(() -> new IllegalStateException(String.format("could not find most recent tag")));
-                }
+                return latestObjectIdOfTags(reachableTags, refToObjectIdFunction);
             case NEAREST:
+                DistanceCalculator dc = DistanceCalculator.create(headId, repository);
+
+                Map<Integer, List<Ref>> tagsByDistance = reachableTags.stream()
+                        .collect(Collectors.groupingBy(r -> dc.distanceTo(refToObjectIdFunction.apply(r)).get()));
+
+                Integer minimumDistance = Collections.min(tagsByDistance.keySet());
+                List<Ref> tagsAtMinimumDistance = tagsByDistance.get(minimumDistance);
+
+                if (tagsAtMinimumDistance.size() == 1) {
+                    return refToObjectIdFunction.apply(tagsAtMinimumDistance.get(0));
+                } else {
+                    // we take the most recent one among those at the same distance
+                    return latestObjectIdOfTags(tagsAtMinimumDistance, refToObjectIdFunction);
+                }
             default:
                 throw new IllegalStateException(String.format("[%s] lookup policy is not implmented", lookupPolicy));
+        }
+    }
+
+    private ObjectId latestObjectIdOfTags(List<Ref> reachableTags, Function<Ref, ObjectId> refToObjectIdFunction) {
+        try (TagDateExtractor dateExtractor = new TagDateExtractor(repository)) {
+            return reachableTags.stream()
+                    .map(r -> new Pair(r, dateExtractor.dateOfRef(r)))
+                    .max(Comparator.comparing(p -> ((Date) p.getRight())))
+                    .map(p -> (Ref) p.getLeft())
+                    .map(refToObjectIdFunction)
+                    .orElseThrow(() -> new IllegalStateException(String.format("could not find most recent tag")));
         }
     }
 

@@ -24,6 +24,7 @@ import java.util.function.Predicate;
 
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.TagCommand;
 import org.eclipse.jgit.lib.Constants;
@@ -693,17 +694,19 @@ public class Scenarios {
         }
 
         /**
-         * Merges commit with id given as parameter with current branch..
+         * Merges commit with id given as parameter with current branch using given FastForwardMode.
          * @param sourceId the application identifier to use as merge source
          * @param id the application identifier to use to store the git commitID of merge commit
+         * @param mode the non null fast forward strategy to use for the merge
          * @return the builder itself to continue building the scenario
          */
-        public ScenarioBuilder merge(String sourceId, String id) {
+        public ScenarioBuilder merge(String sourceId, String id, MergeCommand.FastForwardMode mode) {
             try {
                 ObjectId other = scenario.getCommits().get(sourceId);
                 ObjectId head = repository.resolve(Constants.HEAD);
                 String nameOfHead = scenario.nameOf(head);
                 MergeResult rc = git.merge()
+                        .setFastForward(mode)
                         .setMessage(String.format("%s :: merge %s into %s", id, sourceId, nameOfHead))
                         .include(other)
                         .call();
@@ -712,6 +715,16 @@ public class Scenarios {
                 throw new IllegalStateException(String.format("error merging %s", id), ex);
             }
             return this;
+        }
+
+        /**
+         * Merges commit with id given as parameter with current branch. Tries a fast forward merge.
+         * @param sourceId the application identifier to use as merge source
+         * @param id the application identifier to use to store the git commitID of merge commit
+         * @return the builder itself to continue building the scenario
+         */
+        public ScenarioBuilder merge(String sourceId, String id) {
+            return merge(sourceId, id, MergeCommand.FastForwardMode.FF);
         }
 
         public Scenario getScenario() {
