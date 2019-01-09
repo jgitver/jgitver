@@ -22,12 +22,15 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import fr.brouillard.oss.jgitver.GitVersionCalculator;
 import fr.brouillard.oss.jgitver.ScenarioTest;
 import fr.brouillard.oss.jgitver.Scenarios;
 import fr.brouillard.oss.jgitver.Strategies;
+import fr.brouillard.oss.jgitver.categories.SlowTests;
 
+@Category(SlowTests.class)
 public class NoTagsBigRepositoryTest extends ScenarioTest {
     private static int NB_COMMITS = 2500;
 

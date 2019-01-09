@@ -19,11 +19,14 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import fr.brouillard.oss.jgitver.ScenarioTest;
 import fr.brouillard.oss.jgitver.Scenarios;
 import fr.brouillard.oss.jgitver.Strategies;
+import fr.brouillard.oss.jgitver.categories.SlowTests;
 
+@Category(SlowTests.class)
 public class BigRepositoryWithMultiBranchesTest extends ScenarioTest {
     private static int NB_COMMITS_PER_BRANCH = 2500;
 

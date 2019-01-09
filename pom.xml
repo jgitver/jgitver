@@ -76,6 +76,7 @@
         <maven-jar-plugin.version>2.3.2</maven-jar-plugin.version>
         <maven-failsafe-plugin.version>2.22.0</maven-failsafe-plugin.version>
         <maven-antrun-plugin.version>1.8</maven-antrun-plugin.version>
+        <maven-surefire-plugin.version>2.12.4</maven-surefire-plugin.version>
     </properties>
 
     <developers>
@@ -247,6 +248,26 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>quick-tests</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <excludedGroups>fr.brouillard.oss.jgitver.categories.SlowTests</excludedGroups>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>${maven-failsafe-plugin.version}</version>
                 <executions>
@@ -303,6 +324,11 @@
                     <groupId>org.sonatype.ossindex.maven</groupId>
                     <artifactId>ossindex-maven-plugin</artifactId>
                     <version>${ossindex-maven-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven-surefire-plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -404,6 +430,21 @@
                                 <goals>
                                     <goal>audit</goal>
                                 </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>slow-tests</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <groups>fr.brouillard.oss.jgitver.categories.SlowTests</groups>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
