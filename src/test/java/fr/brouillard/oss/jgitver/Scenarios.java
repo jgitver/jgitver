@@ -25,6 +25,7 @@ import java.util.function.Predicate;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeResult;
+import org.eclipse.jgit.api.TagCommand;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
@@ -610,6 +611,16 @@ public class Scenarios {
         }
 
         /**
+         * Creates a normal/annotated tag on the git commit corresponding to the given application commit id.
+         * @param tagName the name of the normal/annotated tag
+         * @param id the application ID to retrieve the git commit from
+         * @return the builder itself to continue building the scenario
+         */
+        public ScenarioBuilder tag(String tagName, String id) {
+            return tag(tagName, false, id);
+        }
+
+        /**
          * Creates a normal/annotated tag at the current HEAD.
          * @param tagName the name of the normal/annotated tag
          * @return the builder itself to continue building the scenario
@@ -618,13 +629,37 @@ public class Scenarios {
             return tag(tagName, false);
         }
 
-        private ScenarioBuilder tag(String tagName, boolean light) {
+        private ScenarioBuilder tag(String tagName, boolean light, String id) {
             try {
-                git.tag().setName(tagName).setAnnotated(!light).call();
+                TagCommand tagCommand = git.tag().setName(tagName).setAnnotated(!light);
+
+                if (id != null) {   // we do not tag on HEAD
+                    String commitId = scenario.getCommits().get(id).name();
+                    ObjectId objectId = repository.resolve(commitId);
+                    RevCommit commit = repository.parseCommit(objectId);
+                    tagCommand.setObjectId(commit);
+                }
+
+                tagCommand.call();
             } catch (Exception ex) {
                 throw new IllegalStateException(String.format("cannot add tag: %s, lightweight[%s]", tagName, light), ex);
             }
+
             return this;
+        }
+
+        private ScenarioBuilder tag(String tagName, boolean light) {
+            return tag(tagName, light, null);
+        }
+
+        /**
+         * Creates a light tag on the git commit corresponding to the given application commit id.
+         * @param tagName the name of the light tag
+         * @param id the application ID to retrieve the git commit from
+         * @return the builder itself to continue building the scenario
+         */
+        public ScenarioBuilder tagLight(String tagName, String id) {
+            return tag(tagName, true, id);
         }
 
         /**

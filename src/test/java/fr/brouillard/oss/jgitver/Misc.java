@@ -16,6 +16,9 @@
 package fr.brouillard.oss.jgitver;
 
 import java.io.File;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.concurrent.TimeUnit;
 
 public class Misc {
     public static boolean isDebugMode() {

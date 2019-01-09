@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -32,6 +33,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -383,6 +385,8 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
     }
 
     private ObjectId findBaseCommitId(List<Ref> reachableTags, LookupPolicy lookupPolicy, VersionStrategy strategy) {
+        Function<Ref, ObjectId> refToObjectIdFunction = r -> r.getPeeledObjectId() != null ? r.getPeeledObjectId() : r.getObjectId();
+
         switch (lookupPolicy) {
             case MAX:
                 Comparator<Ref> versionTagComparator = (r1, r2) -> {
@@ -394,9 +398,17 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
 
                 return reachableTags.stream()
                         .max(versionTagComparator)
-                        .map(r -> r.getPeeledObjectId() != null ? r.getPeeledObjectId() : r.getObjectId())
+                        .map(refToObjectIdFunction)
                         .orElseThrow(() -> new IllegalStateException(String.format("could not find max version tag")));
             case LATEST:
+                try (TagDateExtractor dateExtractor = new TagDateExtractor(repository)) {
+                    return reachableTags.stream()
+                            .map(r -> new Pair(r, dateExtractor.dateOfRef(r)))
+                            .max(Comparator.comparing(p -> ((Date) p.getRight())))
+                            .map(p -> (Ref)p.getLeft())
+                            .map(refToObjectIdFunction)
+                            .orElseThrow(() -> new IllegalStateException(String.format("could not find most recent tag")));
+                }
             case NEAREST:
             default:
                 throw new IllegalStateException(String.format("[%s] lookup policy is not implmented", lookupPolicy));
@@ -586,4 +598,5 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
         this.computationRequired = true;
         return this;
     }
+
 }
