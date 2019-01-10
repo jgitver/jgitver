@@ -59,7 +59,12 @@ public class NoTagsBigRepositoryTest extends ScenarioTest {
                     .getScenario();
         } finally {
             long end = System.currentTimeMillis();
-            System.out.printf("building big scenario with %d commits took %dms%n", NB_COMMITS, end - start);
+            System.out.printf(
+                    "building big scenario %s with %d commits took %dms%n",
+                    NoTagsBigRepositoryTest.class.getName(),
+                    NB_COMMITS,
+                    end - start
+            );
         }
     }
 
