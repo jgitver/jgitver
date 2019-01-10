@@ -18,14 +18,14 @@ package fr.brouillard.oss.jgitver.impl;
 import static fr.brouillard.oss.jgitver.impl.Lambdas.unchecked;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Optional;
 
 import org.eclipse.jgit.lib.ObjectId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import fr.brouillard.oss.jgitver.ScenarioTest;
 import fr.brouillard.oss.jgitver.Scenarios;
@@ -47,7 +47,7 @@ public class DistanceCalculatorTest extends ScenarioTest {
         Optional<Integer> distanceTo = distanceCalculator.distanceTo(headId);
 
         assertThat("distance to head should always return a value", distanceTo, notNullValue());
-        assertTrue("distance to head should always return a non empty value", distanceTo.isPresent());
+        assertTrue(distanceTo.isPresent(), "distance to head should always return a non empty value");
         assertThat(distanceTo.get(), is(0));
     }
 
@@ -62,7 +62,7 @@ public class DistanceCalculatorTest extends ScenarioTest {
         Optional<Integer> distanceTo = distanceCalculator.distanceTo(gCommit);
 
         assertThat("distance to head should always return a value", distanceTo, notNullValue());
-        assertFalse("distance to unreachable commit should be empty", distanceTo.isPresent());
+        assertFalse(distanceTo.isPresent(), "distance to unreachable commit should be empty");
     }
 
     @Test

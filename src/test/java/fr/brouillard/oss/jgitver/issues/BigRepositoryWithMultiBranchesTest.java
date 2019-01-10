@@ -16,17 +16,17 @@
 package fr.brouillard.oss.jgitver.issues;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import fr.brouillard.oss.jgitver.ScenarioTest;
 import fr.brouillard.oss.jgitver.Scenarios;
 import fr.brouillard.oss.jgitver.Strategies;
-import fr.brouillard.oss.jgitver.categories.SlowTests;
+import fr.brouillard.oss.jgitver.TestsTypes;
 
-@Category(SlowTests.class)
+@Tag(TestsTypes.SLOW)
 public class BigRepositoryWithMultiBranchesTest extends ScenarioTest {
     private static int NB_COMMITS_PER_BRANCH = 2500;
 

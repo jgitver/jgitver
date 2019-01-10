@@ -16,21 +16,21 @@
 package fr.brouillard.oss.jgitver.issues;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import fr.brouillard.oss.jgitver.GitVersionCalculator;
 import fr.brouillard.oss.jgitver.ScenarioTest;
 import fr.brouillard.oss.jgitver.Scenarios;
 import fr.brouillard.oss.jgitver.Strategies;
-import fr.brouillard.oss.jgitver.categories.SlowTests;
+import fr.brouillard.oss.jgitver.TestsTypes;
 
-@Category(SlowTests.class)
+@Tag(TestsTypes.SLOW)
 public class NoTagsBigRepositoryTest extends ScenarioTest {
     private static int NB_COMMITS = 2500;
 
@@ -61,7 +61,7 @@ public class NoTagsBigRepositoryTest extends ScenarioTest {
             long end = System.currentTimeMillis();
             System.out.printf(
                     "building big scenario %s with %d commits took %dms%n",
-                    NoTagsBigRepositoryTest.class.getName(),
+                    NoTagsBigRepositoryTest.class.getSimpleName(),
                     NB_COMMITS,
                     end - start
             );

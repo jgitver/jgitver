@@ -17,11 +17,11 @@ package fr.brouillard.oss.jgitver;
 
 import static fr.brouillard.oss.jgitver.impl.Lambdas.mute;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class LookupPolicyTest extends ScenarioTest {
     public LookupPolicyTest() {

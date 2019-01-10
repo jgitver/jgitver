@@ -17,14 +17,14 @@ package fr.brouillard.oss.jgitver.strategy.maven.defaults;
 
 import static fr.brouillard.oss.jgitver.impl.Lambdas.unchecked;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
 import org.eclipse.jgit.lib.ObjectId;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import fr.brouillard.oss.jgitver.Scenarios;
 import fr.brouillard.oss.jgitver.Strategies;
@@ -44,7 +44,7 @@ public class Scenario4WithDefaultsDetachedHeadOnBranchWithExternalBranchTest ext
      * 
      * @throws IOException if a disk error occurred
      */
-    @Before
+    @BeforeEach
     public void init() throws IOException {
         // reset the head to commit "G"
         ObjectId gCommit = scenario.getCommits().get("G");

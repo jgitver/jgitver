@@ -17,7 +17,7 @@ package fr.brouillard.oss.jgitver;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.IOException;
 import java.net.URL;
@@ -25,7 +25,7 @@ import java.util.Enumeration;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * This integration test class aim is to check generated MANIFEST.MF entries

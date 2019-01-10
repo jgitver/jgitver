@@ -15,10 +15,11 @@
  */
 package fr.brouillard.oss.jgitver.impl;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.function.Function;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class LambdasTests {
     static class IllegalLengthStringException extends Exception{
@@ -59,11 +60,11 @@ public class LambdasTests {
         try {
             upperCase.apply(str5);
             upperCase.apply(str4);
-            Assert.fail("should have thrown an exception");
+            fail("should have thrown an exception");
         } catch (RuntimeException expected) {
             System.out.println("it is what we expected");
         } catch (Exception re) {
-            Assert.fail("should not receive a checked exception: " + re.getClass().getName());
+            fail("should not receive a checked exception: " + re.getClass().getName());
         }
     }
 
@@ -75,11 +76,11 @@ public class LambdasTests {
         try {
             Lambdas.unchecked(() -> ensureInputIs4CharsLong(str5));
             Lambdas.unchecked(() -> ensureInputIs4CharsLong(str4));
-            Assert.fail("should have thrown an exception");
+            fail("should have thrown an exception");
         } catch (RuntimeException expected) {
             System.out.println("it is what we expected");
         } catch (Exception re) {
-            Assert.fail("should not receive a checked exception: " + re.getClass().getName());
+            fail("should not receive a checked exception: " + re.getClass().getName());
         }
     }
 }

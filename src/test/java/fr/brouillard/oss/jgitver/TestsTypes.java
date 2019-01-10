@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.brouillard.oss.jgitver.categories;
+package fr.brouillard.oss.jgitver;
 
-public interface SlowTests {
+public interface TestsTypes {
+    public final static String SLOW = "slow";
 }

@@ -17,14 +17,14 @@ package fr.brouillard.oss.jgitver.strategy.configurable.defaults;
 
 import static fr.brouillard.oss.jgitver.impl.Lambdas.unchecked;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.File;
 import java.io.IOException;
 
 import org.eclipse.jgit.lib.ObjectId;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import fr.brouillard.oss.jgitver.Scenarios;
 import fr.brouillard.oss.jgitver.Strategies;
@@ -71,7 +71,7 @@ public class Scenario12WithDefaultsTest extends ScenarioTest {
         assertThat(versionCalculator.getVersion(), is("1.0.0-rc01"));
     }
     
-    @Test @Ignore
+    @Test @Disabled
     public void version_of_D_commit() {
         ObjectId dCommit = scenario.getCommits().get("D");
         
@@ -89,7 +89,7 @@ public class Scenario12WithDefaultsTest extends ScenarioTest {
         assertThat(versionCalculator.getVersion(), is("1.0.0-rc02"));
     }
     
-    @Test @Ignore
+    @Test @Disabled
     public void version_of_F_commit() {
         ObjectId fCommit = scenario.getCommits().get("F");
         

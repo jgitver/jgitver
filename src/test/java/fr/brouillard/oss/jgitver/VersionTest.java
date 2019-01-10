@@ -19,15 +19,15 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class VersionTest {
 
@@ -39,7 +39,7 @@ public class VersionTest {
         assertThat(v.getMinor(), is(0));
         assertThat(v.getPatch(), is(0));
 
-        assertFalse("no qualifiers expected", v.isQualified());
+        assertFalse(v.isQualified(), "no qualifiers expected");
     }
 
     @Test
@@ -50,7 +50,7 @@ public class VersionTest {
         assertThat(v.getMinor(), is(2));
         assertThat(v.getPatch(), is(0));
 
-        assertFalse("no qualifiers expected", v.isQualified());
+        assertFalse(v.isQualified(), "no qualifiers expected");
     }
 
     @Test
@@ -61,7 +61,7 @@ public class VersionTest {
         assertThat(v.getMinor(), is(5));
         assertThat(v.getPatch(), is(6));
 
-        assertFalse("no qualifiers expected", v.isQualified());
+        assertFalse(v.isQualified(), "no qualifiers expected");
     }
 
     @Test
@@ -73,7 +73,7 @@ public class VersionTest {
         assertThat(v.getMinor(), is(0));
         assertThat(v.getPatch(), is(0));
 
-        assertTrue("version should be qualified", v.isQualified());
+        assertTrue(v.isQualified(), "version should be qualified");
         assertThat(v.toString(), is(versionToParse));
     }
 
@@ -172,7 +172,7 @@ public class VersionTest {
                 Version cmpVersion = Version.parse(versions.get(j));
 
                 boolean isLower = versionComparator.compare(baseVersion, cmpVersion) < 0;
-                assertTrue(String.format("%s should be lower than %s", baseVersion, cmpVersion), isLower);
+                assertTrue(isLower, String.format("%s should be lower than %s", baseVersion, cmpVersion));
             }
         }
     }

@@ -15,13 +15,14 @@
  */
 package fr.brouillard.oss.jgitver.issues;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import java.util.Arrays;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import fr.brouillard.oss.jgitver.BranchingPolicy;
 import fr.brouillard.oss.jgitver.GitVersionCalculator;
@@ -34,7 +35,7 @@ public class Issue23Test {
     private static final String BASE_TAG = "1.0.0";
     private Scenario s;
 
-    @Before
+    @BeforeEach
     public void init_scenario() {
         s = new ScenarioBuilder()
                 .commit("content", "A")
@@ -61,10 +62,10 @@ public class Issue23Test {
         gvc.setUseDefaultBranchingPolicy(false);
         gvc.setQualifierBranchingPolicies(new BranchingPolicy("(.*)", Arrays.asList("IDENTITY")));
 
-        Assert.assertThat(gvc.getVersion(), CoreMatchers.is(BASE_TAG + "-" + BRANCH_NAME));
+        assertThat(gvc.getVersion(), CoreMatchers.is(BASE_TAG + "-" + BRANCH_NAME));
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         Misc.deleteDirectorySimple(s.getRepositoryLocation());
     }

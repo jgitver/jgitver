@@ -17,6 +17,7 @@ package fr.brouillard.oss.jgitver.issues;
 
 import static fr.brouillard.oss.jgitver.impl.Lambdas.mute;
 import static fr.brouillard.oss.jgitver.impl.Lambdas.unchecked;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 
 import java.io.IOException;
@@ -30,12 +31,11 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import fr.brouillard.oss.jgitver.GitVersionCalculator;
 import fr.brouillard.oss.jgitver.Misc;
@@ -52,7 +52,7 @@ public class Issue22Test {
     private Repository repository;
     private GitVersionCalculator versionCalculator;
 
-    @BeforeClass
+    @BeforeAll
     public static void init_scenario() {
         ScenarioBuilder sb = new ScenarioBuilder();
 
@@ -72,7 +72,7 @@ public class Issue22Test {
         }
     }
     
-    @Before
+    @BeforeEach
     public void init() throws IOException {
         repository = new FileRepositoryBuilder().setGitDir(scenario.getRepositoryLocation()).build();
         git = new Git(repository);
@@ -89,7 +89,7 @@ public class Issue22Test {
         try (RevWalk walk = new RevWalk(repository)) {
             RevCommit rc = walk.parseCommit(scenario.getCommits().get("B"));
             String expectedHeadTimestampQualifier = GitUtils.getTimestamp(rc.getAuthorIdent().getWhen().toInstant());
-            Assert.assertThat(versionCalculator.getVersion(), containsString(expectedHeadTimestampQualifier));
+            assertThat(versionCalculator.getVersion(), containsString(expectedHeadTimestampQualifier));
         }
     }
 
@@ -102,18 +102,18 @@ public class Issue22Test {
         try (RevWalk walk = new RevWalk(repository)) {
             RevCommit rc = walk.parseCommit(scenario.getCommits().get("A"));
             String expectedHeadTimestampQualifier = GitUtils.getTimestamp(rc.getAuthorIdent().getWhen().toInstant());
-            Assert.assertThat(versionCalculator.getVersion(), containsString(expectedHeadTimestampQualifier));
+            assertThat(versionCalculator.getVersion(), containsString(expectedHeadTimestampQualifier));
         }
     }    
 
-    @After
+    @AfterEach
     public void cleanup() {
         mute(() -> git.close());
         mute(() -> repository.close());
         mute(() -> versionCalculator.close());
     }
     
-    @AfterClass
+    @AfterAll
     public static void delete() {
         try {
             Misc.deleteDirectorySimple(scenario.getRepositoryLocation());

@@ -26,12 +26,14 @@ import java.util.function.Supplier;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInstance;
 
 import fr.brouillard.oss.jgitver.Scenarios.Scenario;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ScenarioTest {
     protected static Scenario scenario;
     protected Repository repository;
@@ -54,7 +56,7 @@ public class ScenarioTest {
     /**
      * Cleanup the whole junit scenario ; deletes the created git repository.
      */
-    @AfterClass
+    @AfterAll
     public static void cleanupClass() {
         try {
             Misc.deleteDirectorySimple(scenario.getRepositoryLocation());
@@ -67,7 +69,7 @@ public class ScenarioTest {
      * Prepare common variables to access the git repository.
      * @throws IOException if a disk error occurred
      */
-    @Before
+    @BeforeEach
     public void initVersionCalculator() throws IOException {
         repository = new FileRepositoryBuilder().setGitDir(scenario.getRepositoryLocation()).build();
         git = new Git(repository);
@@ -83,7 +85,7 @@ public class ScenarioTest {
     /**
      * Cleanups after each tests.
      */
-    @After
+    @AfterEach
     public void cleanVersionCalculator() {
         mute(() -> git.close());
         mute(() -> repository.close());

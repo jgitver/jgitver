@@ -17,13 +17,13 @@ package fr.brouillard.oss.jgitver.strategy.configurable.defaults;
 
 import static fr.brouillard.oss.jgitver.impl.Lambdas.unchecked;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.Arrays;
 
 import org.eclipse.jgit.lib.ObjectId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import fr.brouillard.oss.jgitver.Scenarios;
 import fr.brouillard.oss.jgitver.Strategies;

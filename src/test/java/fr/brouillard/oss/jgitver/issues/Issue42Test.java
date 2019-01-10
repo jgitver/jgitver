@@ -15,21 +15,26 @@
  */
 package fr.brouillard.oss.jgitver.issues;
 
+import static fr.brouillard.oss.jgitver.impl.Lambdas.unchecked;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import java.io.IOException;
+
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.hamcrest.CoreMatchers;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import fr.brouillard.oss.jgitver.GitVersionCalculator;
 import fr.brouillard.oss.jgitver.Misc;
 import fr.brouillard.oss.jgitver.Scenarios.Scenario;
 import fr.brouillard.oss.jgitver.Scenarios.ScenarioBuilder;
 import fr.brouillard.oss.jgitver.Version;
 import fr.brouillard.oss.jgitver.metadata.Metadatas;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import org.hamcrest.CoreMatchers;
-import org.junit.*;
-
-import java.io.IOException;
-
-import static fr.brouillard.oss.jgitver.impl.Lambdas.unchecked;
 
 public class Issue42Test {
     private static final String BRANCH_NAME = "my-branch";
@@ -40,7 +45,7 @@ public class Issue42Test {
     private Git git;
     private Repository repository;
 
-    @BeforeClass
+    @BeforeAll
     public static void init_scenario() {
         s = new ScenarioBuilder()
                 .commit("content", "A")
@@ -54,7 +59,7 @@ public class Issue42Test {
         }
     }
 
-    @Before
+    @BeforeEach
     public void init() throws IOException {
         repository = new FileRepositoryBuilder().setGitDir(s.getRepositoryLocation()).build();
         git = new Git(repository);
@@ -68,14 +73,14 @@ public class Issue42Test {
         gvc.setMavenLike(true);
         Version versionObject = gvc.getVersionObject();
 
-        Assert.assertThat(versionObject.getMajor(), CoreMatchers.is(1));
-        Assert.assertThat(gvc.meta(Metadatas.CURRENT_VERSION_MAJOR).get(), CoreMatchers.is("1"));
+        assertThat(versionObject.getMajor(), CoreMatchers.is(1));
+        assertThat(gvc.meta(Metadatas.CURRENT_VERSION_MAJOR).get(), CoreMatchers.is("1"));
 
-        Assert.assertThat(versionObject.getMinor(), CoreMatchers.is(2));
-        Assert.assertThat(gvc.meta(Metadatas.CURRENT_VERSION_MINOR).get(), CoreMatchers.is("2"));
+        assertThat(versionObject.getMinor(), CoreMatchers.is(2));
+        assertThat(gvc.meta(Metadatas.CURRENT_VERSION_MINOR).get(), CoreMatchers.is("2"));
 
-        Assert.assertThat(versionObject.getPatch(), CoreMatchers.is(3));
-        Assert.assertThat(gvc.meta(Metadatas.CURRENT_VERSION_PATCH).get(), CoreMatchers.is("3"));
+        assertThat(versionObject.getPatch(), CoreMatchers.is(3));
+        assertThat(gvc.meta(Metadatas.CURRENT_VERSION_PATCH).get(), CoreMatchers.is("3"));
     }
 
     @Test
@@ -86,17 +91,17 @@ public class Issue42Test {
         gvc.setMavenLike(true);
         Version versionObject = gvc.getVersionObject();
 
-        Assert.assertThat(versionObject.getMajor(), CoreMatchers.is(3));
-        Assert.assertThat(gvc.meta(Metadatas.CURRENT_VERSION_MAJOR).get(), CoreMatchers.is("3"));
+        assertThat(versionObject.getMajor(), CoreMatchers.is(3));
+        assertThat(gvc.meta(Metadatas.CURRENT_VERSION_MAJOR).get(), CoreMatchers.is("3"));
 
-        Assert.assertThat(versionObject.getMinor(), CoreMatchers.is(2));
-        Assert.assertThat(gvc.meta(Metadatas.CURRENT_VERSION_MINOR).get(), CoreMatchers.is("2"));
+        assertThat(versionObject.getMinor(), CoreMatchers.is(2));
+        assertThat(gvc.meta(Metadatas.CURRENT_VERSION_MINOR).get(), CoreMatchers.is("2"));
 
-        Assert.assertThat(versionObject.getPatch(), CoreMatchers.is(1));
-        Assert.assertThat(gvc.meta(Metadatas.CURRENT_VERSION_PATCH).get(), CoreMatchers.is("1"));
+        assertThat(versionObject.getPatch(), CoreMatchers.is(1));
+        assertThat(gvc.meta(Metadatas.CURRENT_VERSION_PATCH).get(), CoreMatchers.is("1"));
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         Misc.deleteDirectorySimple(s.getRepositoryLocation());
     }

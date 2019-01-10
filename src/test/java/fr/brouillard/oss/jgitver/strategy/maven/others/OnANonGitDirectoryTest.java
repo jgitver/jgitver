@@ -16,13 +16,13 @@
 package fr.brouillard.oss.jgitver.strategy.maven.others;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.File;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.io.Files;
 
@@ -36,7 +36,7 @@ public class OnANonGitDirectoryTest {
     /**
      * Initialiaze the whole junit class tests ; creates the empty directory.
      */
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         nonGitDirectory = Files.createTempDir();
         if (Misc.isDebugMode()) {
@@ -47,7 +47,7 @@ public class OnANonGitDirectoryTest {
     /**
      * Cleanup the whole junit scenario ; deletes the created directory.
      */
-    @AfterClass
+    @AfterAll
     public static void cleanupClass() {
         try {
             Misc.deleteDirectorySimple(nonGitDirectory);

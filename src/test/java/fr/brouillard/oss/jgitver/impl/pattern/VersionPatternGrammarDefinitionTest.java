@@ -18,7 +18,7 @@ package fr.brouillard.oss.jgitver.impl.pattern;
 import fr.brouillard.oss.jgitver.Version;
 import fr.brouillard.oss.jgitver.metadata.Metadatas;
 import org.hamcrest.CoreMatchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.petitparser.context.Result;
 import org.petitparser.parser.Parser;
 
@@ -27,7 +27,9 @@ import java.util.function.Function;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class VersionPatternGrammarDefinitionTest {
     @Test

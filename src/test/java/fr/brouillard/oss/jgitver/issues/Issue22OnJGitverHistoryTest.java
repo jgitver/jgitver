@@ -17,6 +17,7 @@ package fr.brouillard.oss.jgitver.issues;
 
 import static fr.brouillard.oss.jgitver.impl.Lambdas.mute;
 import static fr.brouillard.oss.jgitver.impl.Lambdas.unchecked;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 import java.io.File;
@@ -27,12 +28,11 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.io.Files;
 
@@ -48,7 +48,7 @@ public class Issue22OnJGitverHistoryTest {
     private Git git;
     private static TimeZone defaultTZ;
     
-    @BeforeClass
+    @BeforeAll
     public static void initialization() throws GitAPIException {
         defaultTZ = TimeZone.getDefault();
         TimeZone.setDefault(TimeZone.getTimeZone("GMT+1:00"));
@@ -70,7 +70,7 @@ public class Issue22OnJGitverHistoryTest {
         }
     }
     
-    @Before
+    @BeforeEach
     public void init() throws IOException {
         repository = new FileRepositoryBuilder().setGitDir(repoDir).build();
         git = new Git(repository);
@@ -93,17 +93,17 @@ Commit Date: vendredi 24 février 2017 09:39:10
 */
         String commitId = "F0E315BC69EC53C3F1F72D54D63F9145012776A1";
         unchecked(() -> git.checkout().setName(commitId).call());
-        Assert.assertThat(versionCalculator.getVersion(), is("0.3.0-20170223191309"));
+        assertThat(versionCalculator.getVersion(), is("0.3.0-20170223191309"));
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         mute(() -> git.close());
         mute(() -> repository.close());
         mute(() -> versionCalculator.close());
     }
     
-    @AfterClass
+    @AfterAll
     public static void reset() {
         TimeZone.setDefault(defaultTZ);
 

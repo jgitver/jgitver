@@ -17,6 +17,9 @@ package fr.brouillard.oss.jgitver.issues;
 
 import static fr.brouillard.oss.jgitver.impl.Lambdas.mute;
 import static fr.brouillard.oss.jgitver.impl.Lambdas.unchecked;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -25,12 +28,12 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.hamcrest.CoreMatchers;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import fr.brouillard.oss.jgitver.GitVersionCalculator;
 import fr.brouillard.oss.jgitver.Misc;
@@ -47,7 +50,7 @@ public class Issue32Test {
     private Repository repository;
     private GitVersionCalculator versionCalculator;
     
-    @BeforeClass
+    @BeforeAll
     public static void init_scenario() {
         s = new ScenarioBuilder()
                 .commit("content", "A")
@@ -61,7 +64,7 @@ public class Issue32Test {
         }
     }
 
-    @Before
+    @BeforeEach
     public void init() throws IOException {
         repository = new FileRepositoryBuilder().setGitDir(s.getRepositoryLocation()).build();
         git = new Git(repository);
@@ -78,8 +81,8 @@ public class Issue32Test {
         Version vo = versionCalculator.getVersionObject();
 
         Optional<String> optDistance = versionCalculator.meta(Metadatas.COMMIT_DISTANCE);
-        Assert.assertTrue(optDistance.isPresent());
-        Assert.assertThat(optDistance.get(), CoreMatchers.is("2"));
+        assertTrue(optDistance.isPresent());
+        assertThat(optDistance.get(), CoreMatchers.is("2"));
     }    
     
     @Test
@@ -90,8 +93,8 @@ public class Issue32Test {
         Version vo = versionCalculator.getVersionObject();
 
         Optional<String> optDistance = versionCalculator.meta(Metadatas.COMMIT_DISTANCE);
-        Assert.assertTrue(optDistance.isPresent());
-        Assert.assertThat(optDistance.get(), CoreMatchers.is("0"));
+        assertTrue(optDistance.isPresent());
+        assertThat(optDistance.get(), CoreMatchers.is("0"));
     }
 
     @Test
@@ -104,18 +107,18 @@ public class Issue32Test {
                 .setUseDistance(true);
         
         Optional<String> optDistance = gvc.meta(Metadatas.COMMIT_DISTANCE);
-        Assert.assertFalse(optDistance.isPresent());
+        assertFalse(optDistance.isPresent());
         gvc.close();
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         mute(() -> git.close());
         mute(() -> repository.close());
         mute(() -> versionCalculator.close());
     }
 
-    @AfterClass
+    @AfterAll
     public static void delete() {
         try {
             Misc.deleteDirectorySimple(s.getRepositoryLocation());
