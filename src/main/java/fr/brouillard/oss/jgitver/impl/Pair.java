@@ -25,7 +25,7 @@ public class Pair<U,V> {
     private final V right;
 
     /**
-     * Creates an immutable pair of two objects of type U & V
+     * Creates an immutable pair of two objects of type U & V.
      * @param left first part
      * @param right second part
      */
@@ -34,10 +34,18 @@ public class Pair<U,V> {
         this.right = right;
     }
 
+    /**
+     * Retrieve the left part of the pair object.
+     * @return the value registered at construction time as the left part
+     */
     public U getLeft() {
         return left;
     }
 
+    /**
+     * Retrieve the rightpart of the pair object.
+     * @return the value registered at construction time as the right part
+     */
     public V getRight() {
         return right;
     }

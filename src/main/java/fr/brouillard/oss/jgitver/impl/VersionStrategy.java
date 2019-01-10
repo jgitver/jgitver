@@ -85,8 +85,13 @@ public abstract class VersionStrategy<T extends VersionStrategy> {
     public T setSearchDepthLimit(int newLimit) {
         return runAndGetSelf(() -> searchDepthLimit = (newLimit > 0) ? newLimit : 0);
     }
-    
-    public boolean considerTagAsAVersionOne(Ref tag) {
+
+    /**
+     * Checks regarding the current strategy if the given {@link Ref} corresponds to a tag of a version.
+     * @param tag a non null tag as a {@link Ref} object
+     * @return true if the given tag matches the version rules of this strategy, false otherwise
+     */
+    public boolean isVersionTag(Ref tag) {
         String tagName = tagNameFromRef(tag);
         return getVersionNamingConfiguration().getSearchPattern().matcher(tagName).matches();
     }

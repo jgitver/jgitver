@@ -15,6 +15,7 @@
  */
 package fr.brouillard.oss.jgitver.impl;
 
+import static fr.brouillard.oss.jgitver.impl.GitUtils.tagsOf;
 import static fr.brouillard.oss.jgitver.impl.Lambdas.as;
 
 import java.io.File;
@@ -78,6 +79,9 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
     private LookupPolicy lookupPolicy = LookupPolicy.MAX;
 
     private final File gitRepositoryLocation;
+
+    private final Function<Ref, ObjectId> refToObjectIdFunction = r -> (r.getPeeledObjectId() != null)
+            ? r.getPeeledObjectId() : r.getObjectId();
 
     private boolean computationRequired = true;
     private Version computedVersion;
@@ -265,8 +269,6 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
 
     private Version buildVersion(Git git, VersionStrategy strategy) {
         try {
-            ObjectId rootId = repository.resolve("HEAD");
-
             metadatas.registerMetadata(Metadatas.DIRTY, "" + GitUtils.isDirty(git));
             
             // retrieve all tags matching a version, and get all info for each of them
@@ -280,7 +282,7 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
             metadatas.registerMetadataTags(Metadatas.ALL_LIGHTWEIGHT_TAGS, allTags.stream().filter(as(GitUtils::isAnnotated).negate()));
 
             List<Ref> allVersionTags = allTags.stream()
-                    .filter(strategy::considerTagAsAVersionOne)
+                    .filter(strategy::isVersionTag)
                     .collect(Collectors.toCollection(ArrayList::new));
 
             List<Ref> normals = allVersionTags.stream().filter(GitUtils::isAnnotated).collect(Collectors.toList());
@@ -289,6 +291,8 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
             metadatas.registerMetadataTags(Metadatas.ALL_VERSION_TAGS, allVersionTags.stream());
             metadatas.registerMetadataTags(Metadatas.ALL_VERSION_ANNOTATED_TAGS, normals.stream());
             metadatas.registerMetadataTags(Metadatas.ALL_VERSION_LIGHTWEIGHT_TAGS, lights.stream());
+
+            ObjectId rootId = repository.resolve("HEAD");
 
             // handle a call on an empty git repository
             if (rootId == null) {
@@ -364,7 +368,14 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
         }
     }
 
-    private Commit findBaseCommitFromReachableTags(ObjectId headId, List<Ref> allVersionTags, List<Ref> normals, List<Ref> lights, int maxDepth, VersionStrategy strategy) throws Exception {
+    private Commit findBaseCommitFromReachableTags(
+            ObjectId headId,
+            List<Ref> allVersionTags,
+            List<Ref> normals,
+            List<Ref> lights,
+            int maxDepth,
+            VersionStrategy strategy
+    ) throws Exception {
         List<Ref> reachableTags = filterReachableTags(headId, allVersionTags);
 
         if (reachableTags.isEmpty()) {
@@ -376,18 +387,16 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
 
         DistanceCalculator distanceCalculator = DistanceCalculator.create(headId, repository, maxDepth);
         if (headId.getName().equals(baseCommitId.getName())) {
-            return new Commit(baseCommitId, 0, GitUtils.tagsOf(normals, baseCommitId), GitUtils.tagsOf(lights, baseCommitId));
+            return new Commit(baseCommitId, 0, tagsOf(normals, baseCommitId), tagsOf(lights, baseCommitId));
         } else {
             return distanceCalculator.distanceTo(baseCommitId)
                     .map(distance ->
-                        new Commit(baseCommitId, distance, GitUtils.tagsOf(normals, baseCommitId), GitUtils.tagsOf(lights, baseCommitId))
+                        new Commit(baseCommitId, distance, tagsOf(normals, baseCommitId), tagsOf(lights, baseCommitId))
                     ).orElse(null);
         }
     }
 
     private ObjectId findBaseCommitId(ObjectId headId, List<Ref> reachableTags, LookupPolicy lookupPolicy, VersionStrategy strategy) {
-        Function<Ref, ObjectId> refToObjectIdFunction = r -> r.getPeeledObjectId() != null ? r.getPeeledObjectId() : r.getObjectId();
-
         switch (lookupPolicy) {
             case MAX:
                 Comparator<Ref> versionTagComparator = (r1, r2) -> {
@@ -446,7 +455,7 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
 
             for (RevCommit revCommit : walk) {
                 ObjectId commitId = revCommit.getId();
-                Predicate<Ref> tagCorresponds = r -> commitId.getName().equals(r.getPeeledObjectId() != null ? r.getPeeledObjectId().getName() : r.getObjectId().getName());
+                Predicate<Ref> tagCorresponds = r -> commitId.getName().equals(refToObjectIdFunction.apply(r).getName());
                 allVersionTags.stream().filter(tagCorresponds).forEach(filtered::add);
             }
         }
@@ -454,13 +463,12 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
         return filtered;
     }
 
-    private List<Ref> tagsOf(List<Ref> tags, final ObjectId id) {
-        return tags.stream().filter(ref -> id.equals(ref.getObjectId()) || id.equals(ref.getPeeledObjectId()))
-                .collect(Collectors.toList());
-    }
-
     private Ref peel(Ref tag) {
-        return repository.peel(tag);
+        try {
+            return repository.getRefDatabase().peel(tag);
+        } catch (IOException e) {
+            return tag;
+        }
     }
 
     @Override

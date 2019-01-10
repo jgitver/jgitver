@@ -16,5 +16,5 @@
 package fr.brouillard.oss.jgitver;
 
 public interface TestsTypes {
-    public final static String SLOW = "slow";
+    String SLOW = "slow";
 }

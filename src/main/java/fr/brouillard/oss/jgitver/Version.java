@@ -250,11 +250,5 @@ public class Version implements Comparable<Version> {
         }
 
         return this.stringRepresentation.compareTo(o.stringRepresentation);
-//        return Comparator
-//                .comparingInt(Version::getMajor)
-//                .thenComparingInt(Version::getMinor)
-//                .thenComparingInt(Version::getPatch)
-//                .thenComparing(Version::toString)
-//                .compare(this, o);
     }
 }

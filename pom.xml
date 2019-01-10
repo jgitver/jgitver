@@ -71,7 +71,7 @@
         <!-- plugins versions -->
         <ossindex-maven-plugin.version>3.0.1</ossindex-maven-plugin.version>
         <checkstyle.version>7.6</checkstyle.version>
-        <maven-checkstyle-plugin.version>2.17</maven-checkstyle-plugin.version>
+        <maven-checkstyle-plugin.version>3.0.0</maven-checkstyle-plugin.version>
         <license-maven-plugin.version>2.11</license-maven-plugin.version>
         <maven-compiler-plugin.version>3.6.0</maven-compiler-plugin.version>
         <maven-jar-plugin.version>2.3.2</maven-jar-plugin.version>
@@ -170,6 +170,7 @@
                 <version>${maven-compiler-plugin.version}</version>
                 <configuration>
                     <showDeprecation>true</showDeprecation>
+                    <compilerArgument>-Xlint:unchecked</compilerArgument>
                 </configuration>
             </plugin>
             <plugin>

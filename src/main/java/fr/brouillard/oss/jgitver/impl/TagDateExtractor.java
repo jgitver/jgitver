@@ -23,6 +23,9 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevWalk;
 
+/**
+ * Utility class able to retrieve date of tags.
+ */
 public class TagDateExtractor implements AutoCloseable {
     private final RevWalk revWalk;
 
@@ -30,10 +33,20 @@ public class TagDateExtractor implements AutoCloseable {
         this.revWalk = new RevWalk(repository);
     }
 
+    /**
+     * Retrieve the date of the given tag.
+     * @param tagObjectId a non null {@link ObjectId} of a tag
+     * @return the date of the date
+     */
     public Date dateOfTagObjectId(ObjectId tagObjectId) throws IOException {
         return revWalk.parseTag(tagObjectId).getTaggerIdent().getWhen();
     }
 
+    /**
+     * Retrieve the date of the given tag.
+     * @param r a non null {@link Ref} of a tag
+     * @return the date of the date
+     */
     public Date dateOfRef(Ref r) {
         try {
             return dateOfTagObjectId(r.getObjectId());
