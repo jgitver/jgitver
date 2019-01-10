@@ -63,7 +63,6 @@
         <petitparser-core.version>2.2.0</petitparser-core.version>
 
         <!-- test dependencies -->
-        <junit.version>4.12</junit.version>
         <java-hamcrest.version>2.0.0.0</java-hamcrest.version>
         <junit.jupiter.version>5.3.2</junit.jupiter.version>
         <junit.vintage.version>5.3.2</junit.vintage.version>
@@ -137,12 +136,6 @@
             <artifactId>petitparser-core</artifactId>
             <version>${petitparser-core.version}</version>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>junit</groupId>-->
-            <!--<artifactId>junit</artifactId>-->
-            <!--<version>${junit.version}</version>-->
-            <!--<scope>test</scope>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -155,11 +148,6 @@
             <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>org.junit.vintage</groupId>-->
-            <!--<artifactId>junit-vintage-engine</artifactId>-->
-            <!--<version>${junit.vintage.version}</version>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>java-hamcrest</artifactId>
