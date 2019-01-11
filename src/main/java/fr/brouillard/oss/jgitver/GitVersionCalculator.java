@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
 
@@ -33,6 +34,11 @@ public interface GitVersionCalculator extends AutoCloseable, MetadataProvider {
      * @return a non null {@link GitVersionCalculator}
      */
     static GitVersionCalculator location(File gitRepositoryLocation) {
+        // ensure given directory exists and is readable
+        if (!Objects.requireNonNull(gitRepositoryLocation).isDirectory() || !gitRepositoryLocation.canRead()) {
+            throw new IllegalStateException("cannot work on non readable directory:" + gitRepositoryLocation);
+        }
+
         Iterator<GitVersionCalculatorBuilder> builders = ServiceLoader.load(GitVersionCalculatorBuilder.class).iterator();
 
         if (builders.hasNext()) {
