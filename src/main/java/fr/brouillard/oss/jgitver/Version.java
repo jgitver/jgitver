@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,7 +50,7 @@ public class Version implements Comparable<Version> {
         this.major = major;
         this.minor = minor;
         this.patch = patch;
-        this.qualifiers = (qualifiers != null) ? new ArrayList<>(qualifiers) : Collections.emptyList();
+        this.qualifiers = new ArrayList<>(Objects.requireNonNull(qualifiers));
 
         StringBuilder sb = new StringBuilder();
         sb.append(String.format("%d.%d.%d", major, minor, patch));
@@ -207,7 +208,7 @@ public class Version implements Comparable<Version> {
         if (minor != version.minor) return false;
         if (patch != version.patch) return false;
         if (!stringRepresentation.equals(version.stringRepresentation)) return false;
-        return qualifiers != null ? qualifiers.equals(version.qualifiers) : version.qualifiers == null;
+        return qualifiers.equals(version.qualifiers);
     }
 
     @Override
@@ -216,7 +217,7 @@ public class Version implements Comparable<Version> {
         result = 31 * result + minor;
         result = 31 * result + patch;
         result = 31 * result + stringRepresentation.hashCode();
-        result = 31 * result + (qualifiers != null ? qualifiers.hashCode() : 0);
+        result = 31 * result + qualifiers.hashCode();
         return result;
     }
 
