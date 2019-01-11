@@ -9,9 +9,9 @@ With this `automation` & `standardization` it is then possible to:
 
 ## Project health
 
-- [![Coverage Status](https://coveralls.io/repos/github/jgitver/jgitver/badge.svg)](https://coveralls.io/github/jgitver/jgitver)
-- [![pipeline status](https://gitlab.com/jgitver/jgitver/badges/master/pipeline.svg)](https://gitlab.com/jgitver/jgitver/commits/master)
 - [![Build Status](https://travis-ci.org/jgitver/jgitver.svg)](https://travis-ci.org/jgitver/jgitver)
+- [![pipeline status](https://gitlab.com/jgitver/jgitver/badges/master/pipeline.svg)](https://gitlab.com/jgitver/jgitver/commits/master)
+- [![Coverage Status](https://coveralls.io/repos/github/jgitver/jgitver/badge.svg)](https://coveralls.io/github/jgitver/jgitver)
 
 ## How it works
 
