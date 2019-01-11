@@ -118,6 +118,7 @@ public abstract class VersionStrategy<T extends VersionStrategy> {
         return self();
     }
 
+    @SuppressWarnings("unchecked")
     protected T self() {
         return (T) this;
     }

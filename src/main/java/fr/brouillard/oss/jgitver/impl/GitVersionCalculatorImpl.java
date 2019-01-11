@@ -267,7 +267,7 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
         return getVersionObject(forceComputation).toString();
     }
 
-    private Version buildVersion(Git git, VersionStrategy strategy) {
+    private Version buildVersion(Git git, VersionStrategy<?> strategy) {
         try {
             metadatas.registerMetadata(Metadatas.DIRTY, "" + GitUtils.isDirty(git));
             
@@ -435,7 +435,7 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
     private ObjectId latestObjectIdOfTags(List<Ref> reachableTags, Function<Ref, ObjectId> refToObjectIdFunction) {
         try (TagDateExtractor dateExtractor = new TagDateExtractor(repository)) {
             return reachableTags.stream()
-                    .map(r -> new Pair(r, dateExtractor.dateOfRef(r)))
+                    .map(r -> new Pair<Ref, Date>(r, dateExtractor.dateOfRef(r)))
                     .max(Comparator.comparing(p -> ((Date) p.getRight())))
                     .map(p -> (Ref) p.getLeft())
                     .map(refToObjectIdFunction)
@@ -570,6 +570,7 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public GitVersionCalculator setMavenLike(boolean mavenLike) {
         this.mavenLike = mavenLike;
         computationRequired = true;

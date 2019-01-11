@@ -48,7 +48,7 @@ public class VersionPatternGrammarDefinition extends VersionGrammarDefinition {
         resetSeparatorProvider();
 
         action("pattern", (List<?> elements) -> {
-            String computedVersion = elements.stream().map(o -> ((Object) o).toString()).collect(Collectors.joining());
+            String computedVersion = elements.stream().map(Object::toString).collect(Collectors.joining());
             return Version.parse(computedVersion);
         });
         action("pattern_element", (o) -> o);
@@ -57,7 +57,9 @@ public class VersionPatternGrammarDefinition extends VersionGrammarDefinition {
         });
         action("placeholder", (o) -> o);
         action("withPrefixPlaceholder", (List<?> elements) -> {
+            @SuppressWarnings("unchecked")
             Prefix p = (Prefix) elements.get(0);
+            @SuppressWarnings("unchecked")
             Optional<String> value = (Optional<String>) elements.get(1);
 
             Optional<String> result = p.apply(value);
