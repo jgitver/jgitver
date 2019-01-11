@@ -15,6 +15,7 @@
  */
 package fr.brouillard.oss.jgitver.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -26,24 +27,24 @@ import org.eclipse.jgit.lib.Ref;
  * @author Matthieu Brouillard
  */
 public class Commit {
-    private ObjectId gitObject;
-    private List<Ref> annotatedTags;
-    private List<Ref> lightTags;
-    private int headDistance;
+    private final ObjectId gitObject;
+    private final List<Ref> annotatedTags;
+    private final List<Ref> lightTags;
+    private final int headDistance;
 
     /**
      * Creates commit object using the given informations.
      * @param gitObject the git object corresponding the the git node
-     * @param headDistance number of commit between head and this node (0 if node is HEAD)
-     * @param annotatedTags list of annotated tags found on the git object
-     * @param lightTags list of lightweight tags found on the git object
+     * @param headDistance positive number of commit between head and this node (0 if node is HEAD)
+     * @param annotatedTags non null list of annotated tags found on the git object
+     * @param lightTags non null list of lightweight tags found on the git object
      */
     public Commit(ObjectId gitObject, int headDistance, List<Ref> annotatedTags, List<Ref> lightTags) {
         super();
-        this.gitObject = gitObject;
+        this.gitObject = Objects.requireNonNull(gitObject);
+        this.annotatedTags = new ArrayList<>(Objects.requireNonNull(annotatedTags));
+        this.lightTags = new ArrayList<>(Objects.requireNonNull(lightTags));
         this.headDistance = headDistance;
-        this.annotatedTags = annotatedTags;
-        this.lightTags = lightTags;
     }
 
     public ObjectId getGitObject() {
