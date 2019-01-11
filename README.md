@@ -12,6 +12,7 @@ With this `automation` & `standardization` it is then possible to:
 - [![Build Status](https://travis-ci.org/jgitver/jgitver.svg)](https://travis-ci.org/jgitver/jgitver)
 - [![pipeline status](https://gitlab.com/jgitver/jgitver/badges/master/pipeline.svg)](https://gitlab.com/jgitver/jgitver/commits/master)
 - [![Coverage Status](https://coveralls.io/repos/github/jgitver/jgitver/badge.svg)](https://coveralls.io/github/jgitver/jgitver)
+- [![Known Vulnerabilities](https://snyk.io/test/github/jgitver/jgitver/badge.svg?targetFile=pom.xml)](https://snyk.io/test/github/jgitver/jgitver?targetFile=pom.xml)
 
 ## How it works
 
