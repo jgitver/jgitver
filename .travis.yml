@@ -19,6 +19,9 @@ branches:
     except:
         - gh-pages
 
+after_success:
+  - ./mvnw -Pcoverage clean integration-test jacoco:report coveralls:report
+
 notifications:
   email:
     - matthieu@brouillard.fr
