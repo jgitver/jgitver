@@ -45,6 +45,9 @@ Before going into deep explanations & documentation let's first show what you wi
 
 ## Usage
 
+
+### via build plugins
+ 
 Most of the time you will want to use `jgitver` via one of its extensions/plugins:
 
 - [jgitver maven plugin](http://www.github.com/jgitver/jgitver-maven-plugin), which can be used as a core maven extension by creating a file `YOUR_PROJECT/.mvn/extensions.xml`:
@@ -67,6 +70,48 @@ Most of the time you will want to use `jgitver` via one of its extensions/plugin
     }
     ```
     find the latest version in [gradle plugin portal](https://plugins.gradle.org/plugin/fr.brouillard.oss.gradle.jgitver)
+
+### Using the CLI 
+
+Starting with `0.10.0` we provide an executable jar able to run jgitver from the cli.
+
+```
+Usage: java -jar jgitver-executable.jar [-hV] [--autoIncrementPatch]
+                                        [--useDirty] [--useDistance]
+                                        [--useGitCommitId]
+                                        [--useGitCommitTimestamp]
+                                        [--useLongFormat] [--dir=<directory>]
+                                        [--gitCommitIdLength=<gitCommitIdLength>
+                                        ] [--metas=<metadatas>]
+                                        [--nonQualifierBranches=<nonQualifierBra
+                                        nches>] [--pattern=<pattern>]
+                                        [--policy=<policy>]
+                                        [--strategy=<strategy>]
+      --autoIncrementPatch   activate auto increment patch functionality
+      --dir, --directory=<directory>
+                             root directory for git project
+      --gitCommitIdLength=<gitCommitIdLength>
+                             length of the git commit id if used
+      --metas, --metadatas=<metadatas>
+                             metadatas to show, separated by ','
+      --nonQualifierBranches=<nonQualifierBranches>
+                             list of fixed name for non qualifier branches
+      --pattern=<pattern>    pattern to identify base tags as versionable ones
+      --policy=<policy>      lookup policy to use to find the base tag to use
+      --strategy=<strategy>  defines the strategy to use
+      --useDirty             activate dirty flag
+      --useDistance          activate distance qualifier
+      --useGitCommitId       add git commit id as qualifier
+      --useGitCommitTimestamp
+                             add git commit timestamp as qualifier
+      --useLongFormat        activate long format usage
+  -h, --help                 display usage
+  -V, --version              display version info
+``` 
+
+You can find the latest executable file on [maven central](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22fr.brouillard.oss%22%20AND%20a%3A%22jgitver%22).
+
+### As a java library
 
 But of course, `jgitver` is a java library published on [maven central](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22fr.brouillard.oss%22%20AND%20a%3A%22jgitver%22) and can be used as such.
 
