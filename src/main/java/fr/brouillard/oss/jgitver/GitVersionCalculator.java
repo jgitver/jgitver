@@ -39,19 +39,26 @@ public interface GitVersionCalculator extends AutoCloseable, MetadataProvider {
             throw new IllegalStateException("cannot work on non readable directory:" + gitRepositoryLocation);
         }
 
-        Iterator<GitVersionCalculatorBuilder> builders = ServiceLoader.load(GitVersionCalculatorBuilder.class).iterator();
+        ClassLoader[] classLoaders = {
+            Thread.currentThread().getContextClassLoader(),
+            GitVersionCalculator.class.getClassLoader()
+        };
 
-        if (builders.hasNext()) {
-            GitVersionCalculator gvc;
-            try {
-                gvc = builders.next().build(gitRepositoryLocation);
-                return gvc;
-            } catch (IOException ex) {
-                throw new IllegalStateException("cannot open git repository under: " + gitRepositoryLocation, ex);
+        for (ClassLoader classLoader : classLoaders) {
+            Iterator<GitVersionCalculatorBuilder> builders = ServiceLoader.load(GitVersionCalculatorBuilder.class).iterator();
+
+            if (builders.hasNext()) {
+                GitVersionCalculator gvc;
+                try {
+                    gvc = builders.next().build(gitRepositoryLocation);
+                    return gvc;
+                } catch (IOException ex) {
+                    throw new IllegalStateException("cannot open git repository under: " + gitRepositoryLocation, ex);
+                }
             }
-        } else {
-            throw new IllegalStateException(String.format("cannot find any %s implementation", GitVersionCalculatorBuilder.class));
         }
+
+        throw new IllegalStateException(String.format("cannot find any %s implementation", GitVersionCalculatorBuilder.class));
     }
 
     /**
