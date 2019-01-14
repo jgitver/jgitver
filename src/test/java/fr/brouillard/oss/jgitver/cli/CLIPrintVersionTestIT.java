@@ -46,7 +46,7 @@ public class CLIPrintVersionTestIT {
 
             String firstLine = printedVersionMessage.split(System.lineSeparator())[0];
 
-            Pattern messageRecognizerPattern = Pattern.compile("^jgitver [0-9]\\.[0-9]\\.[0-9](?:[^\\s]+)\\s\\([a-z0-9]{40}\\)$");
+            Pattern messageRecognizerPattern = Pattern.compile("^jgitver [0-9]+\\.[0-9]+\\.[0-9]+(?:[^\\s]*)\\s\\([a-z0-9]{40}\\)$");
             Matcher messageRecognizerMatcher = messageRecognizerPattern.matcher(firstLine);
 
             assertTrue(
