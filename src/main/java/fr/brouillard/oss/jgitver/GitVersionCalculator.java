@@ -45,7 +45,7 @@ public interface GitVersionCalculator extends AutoCloseable, MetadataProvider {
         };
 
         for (ClassLoader classLoader : classLoaders) {
-            Iterator<GitVersionCalculatorBuilder> builders = ServiceLoader.load(GitVersionCalculatorBuilder.class).iterator();
+            Iterator<GitVersionCalculatorBuilder> builders = ServiceLoader.load(GitVersionCalculatorBuilder.class, classLoader).iterator();
 
             if (builders.hasNext()) {
                 GitVersionCalculator gvc;
@@ -58,7 +58,21 @@ public interface GitVersionCalculator extends AutoCloseable, MetadataProvider {
             }
         }
 
-        throw new IllegalStateException(String.format("cannot find any %s implementation", GitVersionCalculatorBuilder.class));
+        try {
+            Class builderClass = Class.forName("fr.brouillard.oss.jgitver.impl.GitVersionCalculatorImplBuilder");
+            GitVersionCalculatorBuilder builder = (GitVersionCalculatorBuilder) builderClass.newInstance();
+            return builder.build(gitRepositoryLocation);
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+            throw new IllegalStateException(
+                    "cannot instantiate default GitVersionCalculatorImplBuilder class",
+                    ex
+            );
+        } catch (IOException ex) {
+            throw new IllegalStateException(
+                    "using GitVersionCalculatorImplBuilder cannot open git repository under: " + gitRepositoryLocation,
+                    ex
+            );
+        }
     }
 
     /**
