@@ -378,6 +378,13 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
     ) throws Exception {
         List<Ref> reachableTags = filterReachableTags(headId, allVersionTags);
 
+        // see https://github.com/jgitver/jgitver/issues/73
+        // light tags do not have a date information
+        // we keep only annotated ones
+        if (LookupPolicy.LATEST.equals(lookupPolicy)) {
+            reachableTags = keepOnlyAnnotatedTags(reachableTags);
+        }
+
         if (reachableTags.isEmpty()) {
             return null;
         }
@@ -394,6 +401,13 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
                         new Commit(baseCommitId, distance, tagsOf(normals, baseCommitId), tagsOf(lights, baseCommitId))
                     ).orElse(null);
         }
+    }
+
+    private ArrayList<Ref> keepOnlyAnnotatedTags(List<Ref> reachableTags) {
+        return reachableTags
+                .stream()
+                .filter(r -> GitUtils.isAnnotated(r))
+                .collect(Collectors.toCollection(ArrayList<Ref>::new));
     }
 
     private ObjectId findBaseCommitId(ObjectId headId, List<Ref> reachableTags, LookupPolicy lookupPolicy, VersionStrategy strategy) {
@@ -425,6 +439,11 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
                     return refToObjectIdFunction.apply(tagsAtMinimumDistance.get(0));
                 } else {
                     // we take the most recent one among those at the same distance
+                    // due to https://github.com/jgitver/jgitver/issues/73
+                    // we need to keep only the annotated tags
+                    if (LookupPolicy.LATEST.equals(lookupPolicy)) {
+                        tagsAtMinimumDistance = keepOnlyAnnotatedTags(tagsAtMinimumDistance);
+                    }
                     return latestObjectIdOfTags(tagsAtMinimumDistance, refToObjectIdFunction);
                 }
             default:
