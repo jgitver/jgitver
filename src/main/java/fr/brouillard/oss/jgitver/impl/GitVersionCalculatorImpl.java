@@ -41,6 +41,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
@@ -345,6 +346,9 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
             provideNextVersionsMetadatas(calculatedVersion, patchVersionIsIncremented);
 
             return calculatedVersion;
+        } catch (NoWorkTreeException ex) {
+            // Could not find worktree and index - assuming this is a `git worktree` (this assumption should be logged as debug)
+            return Version.NO_WORKTREE_AND_INDEX;
         } catch (Exception ex) {
             throw new IllegalStateException("failure calculating version", ex);
         }

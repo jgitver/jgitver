@@ -29,7 +29,8 @@ public class Version implements Comparable<Version> {
     public static final Version DEFAULT_VERSION = new Version(0, 0, 0);
     public static final Version EMPTY_REPOSITORY_VERSION = DEFAULT_VERSION.addQualifier("EMPTY_GIT_REPOSITORY");
     public static final Version NOT_GIT_VERSION = DEFAULT_VERSION.addQualifier("NOT_A_GIT_REPOSITORY");
-    
+    public static final Version NO_WORKTREE_AND_INDEX = DEFAULT_VERSION.addQualifier("NO_WORKTREE_AND_INDEX");
+
     private final int major;
 
     private final int minor;
