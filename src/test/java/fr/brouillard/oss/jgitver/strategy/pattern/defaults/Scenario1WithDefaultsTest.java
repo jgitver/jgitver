@@ -20,8 +20,11 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.Arrays;
+import java.util.Optional;
 
+import fr.brouillard.oss.jgitver.Features;
 import org.eclipse.jgit.lib.ObjectId;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import fr.brouillard.oss.jgitver.Scenarios;
@@ -35,6 +38,16 @@ public class Scenario1WithDefaultsTest extends ScenarioTest {
         super(
                 Scenarios::s1_linear_with_only_annotated_tags,
                 calculator -> calculator.setStrategy(Strategies.PATTERN));
+    }
+
+    @BeforeAll
+    public static void activateTestFeatures() {
+        Features.DISTANCE_TO_ROOT.activate();
+    }
+
+    @BeforeAll
+    public static void resetTestFeatures() {
+        Features.DISTANCE_TO_ROOT.deactivate();
     }
 
     @Test

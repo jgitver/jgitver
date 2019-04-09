@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
+import fr.brouillard.oss.jgitver.Features;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
@@ -73,8 +74,10 @@ public class PatternVersionStrategy extends VersionStrategy<PatternVersionStrate
             int headDistance = base.getHeadDistance();
             getRegistrar().registerMetadata(Metadatas.COMMIT_DISTANCE, "" + headDistance);
 
-            int headToRootDistance = GitUtils.distanceToRoot(getRepository(), head.getGitObject());
-            getRegistrar().registerMetadata(Metadatas.COMMIT_DISTANCE_TO_ROOT, "" + headToRootDistance);
+            if (Features.DISTANCE_TO_ROOT.isActive()) {
+                int headToRootDistance = GitUtils.distanceToRoot(getRepository(), head.getGitObject());
+                getRegistrar().registerMetadata(Metadatas.COMMIT_DISTANCE_TO_ROOT, "" + headToRootDistance);
+            }
 
             try (RevWalk walk = new RevWalk(getRepository())) {
                 RevCommit rc = walk.parseCommit(head.getGitObject());

@@ -149,6 +149,8 @@ public enum Metadatas {
     COMMIT_DISTANCE,
     /**
      * Exposes the distance from HEAD to the root ancestor.
+     *
+     * not active by default, use {@link fr.brouillard.oss.jgitver.Features#DISTANCE_TO_ROOT} for activation
      */
     COMMIT_DISTANCE_TO_ROOT,
     /**

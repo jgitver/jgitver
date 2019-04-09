@@ -18,6 +18,7 @@ package fr.brouillard.oss.jgitver.impl;
 import java.util.List;
 import java.util.Optional;
 
+import fr.brouillard.oss.jgitver.Features;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
@@ -76,8 +77,10 @@ public class ConfigurableVersionStrategy extends VersionStrategy<ConfigurableVer
 
             getRegistrar().registerMetadata(Metadatas.COMMIT_DISTANCE, "" + headDistance);
 
-            int headToRootDistance = GitUtils.distanceToRoot(getRepository(), head.getGitObject());
-            getRegistrar().registerMetadata(Metadatas.COMMIT_DISTANCE_TO_ROOT, "" + headToRootDistance);
+            if (Features.DISTANCE_TO_ROOT.isActive()) {
+                int headToRootDistance = GitUtils.distanceToRoot(getRepository(), head.getGitObject());
+                getRegistrar().registerMetadata(Metadatas.COMMIT_DISTANCE_TO_ROOT, "" + headToRootDistance);
+            }
 
             boolean needsCommitTimestamp = useCommitTimestamp && !useSnapshot;
 

@@ -123,6 +123,7 @@ public class GitUtils {
         }
     }
 
+    public static final String PREFIX_SYSTEM_PROPERTY = "jgitver.";
     private static final String BRANCH_SYSTEM_PROPERTY = "jgitver.branch";
     private static final String BRANCH_ENV_VARIABLE = "JGITVER_BRANCH";
 }
