@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Optional;
 
+import org.eclipse.jgit.lib.AnyObjectId;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.DepthWalk;
@@ -35,7 +36,7 @@ public interface DistanceCalculator {
      * @param maxDepth the maximum depth to which we accept to look at. If <= 0 then Integer.MAX_VALUE will be used.
      * @return a reusable {@link DistanceCalculator} object
      */
-    static DistanceCalculator create(ObjectId start, Repository repository, int maxDepth) {
+    static DistanceCalculator create(AnyObjectId start, Repository repository, int maxDepth) {
         return new DepthWalkDistanceCalculator(start, repository, maxDepth > 0 ? maxDepth : Integer.MAX_VALUE);
     }
 
@@ -44,7 +45,7 @@ public interface DistanceCalculator {
      * uses Integer.MAX_VALUE as the maximum depth distance.
      * @see #create(ObjectId, Repository, int)
      */
-    static DistanceCalculator create(ObjectId start, Repository repository) {
+    static DistanceCalculator create(AnyObjectId start, Repository repository) {
         return create(start, repository, Integer.MAX_VALUE);
     }
 
@@ -58,11 +59,11 @@ public interface DistanceCalculator {
     Optional<Integer> distanceTo(ObjectId target);
 
     class DepthWalkDistanceCalculator implements DistanceCalculator {
-        private final ObjectId startId;
+        private final AnyObjectId startId;
         private final Repository repository;
         private final int maxDepth;
 
-        DepthWalkDistanceCalculator(ObjectId start, Repository repository, int maxDepth) {
+        DepthWalkDistanceCalculator(AnyObjectId start, Repository repository, int maxDepth) {
             this.startId = start;
             this.repository = repository;
             this.maxDepth = maxDepth;
