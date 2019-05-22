@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -27,10 +28,17 @@ import java.util.stream.Collectors;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.errors.IncorrectObjectTypeException;
+import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
+import org.eclipse.jgit.lib.AnyObjectId;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.DepthWalk;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevSort;
+import org.eclipse.jgit.revwalk.filter.RevFilter;
 
 public class GitUtils {
     public static String tagNameFromRef(Ref tag) {
@@ -90,6 +98,29 @@ public class GitUtils {
      */
     public static Optional<String> providedBranchName() {
         return Optional.ofNullable(System.getProperty(BRANCH_SYSTEM_PROPERTY, System.getenv(BRANCH_ENV_VARIABLE)));
+    }
+
+    /**
+     * Computes inside the given repository the distance between the provided object and the root of the repository.
+     * @param repository the git repository
+     * @param objectId the id of the start of the distance computation
+     * @return the computed distance
+     */
+    public static int distanceToRoot(Repository repository, AnyObjectId objectId) {
+        try (DepthWalk.RevWalk walk = new DepthWalk.RevWalk(repository, Integer.MAX_VALUE)) {
+            RevCommit startCommit = walk.parseCommit(objectId);
+            walk.markRoot(startCommit);
+            walk.setRetainBody(false);
+            walk.sort(RevSort.REVERSE);
+            Iterator<RevCommit> iterator = walk.iterator();
+            if (iterator.hasNext()) {
+                DepthWalk.Commit next = (DepthWalk.Commit) iterator.next();
+                return DistanceCalculator.create(objectId, repository).distanceTo(next.getId()).get();
+            }
+            throw new IllegalStateException("cannot find repository root node for distance computation");
+        } catch (Exception e) {
+            throw new IllegalStateException("cannot compute root distance", e);
+        }
     }
 
     private static final String BRANCH_SYSTEM_PROPERTY = "jgitver.branch";
