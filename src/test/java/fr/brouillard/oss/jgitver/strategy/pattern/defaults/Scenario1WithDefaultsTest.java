@@ -107,4 +107,14 @@ public class Scenario1WithDefaultsTest extends ScenarioTest {
         assertThat(versionCalculator.meta(Metadatas.NEXT_MINOR_VERSION).get(), is("2.1.0"));
         assertThat(versionCalculator.meta(Metadatas.NEXT_PATCH_VERSION).get(), is("2.0.1"));
     }
+
+    @Test
+    public void check_distances_on_master() {
+        unchecked(() -> git.checkout().setName("master").call());
+
+        assertThat(versionCalculator.getVersion(true), is("2.0.0-1"));
+
+        assertThat(versionCalculator.meta(Metadatas.COMMIT_DISTANCE).get(), is("1"));
+        assertThat(versionCalculator.meta(Metadatas.COMMIT_DISTANCE_TO_ROOT).get(), is("4"));
+    }
 }

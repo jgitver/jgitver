@@ -76,6 +76,9 @@ public class ConfigurableVersionStrategy extends VersionStrategy<ConfigurableVer
 
             getRegistrar().registerMetadata(Metadatas.COMMIT_DISTANCE, "" + headDistance);
 
+            int headToRootDistance = GitUtils.distanceToRoot(getRepository(), head.getGitObject());
+            getRegistrar().registerMetadata(Metadatas.COMMIT_DISTANCE_TO_ROOT, "" + headToRootDistance);
+
             boolean needsCommitTimestamp = useCommitTimestamp && !useSnapshot;
 
             try (RevWalk walk = new RevWalk(getRepository())) {

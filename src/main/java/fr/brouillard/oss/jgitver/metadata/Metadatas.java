@@ -148,6 +148,10 @@ public enum Metadatas {
      */
     COMMIT_DISTANCE,
     /**
+     * Exposes the distance from HEAD to the root ancestor.
+     */
+    COMMIT_DISTANCE_TO_ROOT,
+    /**
      * Exposes the commit timestamp instant in the current system timezone using
      * a simplified DateTimeFormatter.ISO_LOCAL_DATE_TIME
      */

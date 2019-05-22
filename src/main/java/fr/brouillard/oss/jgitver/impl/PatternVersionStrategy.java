@@ -73,6 +73,9 @@ public class PatternVersionStrategy extends VersionStrategy<PatternVersionStrate
             int headDistance = base.getHeadDistance();
             getRegistrar().registerMetadata(Metadatas.COMMIT_DISTANCE, "" + headDistance);
 
+            int headToRootDistance = GitUtils.distanceToRoot(getRepository(), head.getGitObject());
+            getRegistrar().registerMetadata(Metadatas.COMMIT_DISTANCE_TO_ROOT, "" + headToRootDistance);
+
             try (RevWalk walk = new RevWalk(getRepository())) {
                 RevCommit rc = walk.parseCommit(head.getGitObject());
                 String commitTimestamp = GitUtils.getTimestamp(rc.getAuthorIdent().getWhen().toInstant());
