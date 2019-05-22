@@ -237,16 +237,16 @@ public class Scenarios {
     /**
      * Builds repository witch merges H
      * <pre>
-     * *   f581afe (HEAD -> master) merge with F G
+     * *   eed0ba5 (HEAD -> master) H :: merge G into E
      * |\
-     * | * 887e3fd (tag: 1.0.1, hotfix) content F
-     * | * 2650f61 content E
-     * * | de302fa content D
-     * * | 95bd953 (tag: 1.1.1, tag: 1.1.0) content D
-     * * | 1dbae55 content C
+     * | * 5d514bf (tag: 1.0.1, hotfix) content G
+     * | * 4c8d8d2 content F
+     * * | a8d85b2 content E
+     * * | cf49743 (tag: 1.1.1, tag: 1.1.0) content D
+     * * | 8065bb5 content C
      * |/
-     * * ff650fe (tag: 1.0.0, tag: 0.9.1, tag: 0.9.0) content B
-     * * dfb908a (tag: 0.8.0) content A
+     * * 96da53b (tag: 1.0.0, tag: 0.9.1, tag: 0.9.0) content B
+     * * 2cd5f31 (tag: 0.8.0) content A
      * </pre>
      * @return the scenario object corresponding to the above git repository
      */
@@ -257,16 +257,16 @@ public class Scenarios {
     /**
      * Builds repository witch merges H
      * <pre>
-     * *   f581afe (HEAD -> master) merge with F G
+     * *   eed0ba5 (HEAD -> master) H :: merge G into E
      * |\
-     * | * 887e3fd (tag: v1.0.1, hotfix) content F
-     * | * 2650f61 content E
-     * * | de302fa content D
-     * * | 95bd953 (tag: v1.1.1, tag: v1.1.0) content D
-     * * | 1dbae55 content C
+     * | * 5d514bf (tag: v1.0.1, hotfix) content G
+     * | * 4c8d8d2 content F
+     * * | a8d85b2 content E
+     * * | cf49743 (tag: v1.1.1, tag: v1.1.0) content D
+     * * | 8065bb5 content C
      * |/
-     * * ff650fe (tag: v1.0.0, tag: v0.9.1, tag: v0.9.0) content B
-     * * dfb908a (tag: v0.8.0) content A
+     * * 96da53b (tag: v1.0.0, tag: v0.9.1, tag: v0.9.0) content B
+     * * 2cd5f31 (tag: v0.8.0) content A
      * </pre>
      * @return the scenario object corresponding to the above git repository
      */
@@ -630,16 +630,16 @@ public class Scenarios {
         /**
          * Builds repository witch merges H
          * <pre>
-         * *   f581afe (HEAD -> master) merge with F G
+         * *   eed0ba5 (HEAD -> master) H :: merge G into E
          * |\
-         * | * 887e3fd (tag: 1.0.1, hotfix) content F
-         * | * 2650f61 content E
-         * * | de302fa content D
-         * * | 95bd953 (tag: 1.1.1, tag: 1.1.0) content D
-         * * | 1dbae55 content C
+         * | * 5d514bf (tag: 1.0.1, hotfix) content G
+         * | * 4c8d8d2 content F
+         * * | a8d85b2 content E
+         * * | cf49743 (tag: 1.1.1, tag: 1.1.0) content D
+         * * | 8065bb5 content C
          * |/
-         * * ff650fe (tag: 1.0.0, tag: 0.9.1, tag: 0.9.0) content B
-         * * dfb908a (tag: 0.8.0) content A
+         * * 96da53b (tag: 1.0.0, tag: 0.9.1, tag: 0.9.0) content B
+         * * 2cd5f31 (tag: 0.8.0) content A
          * </pre>
          * @return the scenario object corresponding to the above git repository
          */
@@ -667,16 +667,16 @@ public class Scenarios {
         /**
          * Builds repository witch merges H
          * <pre>
-         * *   f581afe (HEAD -> master) merge with F G
+         * *   eed0ba5 (HEAD -> master) H :: merge G into E
          * |\
-         * | * 887e3fd (tag: v1.0.1, hotfix) content F
-         * | * 2650f61 content E
-         * * | de302fa content D
-         * * | 95bd953 (tag: v1.1.1, tag: v1.1.0) content D
-         * * | 1dbae55 content C
+         * | * 5d514bf (tag: v1.0.1, hotfix) content G
+         * | * 4c8d8d2 content F
+         * * | a8d85b2 content E
+         * * | cf49743 (tag: v1.1.1, tag: v1.1.0) content D
+         * * | 8065bb5 content C
          * |/
-         * * ff650fe (tag: v1.0.0, tag: v0.9.1, tag: v0.9.0) content B
-         * * dfb908a (tag: v0.8.0) content A
+         * * 96da53b (tag: v1.0.0, tag: v0.9.1, tag: v0.9.0) content B
+         * * 2cd5f31 (tag: v0.8.0) content A
          * </pre>
          * @return the scenario object corresponding to the above git repository
          */
