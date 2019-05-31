@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import fr.brouillard.oss.jgitver.impl.jgit.root.RootCommit;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -38,7 +39,6 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.DepthWalk;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevSort;
-import org.eclipse.jgit.revwalk.filter.RevFilter;
 
 public class GitUtils {
     public static String tagNameFromRef(Ref tag) {
@@ -107,19 +107,19 @@ public class GitUtils {
      * @return the computed distance
      */
     public static int distanceToRoot(Repository repository, AnyObjectId objectId) {
-        try (DepthWalk.RevWalk walk = new DepthWalk.RevWalk(repository, Integer.MAX_VALUE)) {
-            RevCommit startCommit = walk.parseCommit(objectId);
-            walk.markRoot(startCommit);
-            walk.setRetainBody(false);
-            walk.sort(RevSort.REVERSE);
-            Iterator<RevCommit> iterator = walk.iterator();
-            if (iterator.hasNext()) {
-                DepthWalk.Commit next = (DepthWalk.Commit) iterator.next();
-                return DistanceCalculator.create(objectId, repository).distanceTo(next.getId()).get();
+        try (RootCommit.RootWalk rootWalk = new RootCommit.RootWalk(repository)) {
+            RevCommit commit = repository.parseCommit(objectId);
+            rootWalk.markStart(commit);
+            Iterator<RevCommit> rootsIT = rootWalk.iterator();
+
+            if (!rootsIT.hasNext()) {
+                throw new IllegalStateException("could not find at least one root commit in the repository");
             }
-            throw new IllegalStateException("cannot find repository root node for distance computation");
-        } catch (Exception e) {
-            throw new IllegalStateException("cannot compute root distance", e);
+
+            RevCommit foundRoot = rootsIT.next();
+            return DistanceCalculator.create(objectId, repository).distanceTo(foundRoot.getId()).get();
+        } catch (IOException e) {
+            throw new IllegalStateException("failure retrieving root commit in the repository");
         }
     }
 
