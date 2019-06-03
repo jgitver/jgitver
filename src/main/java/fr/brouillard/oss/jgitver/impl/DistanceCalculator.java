@@ -16,7 +16,9 @@
 package fr.brouillard.oss.jgitver.impl;
 
 import java.io.IOException;
+import java.util.Deque;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Optional;
 
 import org.eclipse.jgit.lib.AnyObjectId;
@@ -24,6 +26,8 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.DepthWalk;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevSort;
+import org.eclipse.jgit.revwalk.RevWalk;
 
 /**
  * Allow to compute git depth, in term of commit distance between several commits.
@@ -37,13 +41,14 @@ public interface DistanceCalculator {
      * @return a reusable {@link DistanceCalculator} object
      */
     static DistanceCalculator create(AnyObjectId start, Repository repository, int maxDepth) {
-        return new DepthWalkDistanceCalculator(start, repository, maxDepth > 0 ? maxDepth : Integer.MAX_VALUE);
+        CalculatorKind calculatorBuilder = GitUtils.calculatorBuilder();
+        return calculatorBuilder.calculator(start, repository, maxDepth > 0 ? maxDepth : Integer.MAX_VALUE);
     }
 
     /**
      * Creates a reusable {@link DistanceCalculator} on the given repository for the given start commit,
      * uses Integer.MAX_VALUE as the maximum depth distance.
-     * @see #create(ObjectId, Repository, int)
+     * @see #create(AnyObjectId, Repository, int)
      */
     static DistanceCalculator create(AnyObjectId start, Repository repository) {
         return create(start, repository, Integer.MAX_VALUE);
@@ -58,12 +63,61 @@ public interface DistanceCalculator {
      */
     Optional<Integer> distanceTo(ObjectId target);
 
-    class DepthWalkDistanceCalculator implements DistanceCalculator {
+    /**
+     * DistanceCalculator that mimics 'git log --typo-sort --oneline | wc -l' minus 1
+     */
+    public class LogWalkDistanceCalculator implements DistanceCalculator {
         private final AnyObjectId startId;
         private final Repository repository;
         private final int maxDepth;
 
-        DepthWalkDistanceCalculator(AnyObjectId start, Repository repository, int maxDepth) {
+        public LogWalkDistanceCalculator(AnyObjectId start, Repository repository, int maxDepth) {
+            this.startId = start;
+            this.repository = repository;
+            this.maxDepth = maxDepth;
+        }
+
+        @Override
+        public Optional<Integer> distanceTo(ObjectId target) {
+            try (RevWalk walk = new RevWalk(this.repository)) {
+                RevCommit startCommit = walk.parseCommit(startId);
+                walk.setRetainBody(false);
+                walk.markStart(startCommit);
+                walk.sort(RevSort.TOPO);
+
+                System.out.printf("from %s :: %s\n", startId.name(), target.name());
+
+                Iterator<? extends RevCommit> commitIterator = walk.iterator();
+                int distance = 0;
+                while (commitIterator.hasNext()) {
+                    RevCommit commit = commitIterator.next();
+
+                    System.out.printf("%d - %s\n", distance, commit.getId().name());
+                    if (commit.getId().getName().equals(target.getName())) {
+                        // we found it
+                        return Optional.of(distance);
+                    }
+
+                    distance++;
+
+                    if (distance > maxDepth) {
+                        return Optional.empty();
+                    }
+                }
+            } catch (Exception ignore) {
+                ignore.printStackTrace();
+            }
+
+            return Optional.empty();
+        }
+    }
+
+    public class DepthWalkDistanceCalculator implements DistanceCalculator {
+        private final AnyObjectId startId;
+        private final Repository repository;
+        private final int maxDepth;
+
+        public DepthWalkDistanceCalculator(AnyObjectId start, Repository repository, int maxDepth) {
             this.startId = start;
             this.repository = repository;
             this.maxDepth = maxDepth;
@@ -81,6 +135,7 @@ public interface DistanceCalculator {
 
                 while (commitIterator.hasNext()) {
                     RevCommit commit = commitIterator.next();
+                    
                     if (commit.getId().getName().equals(target.getName())) {
                         // we found it
                         if (commit instanceof DepthWalk.Commit) {
@@ -104,5 +159,92 @@ public interface DistanceCalculator {
             }
             return Optional.empty();
         }
+    }
+
+    /**
+     * Calculates the distance by trying to find the target commit first on the main branch and then following any other branches.
+     */
+    public class FirstParentWalkDistanceCalculator implements DistanceCalculator {
+        private final AnyObjectId startId;
+
+        private final Repository repository;
+
+        private final int maxDepth;
+
+        public FirstParentWalkDistanceCalculator(AnyObjectId start, Repository repository, int maxDepth) {
+            this.startId = start;
+            this.repository = repository;
+            this.maxDepth = maxDepth;
+        }
+
+        public Optional<Integer> distanceTo(ObjectId target) {
+            try (RevWalk walk = new RevWalk(repository)) {
+                RevCommit head = walk.parseCommit(startId);
+
+                Deque<Pair<Integer, RevCommit>> parentsStack = new LinkedList<>();
+                parentsStack.add(new Pair(0, head));
+
+                int commitCount = 0;
+                while (!parentsStack.isEmpty()) {
+                    // based on https://stackoverflow.com/questions/33038224/how-to-call-git-show-first-parent-in-jgit
+                    RevCommit[] parents = head.getParents();
+
+                    if (head.getId().getName().equals(target.getName())) {
+                        // we found it
+                        return Optional.of(Integer.valueOf(commitCount));
+                    }
+                    // get next head
+                    if (parents != null && parents.length > 0) {
+                        // follow the first parent
+                        head = walk.parseCommit(parents[0]);
+                        // remember other parents as we may need to follow the other parents as well if
+                        // the target is not on the current branch
+                        for (int i = 1; i < parents.length; i++) {
+                            parentsStack.push(new Pair(commitCount, parents[i]));
+                        }
+                    } else {
+                        // traverse next parent and reset count
+                        Pair<Integer, RevCommit> previous = parentsStack.poll();
+                        commitCount = previous.getLeft();
+                        RevCommit nextParent = previous.getRight();
+                        head = walk.parseCommit(nextParent);
+                    }
+
+                    if (commitCount >= maxDepth) {
+                        return Optional.empty();
+                    }
+
+                    commitCount++;
+                }
+            } catch (IOException ignore) {
+                ignore.printStackTrace();
+            }
+            return Optional.empty();
+        }
+    }
+
+    public static enum CalculatorKind {
+        /**
+         * Distance calculator which emulates 'git log --typo-sort --oneline | wc -l' minus 1
+         */
+        LOG {
+            @Override
+            DistanceCalculator calculator(AnyObjectId start, Repository repository, int maxDepth) {
+                return new LogWalkDistanceCalculator(start, repository, maxDepth);
+            }
+        },
+        DEPTH {
+            @Override
+            DistanceCalculator calculator(AnyObjectId start, Repository repository, int maxDepth) {
+                return new DepthWalkDistanceCalculator(start, repository, maxDepth);
+            }
+        }, FIRST_PARENT {
+            @Override
+            DistanceCalculator calculator(AnyObjectId start, Repository repository, int maxDepth) {
+                return new FirstParentWalkDistanceCalculator(start, repository, maxDepth);
+            }
+        };
+
+        abstract DistanceCalculator calculator(AnyObjectId start, Repository repository, int maxDepth);
     }
 }

@@ -123,7 +123,13 @@ public class GitUtils {
         }
     }
 
+    public static DistanceCalculator.CalculatorKind calculatorBuilder() {
+        return DistanceCalculator.CalculatorKind.valueOf(System.getProperty(CALCULATOR_KIND_SYSTEM_PROPERTY, DistanceCalculator.CalculatorKind.FIRST_PARENT.name()));
+    }
+
+
     public static final String PREFIX_SYSTEM_PROPERTY = "jgitver.";
     private static final String BRANCH_SYSTEM_PROPERTY = "jgitver.branch";
+    private static final String CALCULATOR_KIND_SYSTEM_PROPERTY = "jgitver.calculator.kind";
     private static final String BRANCH_ENV_VARIABLE = "JGITVER_BRANCH";
 }

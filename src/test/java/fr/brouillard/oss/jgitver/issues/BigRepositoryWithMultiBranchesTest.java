@@ -42,6 +42,24 @@ public class BigRepositoryWithMultiBranchesTest extends ScenarioTest {
         );
     }
 
+    /**
+     * Builds repository with many commits and a tag on the branch
+     * <pre>
+     * {@code
+     * *   318c3c9 (HEAD -> master) C :: merge BL into master
+     * |\
+     * | * 4d841f6 (branchB) 'last B' BL
+     * | . ...
+     * | * xxxxxxx (branchB) commit x Bx
+     * | * a50dde7 (branchB, tag: 2.0.0) 'start of branch B' B
+     * . | ...
+     * * | xxxxxxx commit x Ax
+     * |/
+     * * d74b251 (tag: 1.0.0) start A
+     * }
+     * </pre>
+     * @return the scenario object corresponding to the above git repository
+     */
     static Scenarios.Scenario buildScenario() {
         long start = System.currentTimeMillis();
         try {

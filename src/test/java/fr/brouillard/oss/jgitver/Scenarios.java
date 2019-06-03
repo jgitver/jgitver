@@ -326,6 +326,9 @@ public class Scenarios {
         return Builders.s16_merges_with_short_path().getScenario();
     }
 
+    public static Scenario s17_feature_branches_with_shorter_path() {
+        return Builders.s17_feature_branches_with_shorter_path().getScenario();
+    }
 
     public static class Builders {
         /**
@@ -782,6 +785,103 @@ public class Scenarios {
                     .merge("E", "I")
                     .merge("H", "J");
         }
+        /**
+         * Builds repository with a feature branch that contains less commits than the master branch
+         * <pre>
+         * {@code
+         * *   318c3c9 (HEAD -> master) M2 :: merge F into H
+         * |\
+         * * | a50dde7 content H
+         * * | 4d841f6 content G
+         * | * 368e6d8 (b2) content F
+         * * |   ed0a74c M1 :: merge E into D
+         * |\ \
+         * | * | 0d42532 (b1) content E
+         * * | | 4a2582a content D
+         * * | | 5fcc09c content C
+         * | |/
+         * * | fe753dd content B
+         * |/
+         * * d74b251 (tag: 1.0.0) content A
+         * }
+         * </pre>
+         * @return the scenario object corresponding to the above git repository
+         */
+        public static ScenarioBuilder s17_feature_branches_with_shorter_path() {
+            return new ScenarioBuilder()
+                    .commit("content", "A")
+                    .tag("1.0.0")
+                    .commit("content", "B")
+                    .commit("content", "C")
+                    .commit("content", "D")
+                    .branchOnAppId("b1","A")
+                    .commit("content", "E")
+                    .branchOnAppId("b2","A")
+                    .commit("content", "F")
+                    .master()
+                    .merge("E", "M1", MergeCommand.FastForwardMode.NO_FF)
+                    .commit("content", "G")
+                    .commit("content", "H")
+                    .merge("F", "M2", MergeCommand.FastForwardMode.NO_FF)
+                    .commit("content", "I");
+        }
+
+        /**
+         * Feature branch, wrapped inside another one
+         * <pre>
+         * {@code
+         * * c1faa0c - (HEAD -> master) content H
+         * *   93ac330 - M2 :: merge C2 into M1
+         * |\
+         * | * 16adcca - (bC) content C2
+         * | * 71b4228 - content C1
+         * * |   ae2d477 - M1 :: merge E2 into D
+         * |\ \
+         * | * | 381c149 - (bE) content E2
+         * | * | 0dce471 - content E1
+         * |/ /
+         * * | 91fc982 - content D
+         * |/
+         * * f8b17eb - content B
+         * * 9e90b91 - content A
+         * }
+         * </pre>
+         * @return
+         */
+        public static ScenarioBuilder s18_wrapped_feature_branches() {
+            return new Scenarios.ScenarioBuilder()
+                    .commit("content", "A")
+                    .commit("content", "B")
+                    .branchOnAppId("bC", "B")
+                    .commit("content", "C1")
+                    .commit("content", "C2")
+                    .master()
+                    .commit("content", "D")
+                    .branchOnAppId("bE", "D")
+                    .commit("content", "E1")
+                    .commit("content", "E2")
+                    .master()
+                    .merge("E2", "M1", MergeCommand.FastForwardMode.NO_FF)
+                    .merge("C2", "M2", MergeCommand.FastForwardMode.NO_FF)
+                    .commit("content", "H");
+        }
+        public static ScenarioBuilder s19_merges_in_feature_branch() {
+            return new Scenarios.ScenarioBuilder()
+                    .commit("content", "A")
+                    .commit("content", "B")
+                    .branchOnAppId("bC", "B")
+                    .commit("content", "C1")
+                    .commit("content", "C2")
+                    .branchOnAppId("bD", "C1")
+                    .commit("content", "D1")
+                    .commit("content", "D2")
+                    .checkoutBranch("bC")
+                    .merge("D2", "M1", MergeCommand.FastForwardMode.NO_FF)
+                    .commit("content", "C3")
+                    .master()
+                    .merge("C3", "M2", MergeCommand.FastForwardMode.NO_FF)
+                    .commit("content", "E");
+        }
     }
 
     public static class Scenario {
@@ -859,16 +959,30 @@ public class Scenarios {
         }
 
         /**
-         * Reset the current repository to the master HEAD.
+         * Checkout the given branch.
+         * @return the builder itself to continue building the scenario
+         */
+        public ScenarioBuilder checkoutBranch(String branchName) {
+            try {
+                git.checkout().setName(branchName).call();
+            } catch (Exception ex) {
+                throw new IllegalStateException("cannot checkout " + branchName, ex);
+            }
+            return this;
+        }
+
+        /**
+         * Checkout the master branch.
          * @return the builder itself to continue building the scenario
          */
         public ScenarioBuilder master() {
-            try {
-                git.checkout().setName("master").call();
-            } catch (Exception ex) {
-                throw new IllegalStateException("cannot checkout master", ex);
-            }
-            return this;
+            return checkoutBranch("master");
+//            try {
+//                git.checkout().setName("master").call();
+//            } catch (Exception ex) {
+//                throw new IllegalStateException("cannot checkout master", ex);
+//            }
+//            return this;
         }
 
         /**
