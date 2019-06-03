@@ -59,7 +59,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- runtime dependencies -->
-        <org.eclipse.jgit.version>5.3.1.201904271842-r</org.eclipse.jgit.version>
+        <org.eclipse.jgit.version>5.1.3.201810200350-r</org.eclipse.jgit.version>
         <petitparser-core.version>2.2.0</petitparser-core.version>
 
         <!-- optional dependencies, for use with the CLI -->
