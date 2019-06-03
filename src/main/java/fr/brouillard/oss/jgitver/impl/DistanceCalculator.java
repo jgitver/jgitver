@@ -182,7 +182,7 @@ public interface DistanceCalculator {
                 RevCommit head = walk.parseCommit(startId);
 
                 Deque<Pair<Integer, RevCommit>> parentsStack = new LinkedList<>();
-                parentsStack.add(new Pair(0, head));
+                parentsStack.add(Pair.of(0, head));
 
                 int commitCount = 0;
                 while (!parentsStack.isEmpty()) {
@@ -200,7 +200,7 @@ public interface DistanceCalculator {
                         // remember other parents as we may need to follow the other parents as well if
                         // the target is not on the current branch
                         for (int i = 1; i < parents.length; i++) {
-                            parentsStack.push(new Pair(commitCount, parents[i]));
+                            parentsStack.push(Pair.of(commitCount, parents[i]));
                         }
                     } else {
                         // traverse next parent and reset count

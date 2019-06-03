@@ -49,4 +49,16 @@ public class Pair<U,V> {
     public V getRight() {
         return right;
     }
+
+    /**
+     * Method factory of a pair.
+     * @param left the left value
+     * @param right the right value
+     * @param <U> the type of the left value
+     * @param <V> the type of the right value
+     * @return a non null Pair object
+     */
+    public static <U,V> Pair<U, V> of(U left, V right) {
+        return new Pair<>(left, right);
+    }
 }
