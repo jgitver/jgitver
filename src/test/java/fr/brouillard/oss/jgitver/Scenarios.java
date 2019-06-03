@@ -865,6 +865,29 @@ public class Scenarios {
                     .merge("C2", "M2", MergeCommand.FastForwardMode.NO_FF)
                     .commit("content", "H");
         }
+
+        /**
+         * Merges performed inside a feature branch
+         * <pre>
+         * {@code
+         * * 7b786d9 - (HEAD -> master) content E
+         * *   3e1fd7f - M2 :: merge C3 into B
+         * |\
+         * | * 8e25e94 - (bC) content C3
+         * | *   bd2a45f - M1 :: merge D2 into C2
+         * | |\
+         * | | * c2fa692 - (bD) content D2
+         * | | * 272629b - content D1
+         * | * | ed6874e - content C2
+         * | |/
+         * | * e9dff65 - content C1
+         * |/
+         * * 012d0e3 - content B
+         * * 6873a91 - content A
+         * }
+         * </pre>
+         * @return
+         */
         public static ScenarioBuilder s19_merges_in_feature_branch() {
             return new Scenarios.ScenarioBuilder()
                     .commit("content", "A")
