@@ -51,7 +51,7 @@ public class Issue22OnJGitverHistoryTest {
     @BeforeAll
     public static void initialization() throws GitAPIException {
         defaultTZ = TimeZone.getDefault();
-        TimeZone.setDefault(TimeZone.getTimeZone("GMT+1:00"));
+        TimeZone.setDefault(TimeZone.getTimeZone("GMT+2:00"));
 
         cloneDir = new File(Files.createTempDir(), "jgitver");
         repoDir = new File(cloneDir, ".git");
@@ -82,18 +82,17 @@ public class Issue22OnJGitverHistoryTest {
     }
 
     @Test
-    public void check_commit_F0E315BC69EC53C3F1F72D54D63F9145012776A1() throws IOException {
+    public void check_commit_6F9A3BD838BAD514BF994605F6888035EC87289B() throws IOException {
 /*
-Commit: f0e315bc69ec53c3f1f72d54d63f9145012776a1 [f0e315b]
-Parents: 9660113279
-Author: Matthieu Brouillard <matthieu@brouillard.fr>
-Date: jeudi 23 février 2017 19:13:09
-Committer: Matthieu Brouillard
-Commit Date: vendredi 24 février 2017 09:39:10
+commit 6f9a3bd838bad514bf994605f6888035ec87289b
+Author:     Matthieu Brouillard <matthieu@brouillard.fr>
+AuthorDate: Mon Jun 3 08:17:02 2019 +0200
+Commit:     Matthieu Brouillard <matthieu@brouillard.fr>
+CommitDate: Mon Jun 3 08:17:02 2019 +0200
 */
-        String commitId = "F0E315BC69EC53C3F1F72D54D63F9145012776A1";
+        String commitId = "6F9A3BD838BAD514BF994605F6888035EC87289B";
         unchecked(() -> git.checkout().setName(commitId).call());
-        assertThat(versionCalculator.getVersion(), is("0.3.0-20170223191309"));
+        assertThat(versionCalculator.getVersion(), is("0.11.0-20190603081702"));
     }
 
     @AfterEach
