@@ -33,6 +33,8 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 
+import fr.brouillard.oss.jgitver.Scenarios.Scenario;
+
 import com.google.common.io.Files;
 
 @SuppressWarnings({"checkstyle:nonemptyatclausedescription","checkstyle:javadocparagraph", "checkstyle:summaryjavadoc"})
@@ -975,6 +977,26 @@ public class Scenarios {
                 this.scenario = new Scenario(new File(Files.createTempDir(), ".git"));
                 this.repository = FileRepositoryBuilder.create(scenario.getRepositoryLocation());
                 repository.create();
+                this.git = new Git(repository);
+            } catch (Exception ex) {
+                throw new IllegalStateException("failure building scenario", ex);
+            }
+        }
+        
+        /**
+         * Creates a ScenarioBuilder object from an existing repository used for integration testing or debugging. 
+         */
+        public ScenarioBuilder(File path) {
+            try {
+                // make sure file exists and is a directory
+                if (!path.isDirectory() || !path.canRead()) {
+                    throw new IllegalArgumentException("Path " + path + " not readable or not a directory");
+                }
+                this.scenario = new Scenario(path);
+                FileRepositoryBuilder repositoryBuilder = new FileRepositoryBuilder();
+                repositoryBuilder.setMustExist(true);
+                repositoryBuilder.setGitDir(path);
+                this.repository = repositoryBuilder.build();
                 this.git = new Git(repository);
             } catch (Exception ex) {
                 throw new IllegalStateException("failure building scenario", ex);
