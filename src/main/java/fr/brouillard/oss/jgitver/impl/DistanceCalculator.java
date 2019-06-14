@@ -17,9 +17,12 @@ package fr.brouillard.oss.jgitver.impl;
 
 import java.io.IOException;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import org.eclipse.jgit.lib.AnyObjectId;
 import org.eclipse.jgit.lib.ObjectId;
@@ -79,6 +82,7 @@ public interface DistanceCalculator {
 
         @Override
         public Optional<Integer> distanceTo(ObjectId target) {
+            Objects.requireNonNull(target);
             try (RevWalk walk = new RevWalk(this.repository)) {
                 RevCommit startCommit = walk.parseCommit(startId);
                 walk.setRetainBody(false);
@@ -183,6 +187,7 @@ public interface DistanceCalculator {
 
                 Deque<Pair<Integer, RevCommit>> parentsStack = new LinkedList<>();
                 parentsStack.add(Pair.of(0, head));
+                Set<RevCommit> processedRevs = new HashSet<>();
 
                 int commitCount = 0;
                 while (!parentsStack.isEmpty()) {
@@ -194,20 +199,26 @@ public interface DistanceCalculator {
                         return Optional.of(Integer.valueOf(commitCount));
                     }
                     // get next head
+                    RevCommit firstParent = null;
                     if (parents != null && parents.length > 0) {
-                        // follow the first parent
-                        head = walk.parseCommit(parents[0]);
+                        firstParent = parents[0];
+                    }
+                    if (firstParent != null && !processedRevs.contains(firstParent)) {
+                        // follow the first parent but only if not yet processed for faster processing and to avoid loops
+                        head = walk.parseCommit(firstParent);
+                        processedRevs.add(firstParent);
                         // remember other parents as we may need to follow the other parents as well if
-                        // the target is not on the current branch
+                        // the target is not on the current branch.
                         for (int i = 1; i < parents.length; i++) {
                             parentsStack.push(Pair.of(commitCount, parents[i]));
                         }
                     } else {
-                        // traverse next parent and reset count
+                        // traverse next parent
                         Pair<Integer, RevCommit> previous = parentsStack.poll();
                         commitCount = previous.getLeft();
                         RevCommit nextParent = previous.getRight();
                         head = walk.parseCommit(nextParent);
+                        processedRevs.add(nextParent);
                     }
 
                     if (commitCount >= maxDepth) {
