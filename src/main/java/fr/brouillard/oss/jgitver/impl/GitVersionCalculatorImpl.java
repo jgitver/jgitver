@@ -70,6 +70,7 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
     private boolean useGitCommitTimestamp = false;
     private boolean useDirty = false;
     private boolean useLongFormat = false;
+    private boolean useSnapshot = false;
     private int gitCommitIdLength = 8;
     private int maxDepth = Integer.MAX_VALUE;
     private List<BranchingPolicy> qualifierBranchingPolicies;
@@ -148,7 +149,8 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
                             .setUseGitCommitId(useGitCommitId)
                             .setGitCommitIdLength(gitCommitIdLength)
                             .setUseCommitTimestamp(useGitCommitTimestamp)
-                            .setUseLongFormat(useLongFormat);
+                            .setUseLongFormat(useLongFormat)
+                            .setUseSnapshot(useSnapshot);
                     break;
                 case PATTERN:
                     strategy = new PatternVersionStrategy(vnc, repository, git, metadatas)
@@ -647,6 +649,12 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
     public GitVersionCalculator setLookupPolicy(LookupPolicy policy) {
         this.lookupPolicy = policy;
         this.computationRequired = true;
+        return this;
+    }
+
+    @Override
+    public GitVersionCalculator setUseSnapshot(boolean useSnapshot) {
+        this.useSnapshot = useSnapshot;
         return this;
     }
 

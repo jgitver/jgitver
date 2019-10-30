@@ -37,6 +37,7 @@ public class ConfigurableVersionStrategy extends VersionStrategy<ConfigurableVer
     private int gitCommitIdLength = 8;
     private boolean useDirty = false;
     private boolean useLongFormat;
+    private boolean useSnapshot = false;
 
     public ConfigurableVersionStrategy(VersionNamingConfiguration vnc, Repository repository, Git git, MetadataRegistrar metadatas) {
         super(vnc, repository, git, metadatas);
@@ -44,12 +45,13 @@ public class ConfigurableVersionStrategy extends VersionStrategy<ConfigurableVer
 
     @Override
     public Version build(Commit head, List<Commit> parents) throws VersionCalculationException {
+        if (useSnapshot && useDistance) {
+            throw new VersionCalculationException("Can't use useSnapshot and useDistance in same time");
+        }
         try {
             Commit base = findVersionCommit(head, parents);
             Ref tagToUse = findTagToUse(head, base);
             Version baseVersion = getBaseVersionAndRegisterMetadata(base,tagToUse);
-
-            final boolean useSnapshot = baseVersion.isSnapshot();
 
             if (!isBaseCommitOnHead(head, base) && autoIncrementPatch && !useLongFormat) {
                 // we are not on head
@@ -61,19 +63,44 @@ public class ConfigurableVersionStrategy extends VersionStrategy<ConfigurableVer
 
             int headDistance = base.getHeadDistance();
 
-            if ((useDistance || useLongFormat) && !useSnapshot) {
-                if (tagToUse == null) {
-                    // no tag was found, let's count from initial commit
-                    baseVersion = baseVersion.addQualifier("" + headDistance);
-                } else {
-                    // use distance when long format is asked
-                    // or not on head
-                    // or if on head with a light tag
-                    if (useLongFormat || !isBaseCommitOnHead(head, base) || !GitUtils.isAnnotated(tagToUse)) {
+            final boolean isTagSnapshot = baseVersion.isSnapshot();
+
+            if (useDistance) {
+                if (!isTagSnapshot) {
+                    if (tagToUse == null) {
+                        // no tag was found, let's count from initial commit
                         baseVersion = baseVersion.addQualifier("" + headDistance);
+                    } else {
+                        // use distance when long format is asked
+                        // or not on head
+                        // or if on head with a light tag
+                        if (useLongFormat || !isBaseCommitOnHead(head, base) || !GitUtils.isAnnotated(tagToUse)) {
+                            baseVersion = baseVersion.addQualifier("" + headDistance);
+                        }
                     }
                 }
             }
+
+            boolean needSnapshotQualifier = isTagSnapshot;
+            if (useSnapshot) {
+                needSnapshotQualifier = isTagSnapshot || !isBaseCommitOnHead(head, base)
+                        || !GitUtils.isAnnotated(tagToUse);
+            }
+
+//            if ((useDistance || useLongFormat) && !isTagSnapshot) {
+//                if (tagToUse == null) {
+//                    // no tag was found, let's count from initial commit
+//                    baseVersion = baseVersion.addQualifier("" + headDistance);
+//                } else {
+//                    // use distance when long format is asked
+//                    // or not on head
+//                    // or if on head with a light tag
+//                    if (useLongFormat || !isBaseCommitOnHead(head, base) || !GitUtils.isAnnotated(tagToUse)) {
+//                        baseVersion = baseVersion.addQualifier("" + headDistance);
+//                    }
+//                }
+//            }
+
 
             getRegistrar().registerMetadata(Metadatas.COMMIT_DISTANCE, "" + headDistance);
 
@@ -82,7 +109,7 @@ public class ConfigurableVersionStrategy extends VersionStrategy<ConfigurableVer
                 getRegistrar().registerMetadata(Metadatas.COMMIT_DISTANCE_TO_ROOT, "" + headToRootDistance);
             }
 
-            boolean needsCommitTimestamp = useCommitTimestamp && !useSnapshot;
+            boolean needsCommitTimestamp = useCommitTimestamp && !isTagSnapshot;
 
             try (RevWalk walk = new RevWalk(getRepository())) {
                 RevCommit rc = walk.parseCommit(head.getGitObject());
@@ -118,7 +145,7 @@ public class ConfigurableVersionStrategy extends VersionStrategy<ConfigurableVer
                 baseVersion = baseVersion.addQualifier("dirty");
             }
 
-            return useSnapshot ? baseVersion.removeQualifier("SNAPSHOT").addQualifier("SNAPSHOT") : baseVersion;
+            return needSnapshotQualifier ? baseVersion.removeQualifier("SNAPSHOT").addQualifier("SNAPSHOT") : baseVersion;
         } catch (Exception ex) {
             throw new VersionCalculationException("cannot compute version", ex);
         }
@@ -150,5 +177,9 @@ public class ConfigurableVersionStrategy extends VersionStrategy<ConfigurableVer
 
     public ConfigurableVersionStrategy setUseLongFormat(boolean useLongFormat) {
         return runAndGetSelf(() -> this.useLongFormat = useLongFormat);
+    }
+
+    public VersionStrategy setUseSnapshot(boolean useSnapshot) {
+        return runAndGetSelf(() -> this.useSnapshot = useSnapshot);
     }
 }
