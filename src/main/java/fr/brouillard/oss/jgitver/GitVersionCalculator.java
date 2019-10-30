@@ -276,4 +276,14 @@ public interface GitVersionCalculator extends AutoCloseable, MetadataProvider {
      * @since 0.10.0
      */
     GitVersionCalculator setLookupPolicy(LookupPolicy policy);
+
+
+    /**
+     * When true, append a qualifier with the "SNAPSHOT" qualifier if no version tags found.
+     *
+     * @param useSnapshot if true, a qualifier with "SNAPSHOT" qualifier if no version tags found.
+     * @return itself to chain settings
+     * @since 0.12.0
+     */
+    GitVersionCalculator setUseSnapshot(boolean useSnapshot);
 }
