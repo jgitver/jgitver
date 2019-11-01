@@ -65,6 +65,12 @@ public class Options {
     @Option(names = {"--nonQualifierBranches"}, description = "list of fixed name for non qualifier branches")
     String nonQualifierBranches;
 
+    @Option(names = {"--versionPattern"}, description = "set version pattern (PATTERN strategy)")
+    String versionPattern;
+
+    @Option(names = {"--tagVersionPattern"}, description = "set version pattern for when on annotated tag (PATTERN strategy)")
+    String tagVersionPattern;
+
     @Option(names = {"--dir", "--directory"}, description = "root directory for git project")
     File directory = new File(System.getProperty("user.dir"));
 
