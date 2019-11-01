@@ -95,6 +95,14 @@ public class RunnableCLI {
             gvc.setNonQualifierBranches(opts.nonQualifierBranches);
         }
 
+        if (opts.versionPattern != null) {
+            gvc.setVersionPattern(opts.versionPattern);
+        }
+
+        if (opts.tagVersionPattern != null) {
+            gvc.setTagVersionPattern(opts.tagVersionPattern);
+        }
+
         if (opts.metadatas == null) {
             // no metadatas provided, just output the version
             normal.print(gvc.getVersion());
