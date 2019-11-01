@@ -53,7 +53,7 @@ public class RunnableCLI {
         CommandLine cli = new CommandLine(opts);
 
         try {
-            cli.parse(args);
+            cli.parseArgs(args);
         } catch (CommandLine.UnmatchedArgumentException ex) {
             CommandLine.usage(new Options(), error);
             return 1;
