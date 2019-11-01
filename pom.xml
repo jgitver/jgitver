@@ -63,7 +63,7 @@
         <petitparser-core.version>2.2.0</petitparser-core.version>
 
         <!-- optional dependencies, for use with the CLI -->
-        <picocli.version>3.9.6</picocli.version>
+        <picocli.version>4.0.4</picocli.version>
         <slf4j-nop.version>1.7.26</slf4j-nop.version>
 
         <!-- test dependencies -->
