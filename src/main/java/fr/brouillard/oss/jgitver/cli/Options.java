@@ -24,9 +24,11 @@ import picocli.CommandLine.Option;
 
 @Command(name = "java -jar jgitver-executable.jar", version = {"jgitver %s (%s)"})
 public class Options {
+    @SuppressWarnings("unused")
     @Option(names = {"-V", "--version"}, versionHelp = true, description = "display version info")
     boolean versionInfoRequested;
 
+    @SuppressWarnings("unused")
     @Option(names = {"-h", "--help"}, usageHelp = true, description = "display usage")
     boolean helpRequested = false;
 
