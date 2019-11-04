@@ -17,11 +17,10 @@ package fr.brouillard.oss.jgitver.cli;
 
 import java.io.PrintStream;
 import java.util.Arrays;
-import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import fr.brouillard.oss.jgitver.BranchingPolicy;
 import fr.brouillard.oss.jgitver.GitVersionCalculator;
 import fr.brouillard.oss.jgitver.JGitverProperties;
 import fr.brouillard.oss.jgitver.metadata.Metadatas;
@@ -90,6 +89,32 @@ public class RunnableCLI {
             gvc.setFindTagVersionPattern(opts.pattern);
         }
         gvc.setLookupPolicy(opts.policy);
+
+        if (opts.qualifierBranchPolicies != null) {
+            gvc.setQualifierBranchingPolicies(opts.qualifierBranchPolicies
+                    .stream()
+                    .map(
+                            (Options.QualifierBranchPolicy policy) -> {
+                                if(policy.branchPolicyPattern == null) {
+                                    throw new IllegalArgumentException(
+                                            "Each usage of branchPolicyTransformation must have a branchPolicyPattern");
+                                }
+
+                                if (policy.branchPolicyTransformations != null
+                                        && policy.branchPolicyTransformations.size() > 0) {
+                                    return new BranchingPolicy(
+                                            policy.branchPolicyPattern,
+                                            policy.branchPolicyTransformations
+                                                    .stream()
+                                                    .map(BranchingPolicy.BranchNameTransformations::name)
+                                                    .collect(Collectors.toList()));
+                                } else {
+                                    return new BranchingPolicy(policy.branchPolicyPattern);
+                                }
+                            }
+                    )
+                    .collect(Collectors.toList()));
+        }
 
         if (opts.nonQualifierBranches != null) {
             gvc.setNonQualifierBranches(opts.nonQualifierBranches);

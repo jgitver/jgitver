@@ -16,9 +16,12 @@
 package fr.brouillard.oss.jgitver.cli;
 
 import java.io.File;
+import java.util.List;
 
+import fr.brouillard.oss.jgitver.BranchingPolicy;
 import fr.brouillard.oss.jgitver.LookupPolicy;
 import fr.brouillard.oss.jgitver.Strategies;
+import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -76,4 +79,16 @@ public class Options {
 
     @Option(names = {"--metas", "--metadatas"}, description = "metadatas to show, separated by ','")
     String metadatas;
+
+    @ArgGroup(exclusive = false, multiplicity = "*")
+    List<QualifierBranchPolicy> qualifierBranchPolicies;
+
+    static class QualifierBranchPolicy {
+        @Option(names = "--branchPolicyPattern", required = true, description = "regex to match a branch name")
+        String branchPolicyPattern;
+        @Option(names = "--branchPolicyTransformations",
+                split = ",",
+                description = "transformations to apply to the branchPolicyPattern match")
+        List<BranchingPolicy.BranchNameTransformations> branchPolicyTransformations;
+    }
 }
