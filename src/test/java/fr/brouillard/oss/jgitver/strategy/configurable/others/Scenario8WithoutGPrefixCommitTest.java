@@ -25,9 +25,9 @@ import org.junit.jupiter.api.Test;
 import fr.brouillard.oss.jgitver.Scenarios;
 import fr.brouillard.oss.jgitver.ScenarioTest;
 
-public class Scenario8WithoutGPrefixCommitTest extends ScenarioTest {
+class Scenario8WithoutGPrefixCommitTest extends ScenarioTest {
 
-    public Scenario8WithoutGPrefixCommitTest() {
+    Scenario8WithoutGPrefixCommitTest() {
         super(
                 Scenarios::s8_main_and_branch_with_intermediate_light_tag,
                 calculator -> calculator
@@ -40,12 +40,12 @@ public class Scenario8WithoutGPrefixCommitTest extends ScenarioTest {
     }
 
     @Test
-    public void head_is_on_master_by_default() throws Exception {
+    void head_is_on_master_by_default() throws Exception {
         assertThat(repository.getBranch(), is("master"));
     }
 
     @Test
-    public void version_of_A_commit() {
+    void version_of_A_commit() {
         ObjectId firstCommit = scenario.getCommits().get("A");
 
         // checkout the first commit in scenario
@@ -54,16 +54,16 @@ public class Scenario8WithoutGPrefixCommitTest extends ScenarioTest {
     }
 
     @Test
-    public void version_of_B_commit() {
+    void version_of_B_commit() {
         ObjectId bCommit = scenario.getCommits().get("B");
 
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName(bCommit.name()).call());
-        assertThat(versionCalculator.getVersion(), is("1.0.0"));
+        assertThat(versionCalculator.getVersion(), is("1.0.0" + "-" + bCommit.name().substring(0,8)));
     }
 
     @Test
-    public void version_of_C_commit() {
+    void version_of_C_commit() {
         ObjectId cCommit = scenario.getCommits().get("C");
 
         // checkout the commit in scenario
@@ -72,16 +72,16 @@ public class Scenario8WithoutGPrefixCommitTest extends ScenarioTest {
     }
 
     @Test
-    public void version_of_D_commit() {
+    void version_of_D_commit() {
         ObjectId dCommit = scenario.getCommits().get("D");
 
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName(dCommit.name()).call());
-        assertThat(versionCalculator.getVersion(), is("1.1.0"));
+        assertThat(versionCalculator.getVersion(), is("1.1.0" + "-" + dCommit.name().substring(0,8)));
     }
 
     @Test
-    public void version_of_E_commit() {
+    void version_of_E_commit() {
         ObjectId eCommit = scenario.getCommits().get("E");
 
         // checkout the commit in scenario
@@ -90,7 +90,7 @@ public class Scenario8WithoutGPrefixCommitTest extends ScenarioTest {
     }
 
     @Test
-    public void version_of_F_commit() {
+    void version_of_F_commit() {
         ObjectId fCommit = scenario.getCommits().get("F");
 
         // checkout the commit in scenario
@@ -99,26 +99,26 @@ public class Scenario8WithoutGPrefixCommitTest extends ScenarioTest {
     }
 
     @Test
-    public void version_of_annotated_tags() {
+    void version_of_annotated_tags() {
         unchecked(() -> git.checkout().setName("1.0.0").call());
-        assertThat(versionCalculator.getVersion(), is("1.0.0"));
+        assertThat(versionCalculator.getVersion(), is("1.0.0" + "-" + scenario.getCommits().get("B").name().substring(0,8)));
     }
 
     @Test
-    public void version_of_light_tag_1_1_0() {
+    void version_of_light_tag_1_1_0() {
         unchecked(() -> git.checkout().setName("1.1.0").call());
-        assertThat(versionCalculator.getVersion(), is("1.1.0"));
+        assertThat(versionCalculator.getVersion(), is("1.1.0" + "-" + scenario.getCommits().get("D").name().substring(0,8)));
     }
 
     @Test
-    public void version_of_master() {
+    void version_of_master() {
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName("master").call());
         assertThat(versionCalculator.getVersion(), is("1.1.0" + "-" + scenario.getCommits().get("E").name().substring(0,8)));
     }
 
     @Test
-    public void version_of_branch_issue_10() {
+    void version_of_branch_issue_10() {
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName("issue-10").call());
         assertThat(versionCalculator.getVersion(), is("1.0.1"+ "-" + scenario.getCommits().get("F").name().substring(0,8) + "-issue_10"));
