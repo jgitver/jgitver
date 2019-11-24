@@ -61,8 +61,6 @@ public class PatternVersionStrategy extends VersionStrategy<PatternVersionStrate
             Ref tagToUse = findTagToUse(head, base);
             Version baseVersion = getBaseVersionAndRegisterMetadata(base,tagToUse);
 
-            final boolean useSnapshot = baseVersion.isSnapshot();
-
             if (!isBaseCommitOnHead(head, base) && autoIncrementPatch) {
                 // we are not on head
                 if (GitUtils.isAnnotated(tagToUse)) {
