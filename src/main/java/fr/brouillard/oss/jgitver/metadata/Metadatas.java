@@ -29,7 +29,12 @@ public enum Metadatas {
     /**
      * Is the repository dirty. 
      */
-    DIRTY, 
+    DIRTY,
+
+    /**
+     * Literally text dirty if the repository is dirty.
+     */
+    DIRTY_TEXT,
     /**
      * Name of the commiter of HEAD commit. 
      */

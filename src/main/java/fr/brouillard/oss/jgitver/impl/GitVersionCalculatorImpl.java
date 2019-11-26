@@ -272,8 +272,12 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
 
     private Version buildVersion(Git git, VersionStrategy<?> strategy) {
         try {
-            metadatas.registerMetadata(Metadatas.DIRTY, "" + GitUtils.isDirty(git));
-            
+            boolean dirty = GitUtils.isDirty(git);
+            metadatas.registerMetadata(Metadatas.DIRTY, "" + dirty);
+            if (dirty) {
+                metadatas.registerMetadata(Metadatas.DIRTY_TEXT, "dirty");
+            }
+
             // retrieve all tags matching a version, and get all info for each of them
             List<Ref> allTags = git.tagList().call().stream().map(this::peel)
                     .collect(Collectors.toCollection(ArrayList::new));
