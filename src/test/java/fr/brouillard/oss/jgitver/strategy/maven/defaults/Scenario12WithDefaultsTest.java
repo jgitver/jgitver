@@ -18,11 +18,15 @@ package fr.brouillard.oss.jgitver.strategy.maven.defaults;
 import static fr.brouillard.oss.jgitver.impl.Lambdas.unchecked;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.emptyString;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.io.File;
 import java.io.IOException;
 
 import org.eclipse.jgit.lib.ObjectId;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import fr.brouillard.oss.jgitver.Scenarios;
@@ -116,6 +120,9 @@ public class Scenario12WithDefaultsTest extends ScenarioTest {
         assertThat(versionCalculator.meta(Metadatas.BRANCH_NAME).get(), is("master"));
         assertThat(versionCalculator.meta(Metadatas.BASE_TAG).get(), is("1.0.0"));
         assertThat(versionCalculator.meta(Metadatas.DIRTY).get(), is("false"));
+        
+        // as the repo is clean there must be no meta for DIRTY_TEXT 
+        assertFalse(versionCalculator.meta(Metadatas.DIRTY_TEXT).isPresent());
 
         // TODO open a defect in jgit, order of tags is not respected between v1.0.0 & 1.0.0
         // assertThat(versionCalculator.meta(Metadatas.ALL_TAGS).get(), is("v2.0.0,1.0.0,1.0.0-rc02,1.0.0-rc01,v1.0.0"));
@@ -146,6 +153,7 @@ public class Scenario12WithDefaultsTest extends ScenarioTest {
             dirtyFile = scenario.makeDirty();
             assertThat(versionCalculator.getVersion(), is("2.0.0-SNAPSHOT"));
             assertThat(versionCalculator.meta(Metadatas.DIRTY).get(), is("true"));
+            assertThat(versionCalculator.meta(Metadatas.DIRTY_TEXT).get(), is("dirty"));
         } finally {
             if (dirtyFile != null) {
                 dirtyFile.delete();
