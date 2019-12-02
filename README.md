@@ -87,6 +87,13 @@ Usage: java -jar jgitver-executable.jar [-hV] [--autoIncrementPatch]
                                         nches>] [--pattern=<pattern>]
                                         [--policy=<policy>]
                                         [--strategy=<strategy>]
+                                        [--branchPolicyPattern=<branchPolicyPat
+                                        tern> [--branchPolicyTransformations=<b
+                                        ranchPolicyTransformations>[,<branchPol
+                                        icyTransformations...]...]...
+                                        [--tagVersionPattern=<tagVersionPattern
+                                        >]
+                                        [--versionPattern=<VersionPattern>]
       --autoIncrementPatch   activate auto increment patch functionality
       --dir, --directory=<directory>
                              root directory for git project
@@ -105,11 +112,27 @@ Usage: java -jar jgitver-executable.jar [-hV] [--autoIncrementPatch]
       --useGitCommitTimestamp
                              add git commit timestamp as qualifier
       --useLongFormat        activate long format usage
+      --branchPolicyPattern=<branchPolicyPattern>
+                             regex to match a branch name
+      --branchPolicyTransformations=<branchPolicyTransformations>[,
+          <branchPolicyTransformations>...]
+                             transformations to apply to the
+                                 branchPolicyPattern match
+      --tagVersionPattern=<tagVersionPattern>
+                             set the pattern for when on annotated tag
+                                 (PATTERN strategy)
+      --versionPattern=<versionPattern>
+                             set versionPattern (PATTERN strategy)
+                                     
   -h, --help                 display usage
   -V, --version              display version info
 ``` 
 
 You can find the latest executable file on [maven central](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22fr.brouillard.oss%22%20AND%20a%3A%22jgitver%22).
+
+`--tagVersionPattern` and `--versionPattern` were added in `0.12.0` and only apply when the PATTERN strategy is active.
+
+`--branchPolicyPattern` and `--branchPolicyTransformations` were also added in `0.12.0`. They are grouped arguments and pair up with each other to behave like the policy settings on the Maven and Gradle plugins.  
 
 ### As a java library
 
