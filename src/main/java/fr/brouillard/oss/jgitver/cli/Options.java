@@ -42,7 +42,7 @@ public class Options {
     boolean useDistance = true;
 
     @Option(names = {"--useDirty"}, description = "activate dirty flag")
-    boolean useDirty = true;
+    boolean useDirty = false;
 
     @Option(names = {"--useLongFormat"}, description = "activate long format usage")
     boolean useLongFormat = false;
