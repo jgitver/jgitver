@@ -905,6 +905,15 @@ public class Scenarios {
                     .merge("C3", "M2", MergeCommand.FastForwardMode.NO_FF)
                     .commit("content", "E");
         }
+        
+        public static ScenarioBuilder s20_release_on_head() {
+            return new Scenarios.ScenarioBuilder()
+                    .commit("content", "A")
+                    .commit("content", "B")
+                    .commit("content", "C")
+                    .tag("1.0.0")
+                    .master();
+        }
     }
 
     public static class Scenario {

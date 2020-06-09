@@ -20,6 +20,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 
 import org.eclipse.jgit.lib.ObjectId;
@@ -106,13 +107,15 @@ public class Scenario8WithDefaultsTest extends ScenarioTest {
     }
     
     @Test
-    public void version_of_annotated_tags_in_dirty_state() {
+    public void version_of_annotated_tags_in_dirty_state() throws IOException  {
         unchecked(() -> git.checkout().setName("1.0.0").call());
-        unchecked(() -> {
-            File f = scenario.makeDirty();
+        
+        File f = scenario.makeDirty();
+        try {
             assertThat(versionCalculator.getVersion(), is("1.0.0-dirty"));
-            Files.deleteIfExists(f.toPath());
-        });
+        } finally {
+        	Files.deleteIfExists(f.toPath());
+        }
     }
     
     @Test

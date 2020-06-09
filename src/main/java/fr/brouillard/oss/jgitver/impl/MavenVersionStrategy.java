@@ -42,13 +42,15 @@ public class MavenVersionStrategy extends VersionStrategy<MavenVersionStrategy> 
             Ref tagToUse = findTagToUse(head, base);
             Version baseVersion = getBaseVersionAndRegisterMetadata(base, tagToUse);
             boolean needSnapshot = true;
+            boolean isDirty = GitUtils.isDirty(getGit());
+            boolean isDetachedHead = GitUtils.isDetachedHead(getRepository());
 
             if (tagToUse != null) {
                 needSnapshot = baseVersion.isSnapshot() || !isBaseCommitOnHead(head, base)
-                        || !GitUtils.isAnnotated(tagToUse);
+                        || !GitUtils.isAnnotated(tagToUse) || (isDirty && !isDetachedHead);
             }
 
-            if (!isBaseCommitOnHead(head, base)) {
+            if (!isBaseCommitOnHead(head, base) || (isDirty && !isDetachedHead)) {
                 // we are not on head
                 if (GitUtils.isAnnotated(tagToUse) && !baseVersion.removeQualifier("SNAPSHOT").isQualified()) {
                     // found tag to use was a non qualified annotated one, lets' increment the version automatically
@@ -57,7 +59,7 @@ public class MavenVersionStrategy extends VersionStrategy<MavenVersionStrategy> 
                 baseVersion = baseVersion.noQualifier();
             }
 
-            if (!GitUtils.isDetachedHead(getRepository())) {
+			if (!isDetachedHead) {
                 String branch = getRepository().getBranch();
                 baseVersion = enhanceVersionWithBranch(baseVersion, branch);
             } else {
@@ -68,7 +70,7 @@ public class MavenVersionStrategy extends VersionStrategy<MavenVersionStrategy> 
                 }
             }
             
-            if (useDirty && GitUtils.isDirty(getGit())) {
+			if (useDirty && isDirty) {
                 baseVersion = baseVersion.addQualifier("dirty");
             }
 

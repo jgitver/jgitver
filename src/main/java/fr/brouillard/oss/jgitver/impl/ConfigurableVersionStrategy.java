@@ -120,6 +120,7 @@ public class ConfigurableVersionStrategy extends VersionStrategy<ConfigurableVer
                 }
             }
 
+            
             if (useLongFormat || useGitCommitId) {
                 String commitIdQualifier =
                         (useLongFormat ? "g" : "") + head.getGitObject().getName().substring(0, useLongFormat ? 8 : gitCommitIdLength);
