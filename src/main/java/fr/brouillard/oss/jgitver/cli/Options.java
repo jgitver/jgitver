@@ -44,6 +44,9 @@ public class Options {
     @Option(names = {"--useDirty"}, description = "activate dirty flag")
     boolean useDirty = true;
 
+    @Option(names = {"--forceComputation", "-fc"}, description = "activate forceComputation flag")
+    boolean forceComputation = false;
+
     @Option(names = {"--useLongFormat"}, description = "activate long format usage")
     boolean useLongFormat = false;
 

@@ -78,6 +78,7 @@ public class RunnableCLI {
         gvc.setUseDistance(opts.useDistance);
         gvc.setAutoIncrementPatch(opts.autoIncrementPatch);
         gvc.setUseDirty(opts.useDirty);
+        gvc.setForceComputation(opts.forceComputation);
         gvc.setUseLongFormat(opts.useLongFormat);
         gvc.setUseGitCommitId(opts.useGitCommitId);
         if (opts.useGitCommitId) {

@@ -30,6 +30,7 @@ import fr.brouillard.oss.jgitver.metadata.Metadatas;
 
 public class MavenVersionStrategy extends VersionStrategy<MavenVersionStrategy> {
     private boolean useDirty = false;
+    private boolean forceComputation = false;
 
     public MavenVersionStrategy(VersionNamingConfiguration vnc, Repository repository, Git git, MetadataRegistrar metadatas) {
         super(vnc, repository, git, metadatas);
@@ -41,25 +42,31 @@ public class MavenVersionStrategy extends VersionStrategy<MavenVersionStrategy> 
             Commit base = findVersionCommit(head, parents);
             Ref tagToUse = findTagToUse(head, base);
             Version baseVersion = getBaseVersionAndRegisterMetadata(base, tagToUse);
+            
             boolean needSnapshot = true;
             boolean isDirty = GitUtils.isDirty(getGit());
             boolean isDetachedHead = GitUtils.isDetachedHead(getRepository());
+            boolean isBaseCommitOnHead = isBaseCommitOnHead(head, base);
 
+            boolean shouldComputeVersion = !isDetachedHead || isDirty || !isBaseCommitOnHead || forceComputation;
+            
             if (tagToUse != null) {
                 needSnapshot = baseVersion.isSnapshot() || !isBaseCommitOnHead(head, base)
-                        || !GitUtils.isAnnotated(tagToUse) || (isDirty && !isDetachedHead);
+                        || !GitUtils.isAnnotated(tagToUse) || (isDirty && !isDetachedHead) || forceComputation;
             }
 
-            if (!isBaseCommitOnHead(head, base) || (isDirty && !isDetachedHead)) {
-                // we are not on head
-                if (GitUtils.isAnnotated(tagToUse) && !baseVersion.removeQualifier("SNAPSHOT").isQualified()) {
-                    // found tag to use was a non qualified annotated one, lets' increment the version automatically
-                    baseVersion = baseVersion.incrementPatch();
+            if (shouldComputeVersion) {
+                if (!isBaseCommitOnHead || (isDirty && !isDetachedHead) || forceComputation) {
+                    // we are not on head
+                    if (GitUtils.isAnnotated(tagToUse) && !baseVersion.removeQualifier("SNAPSHOT").isQualified()) {
+                        // found tag to use was a non qualified annotated one, lets' increment the version automatically
+                        baseVersion = baseVersion.incrementPatch();
+                    }
+                    baseVersion = baseVersion.noQualifier();
                 }
-                baseVersion = baseVersion.noQualifier();
             }
-
-			if (!isDetachedHead) {
+            
+            if (!isDetachedHead) {
                 String branch = getRepository().getBranch();
                 baseVersion = enhanceVersionWithBranch(baseVersion, branch);
             } else {
@@ -69,17 +76,17 @@ public class MavenVersionStrategy extends VersionStrategy<MavenVersionStrategy> 
                     baseVersion = enhanceVersionWithBranch(baseVersion, externalyProvidedBranchName.get());
                 }
             }
-            
-			if (useDirty && isDirty) {
+
+            if (useDirty && isDirty) {
                 baseVersion = baseVersion.addQualifier("dirty");
             }
-
+            
             try (RevWalk walk = new RevWalk(getRepository())) {
                 RevCommit rc = walk.parseCommit(head.getGitObject());
                 String commitTimestamp = GitUtils.getTimestamp(rc.getAuthorIdent().getWhen().toInstant());
                 getRegistrar().registerMetadata(Metadatas.COMMIT_TIMESTAMP, commitTimestamp);
             }
-
+            
             return needSnapshot ? baseVersion.removeQualifier("SNAPSHOT").addQualifier("SNAPSHOT") : baseVersion;
         } catch (Exception ex) {
             throw new VersionCalculationException("cannot compute version", ex);
@@ -88,5 +95,8 @@ public class MavenVersionStrategy extends VersionStrategy<MavenVersionStrategy> 
 
     public MavenVersionStrategy setUseDirty(boolean useDirty) {
         return runAndGetSelf(() -> this.useDirty = useDirty);
+    }
+    public MavenVersionStrategy setForceComputation(boolean forceComputation) {
+        return runAndGetSelf(() -> this.forceComputation = forceComputation);
     }
 }

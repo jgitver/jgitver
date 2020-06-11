@@ -277,7 +277,6 @@ public interface GitVersionCalculator extends AutoCloseable, MetadataProvider {
      */
     GitVersionCalculator setLookupPolicy(LookupPolicy policy);
 
-
     /**
      * When true, append a qualifier with the "SNAPSHOT" qualifier if no version tags found.
      *
@@ -286,4 +285,13 @@ public interface GitVersionCalculator extends AutoCloseable, MetadataProvider {
      * @since 0.12.0
      */
     GitVersionCalculator setUseSnapshot(boolean useSnapshot);
+    
+    /**
+     * When true, force the computation of the version even if HEAD is on a version tag.
+     *
+     * @param forceComputation if true, forces the computation of version using other defined parameters
+     * @return itself to chain settings
+     * @since 0.13.0
+     */
+    GitVersionCalculator setForceComputation(boolean forceComputation);
 }

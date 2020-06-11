@@ -71,6 +71,7 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
     private boolean useDirty = false;
     private boolean useLongFormat = false;
     private boolean useSnapshot = false;
+    private boolean forceComputation = false;
     private int gitCommitIdLength = 8;
     private int maxDepth = Integer.MAX_VALUE;
     private List<BranchingPolicy> qualifierBranchingPolicies;
@@ -139,6 +140,7 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
             switch (versionStrategy) {
                 case MAVEN:
                     strategy = new MavenVersionStrategy(vnc, repository, git, metadatas)
+                            .setForceComputation(forceComputation)
                             .setUseDirty(useDirty);
                     break;
                 case CONFIGURABLE:
@@ -662,4 +664,9 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
         return this;
     }
 
+    @Override
+    public GitVersionCalculator setForceComputation(boolean forceComputation) {
+        this.forceComputation = forceComputation;
+        return this;
+    }
 }
