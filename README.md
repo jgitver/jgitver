@@ -7,13 +7,14 @@ With this `automation` & `standardization` it is then possible to:
 - setup clean Continuous Integration (_version per branch, ..._)
 - keep your project history clean, no more polluting commits to update any project descriptor
 
-## Project health
+## Project statuses
 
-- [![Build Status](https://travis-ci.org/jgitver/jgitver.svg)](https://travis-ci.org/jgitver/jgitver)
+- [![Build Status](https://travis-ci.org/jgitver/jgitver.svg?branch=master)](https://travis-ci.org/jgitver/jgitver)
 - [![pipeline status](https://gitlab.com/jgitver/jgitver/badges/master/pipeline.svg)](https://gitlab.com/jgitver/jgitver/commits/master)
 - [![Coverage Status](https://coveralls.io/repos/github/jgitver/jgitver/badge.svg)](https://coveralls.io/github/jgitver/jgitver)
 - [![Known Vulnerabilities](https://snyk.io/test/github/jgitver/jgitver/badge.svg?targetFile=pom.xml)](https://snyk.io/test/github/jgitver/jgitver?targetFile=pom.xml)
-
+- [![Maven Central](https://maven-badges.herokuapp.com/maven-central/fr.brouillard.oss/jgitver/badge.svg)](https://maven-badges.herokuapp.com/maven-central/fr.brouillard.oss/jgitver)
+- [![Discuss](https://badges.gitter.im/jgitver/jgitver.svg)](https://gitter.im/jgitver/Lobby)
 ## How it works
 
 `jgitver` uses annotated tags, lightweight tags, branches names & commits to deduce/calculate the version of a particular git commit.  
@@ -57,11 +58,11 @@ Most of the time you will want to use `jgitver` via one of its extensions/plugin
       <extension>
         <groupId>fr.brouillard.oss</groupId>
         <artifactId>jgitver-maven-plugin</artifactId>
-        <version>1.4.2</version>
+        <version>1.5.1</version>
       </extension>
     </extensions>
     ```
-    find the latest version on [maven central](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22fr.brouillard.oss%22%20AND%20a%3A%22jgitver-maven-plugin%22) & read [jgitver maven plugin](http://www.github.com/jgitver/jgitver-maven-plugin) homepage for further configuration with maven. 
+    find latest version on [![Maven Central](https://maven-badges.herokuapp.com/maven-central/fr.brouillard.oss/jgitver-maven-plugin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/fr.brouillard.oss/jgitver-maven-plugin) & read [jgitver maven plugin](http://www.github.com/jgitver/jgitver-maven-plugin) homepage for further configuration with maven. 
     
 - [jgitver gradle plugin](https://github.com/jgitver/gradle-jgitver-plugin) which can be used using plugins DSL syntax:
     ```
