@@ -96,6 +96,8 @@ Usage: java -jar jgitver-executable.jar [-hV] [--autoIncrementPatch]
                                         >]
                                         [--versionPattern=<VersionPattern>]
       --autoIncrementPatch   activate auto increment patch functionality
+      -fc, --forceComputation
+                             activate forceComputation flag
       --dir, --directory=<directory>
                              root directory for git project
       --gitCommitIdLength=<gitCommitIdLength>
