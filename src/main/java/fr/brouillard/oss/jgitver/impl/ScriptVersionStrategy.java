@@ -119,14 +119,22 @@ public class ScriptVersionStrategy extends VersionStrategy<ScriptVersionStrategy
 
             metaProps.put(Metadatas.BRANCH_NAME.name(), branch);
 
+            registrar.registerMetadata(Metadatas.BRANCH_NAME, branch);
+
             getVersionNamingConfiguration().branchQualifier(branch).
-                ifPresent(qualifier ->
-                          metaProps.put(Metadatas.QUALIFIED_BRANCH_NAME.name(),
-                                        qualifier));
+                ifPresent(qualifier -> {
+                        metaProps.put(Metadatas.QUALIFIED_BRANCH_NAME.name(),
+                                      qualifier);
+
+                        registrar.registerMetadata(Metadatas.QUALIFIED_BRANCH_NAME, qualifier);
+                    });
 
             GitUtils.providedBranchName().ifPresent(externalName -> {
                     metaProps.put(Metadatas.QUALIFIED_BRANCH_NAME.name(),
                                   externalName);
+
+                    registrar.registerMetadata(Metadatas.QUALIFIED_BRANCH_NAME,
+                                               externalName);
                 
                     metaProps.put("PROVIDED_BRANCH_NAME", externalName);
                 });
@@ -156,6 +164,11 @@ public class ScriptVersionStrategy extends VersionStrategy<ScriptVersionStrategy
                 baseVersion = versionFromTag(tagToUse);
 
                 metaProps.put(Metadatas.BASE_TAG_TYPE.name(), tagType.name());
+
+                // Required by provideNextVersionsMetadatas
+                registrar.registerMetadata(Metadatas.BASE_TAG_TYPE,
+                                           tagType.name());
+                
                 metaProps.put(Metadatas.BASE_TAG.name(), tagName);
             } else {
                 baseVersion = Version.DEFAULT_VERSION;
@@ -272,8 +285,6 @@ public class ScriptVersionStrategy extends VersionStrategy<ScriptVersionStrategy
 
             return new Version(major, minor, patch, qualifiers);
         } catch (Exception ex) {
-            ex.printStackTrace();
-
             throw new VersionCalculationException("cannot compute version", ex);
         }
     }
