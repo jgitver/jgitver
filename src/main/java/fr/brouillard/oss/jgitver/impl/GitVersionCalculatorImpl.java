@@ -55,6 +55,7 @@ import fr.brouillard.oss.jgitver.BranchingPolicy.BranchNameTransformations;
 import fr.brouillard.oss.jgitver.GitVersionCalculator;
 import fr.brouillard.oss.jgitver.LookupPolicy;
 import fr.brouillard.oss.jgitver.Strategies;
+import fr.brouillard.oss.jgitver.ScriptType;
 import fr.brouillard.oss.jgitver.Version;
 import fr.brouillard.oss.jgitver.impl.metadata.MetadataHolder;
 import fr.brouillard.oss.jgitver.metadata.Metadatas;
@@ -80,6 +81,8 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
     private String tagVersionPattern = null;
     private String versionPattern = null;
     private LookupPolicy lookupPolicy = LookupPolicy.MAX;
+    private ScriptType scriptType = ScriptType.GROOVY;
+    private String script = "";
 
     private final File gitRepositoryLocation;
 
@@ -159,6 +162,11 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
                             .setAutoIncrementPatch(autoIncrementPatch)
                             .setVersionPattern(versionPattern)
                             .setTagVersionPattern(tagVersionPattern);
+                    break;
+                case SCRIPT:
+                    strategy = new ScriptVersionStrategy(vnc, repository, git, metadatas)
+                        .setScriptType(scriptType)
+                        .setScript(script);
                     break;
                 default:
                     throw new IllegalStateException("unknown strategy: " + versionStrategy);
@@ -667,6 +675,18 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
     @Override
     public GitVersionCalculator setForceComputation(boolean forceComputation) {
         this.forceComputation = forceComputation;
+        return this;
+    }
+
+    @Override
+    public GitVersionCalculator setScriptType(ScriptType scriptType) {
+        this.scriptType = scriptType;
+        return this;
+    }
+
+    @Override
+    public GitVersionCalculator setScript(String script) {
+        this.script = script;
         return this;
     }
 }

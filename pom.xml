@@ -132,6 +132,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.apache.maven.shared</groupId>
+            <artifactId>maven-script-interpreter</artifactId>
+            <version>1.2</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.eclipse.jgit</groupId>
             <artifactId>org.eclipse.jgit</artifactId>
             <version>${org.eclipse.jgit.version}</version>

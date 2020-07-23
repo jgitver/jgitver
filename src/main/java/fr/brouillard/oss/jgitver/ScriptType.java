@@ -15,6 +15,6 @@
  */
 package fr.brouillard.oss.jgitver;
 
-public enum Strategies {
-    MAVEN, CONFIGURABLE, PATTERN, SCRIPT;
+public enum ScriptType {
+    BEAN_SHELL, GROOVY
 }
