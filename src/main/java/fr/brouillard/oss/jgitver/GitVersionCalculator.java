@@ -23,6 +23,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
 
+import java.lang.reflect.InvocationTargetException;
+
 import fr.brouillard.oss.jgitver.metadata.MetadataProvider;
 import fr.brouillard.oss.jgitver.metadata.Metadatas;
 
@@ -60,9 +62,9 @@ public interface GitVersionCalculator extends AutoCloseable, MetadataProvider {
 
         try {
             Class builderClass = Class.forName("fr.brouillard.oss.jgitver.impl.GitVersionCalculatorImplBuilder");
-            GitVersionCalculatorBuilder builder = (GitVersionCalculatorBuilder) builderClass.newInstance();
+            GitVersionCalculatorBuilder builder = (GitVersionCalculatorBuilder) builderClass.getConstructor().newInstance();
             return builder.build(gitRepositoryLocation);
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+        } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
             throw new IllegalStateException(
                     "cannot instantiate default GitVersionCalculatorImplBuilder class",
                     ex
@@ -294,4 +296,18 @@ public interface GitVersionCalculator extends AutoCloseable, MetadataProvider {
      * @since 0.13.0
      */
     GitVersionCalculator setForceComputation(boolean forceComputation);
+
+    /**
+     * Set the type of the script (default: {@link ScriptType#GROOVY}).
+     * @param scriptType the script type
+     * @return itself for chaining
+     */
+    GitVersionCalculator setScriptType(ScriptType scriptType);
+
+    /**
+     * Set the script to be interpreted.
+     * @param script the script content
+     * @return itself for chaining
+     */
+    GitVersionCalculator setScript(String script);
 }
