@@ -162,6 +162,10 @@ public enum Metadatas {
      * Exposes the commit timestamp instant in the current system timezone using
      * a simplified DateTimeFormatter.ISO_LOCAL_DATE_TIME
      */
-    COMMIT_TIMESTAMP
+    COMMIT_TIMESTAMP,
+    /**
+     * True if the current HEAD is on an annotated tag, false otherwise
+     */
+    ANNOTATED
     ;
 }

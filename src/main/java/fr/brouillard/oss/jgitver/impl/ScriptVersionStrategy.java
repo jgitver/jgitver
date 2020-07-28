@@ -138,9 +138,6 @@ public class ScriptVersionStrategy extends VersionStrategy<ScriptVersionStrategy
             metaProps.put("BASE_COMMIT_ON_HEAD",
                           isBaseCommitOnHead(head, base));
             
-            metaProps.put("ANNOTATED",
-                    GitUtils.isAnnotated(tagToUse));
-            
             EnumSet.allOf(Metadatas.class).
                 forEach(key -> metaProvider.meta(key).
                     ifPresent(value -> metaProps.put(key.name(), metaFunctor(key).apply(value))));
@@ -285,6 +282,7 @@ public class ScriptVersionStrategy extends VersionStrategy<ScriptVersionStrategy
             case COMMIT_DISTANCE_TO_ROOT:
                 return TO_INTEGER;
             case DIRTY:
+            case ANNOTATED:
                 return TO_BOOLEAN;
             default: return IDENTITY;
         }

@@ -135,6 +135,7 @@ public abstract class VersionStrategy<T extends VersionStrategy> {
             getRegistrar().registerMetadata(Metadatas.BASE_TAG, tagName);
         }
 
+        getRegistrar().registerMetadata(Metadatas.ANNOTATED,"" + GitUtils.isAnnotated(tagToUse));
         getRegistrar().registerMetadata(Metadatas.BASE_VERSION, baseVersion.toString());
         getRegistrar().registerMetadata(Metadatas.CURRENT_VERSION_MAJOR, Integer.toString(baseVersion.getMajor()));
         getRegistrar().registerMetadata(Metadatas.CURRENT_VERSION_MINOR, Integer.toString(baseVersion.getMinor()));
