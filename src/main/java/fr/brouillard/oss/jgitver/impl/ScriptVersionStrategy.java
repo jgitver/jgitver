@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Function;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Ref;
@@ -89,30 +90,19 @@ public class ScriptVersionStrategy extends VersionStrategy<ScriptVersionStrategy
         try {
             final Commit base = findVersionCommit(head, parents);
             final MetadataRegistrar registrar = getRegistrar();
-            final MetadataProvider metaProvider =
-                MetadataProvider.class.cast(registrar);
+            final MetadataProvider metaProvider = MetadataProvider.class.cast(registrar);
 
             final HashMap<String, Object> metaProps =
                 new HashMap<String, Object>();
 
-            EnumSet.allOf(Metadatas.class).
-                forEach(key -> metaProvider.meta(key).
-                        ifPresent(value -> metaProps.put(key.name(), value)));
-
-            // Distance
             registrar.registerMetadata(Metadatas.COMMIT_DISTANCE,
                                        "" + base.getHeadDistance());
-
-            metaProps.put(Metadatas.COMMIT_DISTANCE.name(),
-                          base.getHeadDistance());
 
             if (Features.DISTANCE_TO_ROOT.isActive()) {
                 final int dtr = GitUtils.
                     distanceToRoot(getRepository(), head.getGitObject());
 
                 registrar.registerMetadata(Metadatas.COMMIT_DISTANCE_TO_ROOT, "" + dtr);
-
-                metaProps.put(Metadatas.COMMIT_DISTANCE_TO_ROOT.name(), dtr);
             }
 
             // Branch related
@@ -124,16 +114,10 @@ public class ScriptVersionStrategy extends VersionStrategy<ScriptVersionStrategy
 
             getVersionNamingConfiguration().branchQualifier(branch).
                 ifPresent(qualifier -> {
-                        metaProps.put(Metadatas.QUALIFIED_BRANCH_NAME.name(),
-                                      qualifier);
-
                         registrar.registerMetadata(Metadatas.QUALIFIED_BRANCH_NAME, qualifier);
                     });
 
             GitUtils.providedBranchName().ifPresent(externalName -> {
-                    metaProps.put(Metadatas.QUALIFIED_BRANCH_NAME.name(),
-                                  externalName);
-
                     registrar.registerMetadata(Metadatas.QUALIFIED_BRANCH_NAME,
                                                externalName);
                 
@@ -148,10 +132,10 @@ public class ScriptVersionStrategy extends VersionStrategy<ScriptVersionStrategy
 
             // Extra convenient metadata
             metaProps.put("DETACHED_HEAD",
-                          GitUtils.isDetachedHead(getRepository()));
+                          "" + GitUtils.isDetachedHead(getRepository()));
 
             metaProps.put("BASE_COMMIT_ON_HEAD",
-                          isBaseCommitOnHead(head, base));
+                          "" + isBaseCommitOnHead(head, base));
 
             // Tag related metadata
             final Ref tagToUse = findTagToUse(head, base);
@@ -164,33 +148,28 @@ public class ScriptVersionStrategy extends VersionStrategy<ScriptVersionStrategy
 
                 baseVersion = versionFromTag(tagToUse);
 
-                metaProps.put(Metadatas.BASE_TAG_TYPE.name(), tagType.name());
-
-                // Required by provideNextVersionsMetadatas
                 registrar.registerMetadata(Metadatas.BASE_TAG_TYPE,
                                            tagType.name());
-                
-                metaProps.put(Metadatas.BASE_TAG.name(), tagName);
+                registrar.registerMetadata(Metadatas.BASE_TAG, tagName);
             } else {
                 baseVersion = Version.DEFAULT_VERSION;
             }
 
-            metaProps.put(Metadatas.BASE_VERSION.name(), baseVersion);
 
-            // Required by provideNextVersionsMetadatas
             registrar.registerMetadata(Metadatas.BASE_VERSION,
                                        baseVersion.toString());
-
-            metaProps.put(Metadatas.CURRENT_VERSION_MAJOR.name(),
-                          baseVersion.getMajor());
-
-            metaProps.put(Metadatas.CURRENT_VERSION_MINOR.name(),
-                          baseVersion.getMinor());
-
-            metaProps.put(Metadatas.CURRENT_VERSION_PATCH.name(),
-                          baseVersion.getPatch());
+            registrar.registerMetadata(Metadatas.CURRENT_VERSION_MAJOR, 
+                    "" + baseVersion.getMajor());
+            registrar.registerMetadata(Metadatas.CURRENT_VERSION_MINOR,
+                          "" + baseVersion.getMinor());
+            registrar.registerMetadata(Metadatas.CURRENT_VERSION_PATCH,
+                          "" + baseVersion.getPatch());
 
             metaProps.put("ANNOTATED", GitUtils.isAnnotated(tagToUse));
+
+            EnumSet.allOf(Metadatas.class).
+                forEach(key -> metaProvider.meta(key).
+                    ifPresent(value -> metaProps.put(key.name(), metaFunctor(key).apply(value))));
 
             // ---
 
@@ -300,5 +279,40 @@ public class ScriptVersionStrategy extends VersionStrategy<ScriptVersionStrategy
      */
     public ScriptVersionStrategy setScript(String script) {
         return runAndGetSelf(() -> this.script = script);
+    }
+
+    private static Function<String, String> IDENTITY = s -> s;
+    private static Function<String, Boolean> TO_BOOLEAN = s -> {
+        if (s == null || s.length() == 0) {
+            return null;
+        }
+        return Boolean.valueOf(s);
+    };
+    private static Function<String, Integer> TO_INTEGER = s -> {
+        if (s == null || s.length() == 0) {
+            return null;
+        }
+        return Integer.valueOf(s);
+    };
+    private static Function<String, Version> TO_VERSION = Version::parse;
+    
+    private static Function<String, ? extends Object> metaFunctor(Metadatas meta) {
+        switch (meta) {
+            case CALCULATED_VERSION:
+            case BASE_VERSION:
+            case NEXT_MAJOR_VERSION:
+            case NEXT_MINOR_VERSION:
+            case NEXT_PATCH_VERSION:
+                return TO_VERSION;
+            case CURRENT_VERSION_MAJOR:
+            case CURRENT_VERSION_MINOR:
+            case CURRENT_VERSION_PATCH:
+            case COMMIT_DISTANCE:
+            case COMMIT_DISTANCE_TO_ROOT:
+                return TO_INTEGER;
+            case DIRTY:
+                return TO_BOOLEAN;
+            default: return IDENTITY;
+        }
     }
 }
