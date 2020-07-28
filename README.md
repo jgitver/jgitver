@@ -221,6 +221,58 @@ Then depending on the configuration it will also:
 - `GitVersionCalculator#setGitCommitIdLength(int)`: truncate the previous qualifier to the given length. Valid value must be between 8 & 40, default is _8_ 
 - `GitVersionCalculator#setUseGitCommitTimestamp(boolean)`: add git HEAD commit timestamp as a qualifier, default is _false_. Date is extracted from the author information, not from committer information. _Difference between both is explained [here](https://stackoverflow.com/a/11857467/81668)_.
 
+### Scriptable strategy
+
+In this mode, the default behaviour is the same as the pattern strategy.
+
+This can be customized with 2 settings:
+
+- `scriptType`: Either `GROOVY` (default) or `BEAN_SHELL`
+- `script`: Script contenu
+
+The script must output the version in CSV format using ';' separator, with at least the 3 first columns, corresponding to integer values for major, minor and patch (e.g. `1;2;3`).
+
+The script has access to [metadata](#_meta_fields) (e.g. In BeanShell for the SHA1 `metadata.GIT_SHA1_8`).
+
+The script also has access to the environment variables and system properties, respectively thanks to `env` (e.g. `env.HOME`) and `sys` (e.g. `sys.user.home`).
+
+*Example configuration:* (default behaviour)
+
+```xml
+<configuration xmlns="http://jgitver.github.io/maven/configuration/1.1.0"
+	    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	    xsi:schemaLocation="http://jgitver.github.io/maven/configuration/1.1.0 https://jgitver.github.io/maven/configuration/jgitver-configuration-v1_1_0.xsd">
+  <strategy>SCRIPT</strategy>
+  <scriptType>GROOVY</scriptType>
+  <script><![CDATA[
+def currentPatch = metadata.CURRENT_VERSION_PATCH
+
+// autoIncrementPatch by default
+def patch = (metadata.BASE_COMMIT_ON_HEAD && metadata.ANNOTATE) ? currentPatch + 1 : currentPatch
+
+def mmp = metadata.CURRENT_VERSION_MAJOR + ';' + metadata.CURRENT_VERSION_MINOR + ';' + patch
+
+def qualifiers = []
+
+if (!metadata.DETACHED_HEAD && metadata.QUALIFIED_BRANCH_NAME) {
+  qualifiers.add(metadata.QUALIFIED_BRANCH_NAME)
+}
+
+if (!metadata.BASE_COMMIT_ON_HEAD || !metadata.ANNOTATED) {
+  def sz = qualifiers.size()
+
+  if (sz == 0) {
+    qualifiers.add(metadata.COMMIT_DISTANCE)
+  } else {
+    qualifiers[sz-1] = qualifiers[sz-1] + '.' + metadata.COMMIT_DISTANCE
+  }
+}
+
+print mmp + ';' + qualifiers.join(';')
+]]></script>
+</configuration>
+```
+
 ### Versions naming & extraction
 
 `jgitver` uses a pattern recognition in order to filter the tags it uses for any version computation.
