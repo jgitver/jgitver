@@ -88,12 +88,13 @@ public class ScriptVersionStrategy extends VersionStrategy<ScriptVersionStrategy
     @Override
     public Version build(Commit head, List<Commit> parents) throws VersionCalculationException {
         try {
-            final Commit base = findVersionCommit(head, parents);
+            Commit base = findVersionCommit(head, parents);
+            Ref tagToUse = findTagToUse(head, base);
+            final Version baseVersion = getBaseVersionAndRegisterMetadata(base,tagToUse);
             final MetadataRegistrar registrar = getRegistrar();
             final MetadataProvider metaProvider = MetadataProvider.class.cast(registrar);
 
-            final HashMap<String, Object> metaProps =
-                new HashMap<String, Object>();
+            final HashMap<String, Object> metaProps = new HashMap<String, Object>();
 
             registrar.registerMetadata(Metadatas.COMMIT_DISTANCE,
                                        "" + base.getHeadDistance());
@@ -132,41 +133,14 @@ public class ScriptVersionStrategy extends VersionStrategy<ScriptVersionStrategy
 
             // Extra convenient metadata
             metaProps.put("DETACHED_HEAD",
-                          "" + GitUtils.isDetachedHead(getRepository()));
+                          GitUtils.isDetachedHead(getRepository()));
 
             metaProps.put("BASE_COMMIT_ON_HEAD",
-                          "" + isBaseCommitOnHead(head, base));
-
-            // Tag related metadata
-            final Ref tagToUse = findTagToUse(head, base);
-
-            final Version baseVersion;
-
-            if (tagToUse != null) {
-                final String tagName = GitUtils.tagNameFromRef(tagToUse);
-                final TagType tagType = computeTagType(tagToUse, maxVersionTag(base.getAnnotatedTags()).orElse(null));
-
-                baseVersion = versionFromTag(tagToUse);
-
-                registrar.registerMetadata(Metadatas.BASE_TAG_TYPE,
-                                           tagType.name());
-                registrar.registerMetadata(Metadatas.BASE_TAG, tagName);
-            } else {
-                baseVersion = Version.DEFAULT_VERSION;
-            }
-
-
-            registrar.registerMetadata(Metadatas.BASE_VERSION,
-                                       baseVersion.toString());
-            registrar.registerMetadata(Metadatas.CURRENT_VERSION_MAJOR, 
-                    "" + baseVersion.getMajor());
-            registrar.registerMetadata(Metadatas.CURRENT_VERSION_MINOR,
-                          "" + baseVersion.getMinor());
-            registrar.registerMetadata(Metadatas.CURRENT_VERSION_PATCH,
-                          "" + baseVersion.getPatch());
-
-            metaProps.put("ANNOTATED", GitUtils.isAnnotated(tagToUse));
-
+                          isBaseCommitOnHead(head, base));
+            
+            metaProps.put("ANNOTATED",
+                    GitUtils.isAnnotated(tagToUse));
+            
             EnumSet.allOf(Metadatas.class).
                 forEach(key -> metaProvider.meta(key).
                     ifPresent(value -> metaProps.put(key.name(), metaFunctor(key).apply(value))));
