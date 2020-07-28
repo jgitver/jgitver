@@ -166,6 +166,10 @@ public enum Metadatas {
     /**
      * True if the current HEAD is on an annotated tag, false otherwise
      */
-    ANNOTATED
+    ANNOTATED,
+    /**
+     * True if the current HEAD is detached, false otherwise
+     */
+    DETACHED_HEAD
     ;
 }

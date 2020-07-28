@@ -15,6 +15,7 @@
  */
 package fr.brouillard.oss.jgitver.impl;
 
+import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -135,6 +136,11 @@ public abstract class VersionStrategy<T extends VersionStrategy> {
             getRegistrar().registerMetadata(Metadatas.BASE_TAG, tagName);
         }
 
+        try {
+            getRegistrar().registerMetadata(Metadatas.DETACHED_HEAD, "" + GitUtils.isDetachedHead(getRepository()));
+        } catch (IOException ioe) {
+            // ignore
+        }
         getRegistrar().registerMetadata(Metadatas.ANNOTATED,"" + GitUtils.isAnnotated(tagToUse));
         getRegistrar().registerMetadata(Metadatas.BASE_VERSION, baseVersion.toString());
         getRegistrar().registerMetadata(Metadatas.CURRENT_VERSION_MAJOR, Integer.toString(baseVersion.getMajor()));

@@ -131,10 +131,6 @@ public class ScriptVersionStrategy extends VersionStrategy<ScriptVersionStrategy
                 metaProps.put(Metadatas.COMMIT_TIMESTAMP.name(), GitUtils.getTimestamp(rc.getAuthorIdent().getWhen().toInstant()));
             }
 
-            // Extra convenient metadata
-            metaProps.put("DETACHED_HEAD",
-                          GitUtils.isDetachedHead(getRepository()));
-
             metaProps.put("BASE_COMMIT_ON_HEAD",
                           isBaseCommitOnHead(head, base));
             
@@ -283,6 +279,7 @@ public class ScriptVersionStrategy extends VersionStrategy<ScriptVersionStrategy
                 return TO_INTEGER;
             case DIRTY:
             case ANNOTATED:
+            case DETACHED_HEAD:
                 return TO_BOOLEAN;
             default: return IDENTITY;
         }
