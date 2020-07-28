@@ -136,7 +136,9 @@ public class ConfigurableVersionStrategy extends VersionStrategy<ConfigurableVer
                 // ugly syntax to bypass the final/effectively final pb to access vraiable in lambda
                 Optional<String> externalyProvidedBranchName = GitUtils.providedBranchName();
                 if (externalyProvidedBranchName.isPresent()) {
-                    baseVersion = enhanceVersionWithBranch(baseVersion, externalyProvidedBranchName.get());
+                    String externalBranchName = externalyProvidedBranchName.get();
+                    baseVersion = enhanceVersionWithBranch(baseVersion, externalBranchName);
+                    getRegistrar().registerMetadata(Metadatas.PROVIDED_BRANCH_NAME, externalBranchName);
                 }
             }
 

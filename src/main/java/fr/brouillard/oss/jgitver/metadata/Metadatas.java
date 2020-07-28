@@ -64,6 +64,10 @@ public enum Metadatas {
      */
     QUALIFIED_BRANCH_NAME,
     /**
+     * Branch name externally provided if any. 
+     */
+    PROVIDED_BRANCH_NAME,
+    /**
      * Corresponds to the list of tags, associated with the current HEAD.
      */
     HEAD_TAGS, 

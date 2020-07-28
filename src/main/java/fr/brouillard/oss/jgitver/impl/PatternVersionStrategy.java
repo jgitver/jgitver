@@ -94,6 +94,7 @@ public class PatternVersionStrategy extends VersionStrategy<PatternVersionStrate
                 Optional<String> externalyProvidedBranchName = GitUtils.providedBranchName();
                 if (externalyProvidedBranchName.isPresent()) {
                     baseVersion = enhanceVersionWithBranch(baseVersion, externalyProvidedBranchName.get());
+                    getRegistrar().registerMetadata(Metadatas.PROVIDED_BRANCH_NAME, externalyProvidedBranchName.get());
                 }
             }
 

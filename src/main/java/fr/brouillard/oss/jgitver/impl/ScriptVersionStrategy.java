@@ -109,8 +109,6 @@ public class ScriptVersionStrategy extends VersionStrategy<ScriptVersionStrategy
             // Branch related
             final String branch = getRepository().getBranch();
 
-            metaProps.put(Metadatas.BRANCH_NAME.name(), branch);
-
             registrar.registerMetadata(Metadatas.BRANCH_NAME, branch);
 
             getVersionNamingConfiguration().branchQualifier(branch).
@@ -119,11 +117,9 @@ public class ScriptVersionStrategy extends VersionStrategy<ScriptVersionStrategy
                     });
 
             GitUtils.providedBranchName().ifPresent(externalName -> {
-                    registrar.registerMetadata(Metadatas.QUALIFIED_BRANCH_NAME,
-                                               externalName);
-                
-                    metaProps.put("PROVIDED_BRANCH_NAME", externalName);
-                });
+                registrar.registerMetadata(Metadatas.QUALIFIED_BRANCH_NAME, externalName);
+                registrar.registerMetadata(Metadatas.PROVIDED_BRANCH_NAME, externalName);
+            });
 
             try (final RevWalk walk = new RevWalk(getRepository())) {
                 final RevCommit rc = walk.parseCommit(head.getGitObject());
