@@ -16,6 +16,7 @@
 package fr.brouillard.oss.jgitver.impl;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -207,24 +208,9 @@ public class ScriptVersionStrategy extends VersionStrategy<ScriptVersionStrategy
 
             if (script == null || script.length() == 0) {
                 interpreter = new GroovyScriptInterpreter();
-
-                final String sep = System.lineSeparator();
-
-                try (final InputStream in = getClass().getResourceAsStream("/META-INF/jgitver-version-script.groovy");
-                     final BufferedReader br =
-                         new BufferedReader(new InputStreamReader(in))) {
-
-                    final StringBuilder buf = new StringBuilder();
-
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        buf.append(line + sep);
-                    }
-
-                    script = buf.toString();
-                }
+                script = defaultGroovyScript();
             } else {
-                interpreter = (scriptType == ScriptType.BEAN_SHELL)
+                interpreter = (ScriptType.BEAN_SHELL.equals(scriptType))
                     ? new BeanShellScriptInterpreter()
                     : new GroovyScriptInterpreter();
             }
@@ -246,27 +232,9 @@ public class ScriptVersionStrategy extends VersionStrategy<ScriptVersionStrategy
 
             // ---
 
-            final int major;
-            final int minor;
-            final int patch;
-
-            try {
-                major = Integer.parseInt(verComponents[0]);
-            } catch (Exception cause) {
-                throw new VersionCalculationException("invalid major", cause);
-            }
-
-            try {
-                minor = Integer.parseInt(verComponents[1]);
-            } catch (Exception cause) {
-                throw new VersionCalculationException("invalid minor", cause);
-            }
-
-            try {
-                patch = Integer.parseInt(verComponents[2]);
-            } catch (Exception cause) {
-                throw new VersionCalculationException("invalid patch", cause);
-            }
+            final int major = extractPartialVersion(verComponents[0], "major");
+            final int minor = extractPartialVersion(verComponents[1], "minor");
+            final int patch = extractPartialVersion(verComponents[2], "patch");
 
             // ---
 
@@ -286,6 +254,33 @@ public class ScriptVersionStrategy extends VersionStrategy<ScriptVersionStrategy
             return new Version(major, minor, patch, qualifiers);
         } catch (Exception ex) {
             throw new VersionCalculationException("cannot compute version", ex);
+        }
+    }
+    
+    private String defaultGroovyScript() {
+        final String sep = System.lineSeparator();
+
+        try (final InputStream in = getClass().getResourceAsStream("/META-INF/jgitver-version-script.groovy");
+             final BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
+
+            final StringBuilder buf = new StringBuilder();
+
+            String line;
+            while ((line = br.readLine()) != null) {
+                buf.append(line + sep);
+            }
+
+            return buf.toString();
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
+    }
+    
+    private int extractPartialVersion(String partialValue, String part) throws VersionCalculationException {
+        try {
+            return Integer.parseInt(partialValue);
+        } catch (Exception cause) {
+            throw new VersionCalculationException("invalid " + part + " value: " + partialValue, cause);
         }
     }
 
