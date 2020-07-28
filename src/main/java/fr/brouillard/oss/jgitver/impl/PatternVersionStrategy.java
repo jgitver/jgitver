@@ -69,6 +69,8 @@ public class PatternVersionStrategy extends VersionStrategy<PatternVersionStrate
                 }
             }
 
+            getRegistrar().registerMetadata(Metadatas.BASE_COMMIT_ON_HEAD, "" + isBaseCommitOnHead(head, base));
+            
             int headDistance = base.getHeadDistance();
             getRegistrar().registerMetadata(Metadatas.COMMIT_DISTANCE, "" + headDistance);
 

@@ -170,6 +170,11 @@ public enum Metadatas {
     /**
      * True if the current HEAD is detached, false otherwise
      */
-    DETACHED_HEAD
+    DETACHED_HEAD,
+    /**
+     * True if the current HEAD is on the same commit as the one serving 
+     * as reference for the version computation 
+     */
+    BASE_COMMIT_ON_HEAD
     ;
 }

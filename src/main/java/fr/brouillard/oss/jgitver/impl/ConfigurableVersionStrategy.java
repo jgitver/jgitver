@@ -53,6 +53,8 @@ public class ConfigurableVersionStrategy extends VersionStrategy<ConfigurableVer
             Ref tagToUse = findTagToUse(head, base);
             Version baseVersion = getBaseVersionAndRegisterMetadata(base,tagToUse);
 
+            getRegistrar().registerMetadata(Metadatas.BASE_COMMIT_ON_HEAD, "" + isBaseCommitOnHead(head, base));
+            
             if (!isBaseCommitOnHead(head, base) && autoIncrementPatch && !useLongFormat) {
                 // we are not on head
                 if (GitUtils.isAnnotated(tagToUse)) {

@@ -49,9 +49,11 @@ public class MavenVersionStrategy extends VersionStrategy<MavenVersionStrategy> 
             boolean isBaseCommitOnHead = isBaseCommitOnHead(head, base);
 
             boolean shouldComputeVersion = !isDetachedHead || isDirty || !isBaseCommitOnHead || forceComputation;
-            
+
+            getRegistrar().registerMetadata(Metadatas.BASE_COMMIT_ON_HEAD, "" + isBaseCommitOnHead);
+
             if (tagToUse != null) {
-                needSnapshot = baseVersion.isSnapshot() || !isBaseCommitOnHead(head, base)
+                needSnapshot = baseVersion.isSnapshot() || !isBaseCommitOnHead
                         || !GitUtils.isAnnotated(tagToUse) || (isDirty && !isDetachedHead) || forceComputation;
             }
 

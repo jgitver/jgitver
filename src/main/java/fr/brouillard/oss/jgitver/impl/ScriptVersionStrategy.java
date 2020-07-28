@@ -131,8 +131,7 @@ public class ScriptVersionStrategy extends VersionStrategy<ScriptVersionStrategy
                 metaProps.put(Metadatas.COMMIT_TIMESTAMP.name(), GitUtils.getTimestamp(rc.getAuthorIdent().getWhen().toInstant()));
             }
 
-            metaProps.put("BASE_COMMIT_ON_HEAD",
-                          isBaseCommitOnHead(head, base));
+            registrar.registerMetadata(Metadatas.BASE_COMMIT_ON_HEAD, "" + isBaseCommitOnHead(head, base));
             
             EnumSet.allOf(Metadatas.class).
                 forEach(key -> metaProvider.meta(key).
@@ -280,6 +279,7 @@ public class ScriptVersionStrategy extends VersionStrategy<ScriptVersionStrategy
             case DIRTY:
             case ANNOTATED:
             case DETACHED_HEAD:
+            case BASE_COMMIT_ON_HEAD:
                 return TO_BOOLEAN;
             default: return IDENTITY;
         }
