@@ -59,7 +59,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- runtime dependencies -->
-        <org.eclipse.jgit.version>5.3.1.201904271842-r</org.eclipse.jgit.version>
+        <org.eclipse.jgit.version>5.3.7.202002110540-r</org.eclipse.jgit.version>
         <petitparser-core.version>2.2.0</petitparser-core.version>
 
         <!-- optional dependencies, for use with the CLI -->
@@ -83,6 +83,7 @@
         <maven-antrun-plugin.version>1.8</maven-antrun-plugin.version>
         <maven-surefire-plugin.version>3.0.0-M4</maven-surefire-plugin.version>
         <maven-assembly-plugin.version>3.1.1</maven-assembly-plugin.version>
+        <maven-script-interpreter.version>1.3</maven-script-interpreter.version>
     </properties>
 
     <developers>
@@ -134,7 +135,7 @@
         <dependency>
             <groupId>org.apache.maven.shared</groupId>
             <artifactId>maven-script-interpreter</artifactId>
-            <version>1.2</version>
+            <version>${maven-script-interpreter.version}</version>
         </dependency>
 
         <dependency>
