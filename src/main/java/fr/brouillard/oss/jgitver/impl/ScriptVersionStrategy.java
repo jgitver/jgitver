@@ -27,15 +27,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Function;
 
+import org.apache.maven.shared.scriptinterpreter.ProjectBeanShellScriptInterpreter;
+import org.apache.maven.shared.scriptinterpreter.ProjectGroovyScriptInterpreter;
+import org.apache.maven.shared.scriptinterpreter.ScriptRunner;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
-import org.petitparser.context.Result;
 
-import org.apache.maven.shared.scriptinterpreter.BeanShellScriptInterpreter;
-import org.apache.maven.shared.scriptinterpreter.GroovyScriptInterpreter;
 import org.apache.maven.shared.scriptinterpreter.ScriptInterpreter;
 
 import fr.brouillard.oss.jgitver.Features;
@@ -45,7 +45,6 @@ import fr.brouillard.oss.jgitver.Version;
 import fr.brouillard.oss.jgitver.metadata.MetadataProvider;
 import fr.brouillard.oss.jgitver.metadata.MetadataRegistrar;
 import fr.brouillard.oss.jgitver.metadata.Metadatas;
-import fr.brouillard.oss.jgitver.metadata.TagType;
 
 /**
  * Executes the given script (according its {@link ScriptType}, 
@@ -144,15 +143,15 @@ public class ScriptVersionStrategy extends VersionStrategy<ScriptVersionStrategy
                                 Collections.unmodifiableMap(metaProps));
 
             final ScriptInterpreter interpreter;
-
+            final ScriptRunner runner;
 
             if (script == null || script.length() == 0) {
-                interpreter = new GroovyScriptInterpreter();
+                interpreter = new ProjectGroovyScriptInterpreter();
                 script = defaultGroovyScript();
             } else {
                 interpreter = (ScriptType.BEAN_SHELL.equals(scriptType))
-                    ? new BeanShellScriptInterpreter()
-                    : new GroovyScriptInterpreter();
+                    ? new ProjectBeanShellScriptInterpreter()
+                    : new ProjectGroovyScriptInterpreter();
             }
 
             final ByteArrayOutputStream output = new ByteArrayOutputStream();
