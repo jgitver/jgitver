@@ -117,6 +117,8 @@ public class ConfigurableVersionStrategy extends VersionStrategy<ConfigurableVer
                 RevCommit rc = walk.parseCommit(head.getGitObject());
                 String commitTimestamp = GitUtils.getTimestamp(rc.getAuthorIdent().getWhen().toInstant());
                 getRegistrar().registerMetadata(Metadatas.COMMIT_TIMESTAMP, commitTimestamp);
+                String isoCommitTimestamp = GitUtils.getIsoTimestamp(rc.getAuthorIdent().getWhen().toInstant());
+                getRegistrar().registerMetadata(Metadatas.COMMIT_ISO_TIMESTAMP, isoCommitTimestamp);
                 if (needsCommitTimestamp) {
                     baseVersion = baseVersion.addQualifier(commitTimestamp);
                 }

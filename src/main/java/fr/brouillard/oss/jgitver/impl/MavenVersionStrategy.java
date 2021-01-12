@@ -88,6 +88,8 @@ public class MavenVersionStrategy extends VersionStrategy<MavenVersionStrategy> 
                 RevCommit rc = walk.parseCommit(head.getGitObject());
                 String commitTimestamp = GitUtils.getTimestamp(rc.getAuthorIdent().getWhen().toInstant());
                 getRegistrar().registerMetadata(Metadatas.COMMIT_TIMESTAMP, commitTimestamp);
+                String isoCommitTimestamp = GitUtils.getIsoTimestamp(rc.getAuthorIdent().getWhen().toInstant());
+                getRegistrar().registerMetadata(Metadatas.COMMIT_ISO_TIMESTAMP, isoCommitTimestamp);
             }
             
             return needSnapshot ? baseVersion.removeQualifier("SNAPSHOT").addQualifier("SNAPSHOT") : baseVersion;
