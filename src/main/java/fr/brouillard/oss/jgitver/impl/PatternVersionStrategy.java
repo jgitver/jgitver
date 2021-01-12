@@ -83,6 +83,8 @@ public class PatternVersionStrategy extends VersionStrategy<PatternVersionStrate
                 RevCommit rc = walk.parseCommit(head.getGitObject());
                 String commitTimestamp = GitUtils.getTimestamp(rc.getAuthorIdent().getWhen().toInstant());
                 getRegistrar().registerMetadata(Metadatas.COMMIT_TIMESTAMP, commitTimestamp);
+                String isoCommitTimestamp = GitUtils.getIsoTimestamp(rc.getAuthorIdent().getWhen().toInstant());
+                getRegistrar().registerMetadata(Metadatas.COMMIT_ISO_TIMESTAMP, isoCommitTimestamp);
                 baseVersion = baseVersion.addQualifier(commitTimestamp);
             }
 

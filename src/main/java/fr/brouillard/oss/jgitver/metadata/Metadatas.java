@@ -168,6 +168,11 @@ public enum Metadatas {
      */
     COMMIT_TIMESTAMP,
     /**
+     * Exposes the commit timestamp instant in the UTC timezone using
+     * DateTimeFormatter.ISO_OFFSET_DATE_TIME
+     */
+    COMMIT_ISO_TIMESTAMP,
+    /**
      * True if the current HEAD is on an annotated tag, false otherwise
      */
     ANNOTATED,

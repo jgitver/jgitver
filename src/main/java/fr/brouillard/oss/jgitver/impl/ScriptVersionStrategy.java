@@ -123,6 +123,8 @@ public class ScriptVersionStrategy extends VersionStrategy<ScriptVersionStrategy
             try (final RevWalk walk = new RevWalk(getRepository())) {
                 final RevCommit rc = walk.parseCommit(head.getGitObject());
                 getRegistrar().registerMetadata(Metadatas.COMMIT_TIMESTAMP, GitUtils.getTimestamp(rc.getAuthorIdent().getWhen().toInstant()));
+                String isoCommitTimestamp = GitUtils.getIsoTimestamp(rc.getAuthorIdent().getWhen().toInstant());
+                getRegistrar().registerMetadata(Metadatas.COMMIT_ISO_TIMESTAMP, isoCommitTimestamp);
             }
 
             registrar.registerMetadata(Metadatas.BASE_COMMIT_ON_HEAD, "" + isBaseCommitOnHead(head, base));

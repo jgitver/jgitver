@@ -96,7 +96,11 @@ CommitDate: Mon Jun 3 08:17:02 2019 +0200
         Optional<String> commitTimestampMeta = versionCalculator.meta(Metadatas.COMMIT_TIMESTAMP);
         assertTrue(commitTimestampMeta.isPresent());
         assertThat(commitTimestampMeta.get(), is("20190603081702"));
-    }
+
+        Optional<String> commitIsoTimestampMeta = versionCalculator.meta(Metadatas.COMMIT_ISO_TIMESTAMP);
+        assertTrue(commitIsoTimestampMeta.isPresent());
+        assertThat(commitIsoTimestampMeta.get(), is("2019-06-03T06:17:02Z"));
+}
 
     @AfterEach
     public void cleanup() {

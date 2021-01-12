@@ -18,6 +18,7 @@ package fr.brouillard.oss.jgitver.impl;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
@@ -85,6 +86,17 @@ public class GitUtils {
                 .replace("-", "")
                 .replace(":", "")
                 .replace("T", "");
+    }
+
+    /**
+     * Builds a string representing the given instant interpolated in the UTC timezone.
+     * @param commitInstant commit time as an Instant
+     * @return a string representing the commit time in ISO format in UTC timezone
+     */
+    public static String getIsoTimestamp(Instant commitInstant) {
+    	OffsetDateTime commitDateTime = OffsetDateTime.ofInstant(commitInstant, ZoneId.of("Z"));
+        String isoDateTime = DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(commitDateTime);
+        return isoDateTime;
     }
 
     /**
