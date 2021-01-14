@@ -70,7 +70,7 @@
         <java-hamcrest.version>2.0.0.0</java-hamcrest.version>
         <junit.jupiter.version>5.4.2</junit.jupiter.version>
         <junit.vintage.version>5.4.2</junit.vintage.version>
-        <guava.version>27.1-jre</guava.version>
+        <guava.version>30.1-jre</guava.version>
 
         <!-- plugins versions -->
         <ossindex-maven-plugin.version>3.0.1</ossindex-maven-plugin.version>
