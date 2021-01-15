@@ -1,4 +1,6 @@
-# jgitver: git versioning library [![Discuss](https://badges.gitter.im/jgitver/jgitver.svg)](https://gitter.im/jgitver/Lobby) 
+# jgitver: git versioning library 
+
+[![Sponsor](https://img.shields.io/badge/sponsor-jgitver-blue?logo=github-sponsors)](https://github.com/sponsors/McFoggy) [![Discuss](https://badges.gitter.im/jgitver/jgitver.svg)](https://gitter.im/jgitver/Lobby) 
 
 The goal of `jgitver` is to provide a standardized way, via a library, to calculate a project [semver](http://semver.org) compatible version from a git repository and its content: `tags`, `branches`, `HEAD`, ...  
 
@@ -9,6 +11,7 @@ With this `automation` & `standardization` it is then possible to:
 
 ## Project statuses
 
+- [![Sponsor](https://img.shields.io/badge/sponsor-jgitver-blue?logo=github-sponsors)](https://github.com/sponsors/McFoggy)
 - [![Build Status](https://travis-ci.org/jgitver/jgitver.svg?branch=master)](https://travis-ci.org/jgitver/jgitver)
 - [![pipeline status](https://gitlab.com/jgitver/jgitver/badges/master/pipeline.svg)](https://gitlab.com/jgitver/jgitver/commits/master)
 - [![Coverage Status](https://coveralls.io/repos/github/jgitver/jgitver/badge.svg)](https://coveralls.io/github/jgitver/jgitver)
