@@ -34,6 +34,8 @@ import fr.brouillard.oss.jgitver.metadata.MetadataProvider;
 import fr.brouillard.oss.jgitver.metadata.MetadataRegistrar;
 import fr.brouillard.oss.jgitver.metadata.Metadatas;
 
+import static java.util.Optional.empty;
+
 public class PatternVersionStrategy extends VersionStrategy<PatternVersionStrategy> {
     public static final String DEFAULT_VERSION_PATTERN = "${v}${<meta.QUALIFIED_BRANCH_NAME}${<meta.COMMIT_DISTANCE}";
     public static final String DEFAULT_TAG_VERSION_PATTERN = "${v}";
@@ -59,8 +61,8 @@ public class PatternVersionStrategy extends VersionStrategy<PatternVersionStrate
         try {
             Commit base = findVersionCommit(head, parents);
             Ref tagToUse = findTagToUse(head, base);
-            Version baseVersion = getBaseVersionAndRegisterMetadata(base,tagToUse);
-
+            Version baseVersion = getBaseVersionAndRegisterMetadata(base, tagToUse);
+            Optional<String> branchPattern = empty();
             if (!isBaseCommitOnHead(head, base) && autoIncrementPatch) {
                 // we are not on head
                 if (GitUtils.isAnnotated(tagToUse)) {
@@ -91,6 +93,7 @@ public class PatternVersionStrategy extends VersionStrategy<PatternVersionStrate
             if (!GitUtils.isDetachedHead(getRepository())) {
                 String branch = getRepository().getBranch();
                 baseVersion = enhanceVersionWithBranch(baseVersion, branch);
+                branchPattern = getVersionNamingConfiguration().branchPattern(branch);
             } else {
                 // ugly syntax to bypass the final/effectively final pb to access vraiable in lambda
                 Optional<String> externalyProvidedBranchName = GitUtils.providedBranchName();
@@ -100,7 +103,8 @@ public class PatternVersionStrategy extends VersionStrategy<PatternVersionStrate
                 }
             }
 
-            String versionPattern = (this.versionPattern != null) ? this.versionPattern : DEFAULT_VERSION_PATTERN;
+
+            String versionPattern = resolveVersionPattern(branchPattern);
             if (isBaseCommitOnHead(head, base) && GitUtils.isAnnotated(tagToUse)) {
                 versionPattern = (this.tagVersionPattern != null) ? this.tagVersionPattern : DEFAULT_TAG_VERSION_PATTERN;
             }
@@ -124,6 +128,10 @@ public class PatternVersionStrategy extends VersionStrategy<PatternVersionStrate
         } catch (Exception ex) {
             throw new VersionCalculationException("cannot compute version", ex);
         }
+    }
+
+    private String resolveVersionPattern(Optional<String> branchPattern) {
+        return branchPattern.orElse(this.versionPattern != null ? this.versionPattern : DEFAULT_VERSION_PATTERN);
     }
 
     /**

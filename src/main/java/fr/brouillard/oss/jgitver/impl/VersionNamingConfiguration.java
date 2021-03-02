@@ -76,7 +76,15 @@ public class VersionNamingConfiguration {
                 return bPolicy.qualifier(branch);
             }
         }
-        
+        return Optional.empty();
+    }
+
+    public Optional<String> branchPattern(String branch) {
+        for (BranchingPolicy bPolicy : branchPolicies) {
+            if (bPolicy.appliesOn(branch)) {
+                return bPolicy.getVersionPattern();
+            }
+        }
         return Optional.empty();
     }
 }

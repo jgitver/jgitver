@@ -25,9 +25,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static java.util.Optional.*;
+
 public class BranchingPolicy {
     private final Pattern recognitionPattern;
-    private List<Function<String, String>> transformations;
+    private final List<Function<String, String>> transformations;
+    private final Optional<String> versionPattern;
 
     /**
      * Default branching policy that sanitizes branch names as per jgtiver <=
@@ -50,9 +53,24 @@ public class BranchingPolicy {
      *                           The pattern MUST contains at least one capture group.
      */
     public BranchingPolicy(String recognitionPattern) {
+        this(recognitionPattern, (String) null);
+    }
+
+    /**
+     * Builds a BranchingPolicy object using the given pattern as a recognition {@link Pattern}.
+     * Some default branches transformations will be applied:
+     * <ul>
+     *     <li>{@link BranchNameTransformations#REPLACE_UNEXPECTED_CHARS_UNDERSCORE}</li>
+     *     <li>{@link BranchNameTransformations#LOWERCASE_EN}</li>
+     * </ul>
+     * @param recognitionPattern the string representing a {@link Pattern} used to isolate the name to use from the branch.
+     *                           The pattern MUST contains at least one capture group.
+     * @param versionPattern optional version pattern
+     */
+    public BranchingPolicy(String recognitionPattern, String versionPattern) {
         this(recognitionPattern, Arrays.asList(
                 BranchNameTransformations.REPLACE_UNEXPECTED_CHARS_UNDERSCORE.name(),
-                BranchNameTransformations.LOWERCASE_EN.name())
+                BranchNameTransformations.LOWERCASE_EN.name()), versionPattern
         );
     }
 
@@ -63,8 +81,20 @@ public class BranchingPolicy {
      * @param transformationsNames the non null list of transformations to apply to the extracted name
      */
     public BranchingPolicy(String recognitionPattern, List<String> transformationsNames) {
+        this(recognitionPattern, transformationsNames, null);
+    }
+
+    /**
+     * Builds a BranchingPolicy object using the given pattern as a recognition {@link Pattern}and the given branches transformations
+     * @param recognitionPattern the string representing a {@link Pattern} used to isolate the name to use from the branch.
+     *                           The pattern MUST contains at least one capture group.
+     * @param transformationsNames the non null list of transformations to apply to the extracted name
+     * @param versionPattern optional version pattern
+     */
+    public BranchingPolicy(String recognitionPattern, List<String> transformationsNames, String versionPattern) {
         this.recognitionPattern = Pattern.compile(recognitionPattern);
-        transformations = transformationsNames.stream().map(BranchNameTransformations::valueOf).collect(Collectors.toList());
+        this.transformations = transformationsNames.stream().map(BranchNameTransformations::valueOf).collect(Collectors.toList());
+        this.versionPattern = ofNullable(versionPattern);
     }
 
     /**
@@ -112,11 +142,11 @@ public class BranchingPolicy {
         if (branch != null) {
             Matcher matcher = recognitionPattern.matcher(branch);
             if (matcher.matches() && matcher.groupCount() >= 1) {
-                return Optional.of(matcher.group(1));
+                return of(matcher.group(1));
             }
         }
 
-        return Optional.empty();
+        return empty();
     }
 
     public Optional<String> qualifier(String branch) {
@@ -124,7 +154,7 @@ public class BranchingPolicy {
                 .map(extractedName -> transformations.stream().reduce(extractedName, (bName, f) -> f.apply(bName), (b1, b2) -> b2));
     }
 
-    public static enum BranchNameTransformations implements Function<String, String> {
+    public enum BranchNameTransformations implements Function<String, String> {
         IDENTITY, REMOVE_UNEXPECTED_CHARS {
             @Override
             public String apply(String branch) {
@@ -190,5 +220,9 @@ public class BranchingPolicy {
         public String apply(String branch) {
             return branch;
         }
+    }
+
+    public Optional<String> getVersionPattern() {
+        return versionPattern;
     }
 }
