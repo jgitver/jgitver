@@ -111,8 +111,14 @@ public class BranchingPolicy {
     private Optional<String> recogniseBranch(String branch) {
         if (branch != null) {
             Matcher matcher = recognitionPattern.matcher(branch);
-            if (matcher.matches() && matcher.groupCount() >= 1) {
-                return Optional.of(matcher.group(1));
+            if (matcher.matches()) {
+                int i = 0;
+                while (++i <= matcher.groupCount()) {
+                    String name = matcher.group(i);
+                    if (name != null && !name.isEmpty()) {
+                        return Optional.of(name);
+                    }
+                }
             }
         }
 

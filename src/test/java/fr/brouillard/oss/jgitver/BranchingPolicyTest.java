@@ -15,17 +15,19 @@
  */
 package fr.brouillard.oss.jgitver;
 
+import java.util.Optional;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.Optional;
-
-import org.junit.jupiter.api.Test;
 
 public class BranchingPolicyTest {
     @Test
@@ -44,5 +46,27 @@ public class BranchingPolicyTest {
         assertThat("unexpected chars should have been transformed to underscore", resolutionResult.get(), containsString("_"));
         assertThat("no unexpected chars should remain", resolutionResult.get(), not(containsString("-")));
         assertThat("no uppercase chars should remain", resolutionResult.get(), not(matchesPattern("[A-Z]")));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+      // No capturing group, no match
+      ".*, ABC,",
+      // Non-capturing group ignored
+      "(?:A*)(.*), AAABC, bc",
+      // Multiple groups (one of which may be "")
+      "(A*)(.*), AAABC, aaa",
+      "(A*)(.*), BC, bc",
+      // Mutually-exclusive groups (one of which may be null)
+      "(?:feature/)(?:([A-Z]+-[0-9]+).*|(.*)), feature/ABC-123_description, abc_123",
+      "(?:feature/)(?:([A-Z]+-[0-9]+).*|(.*)), feature/description, description",
+      "(?:feature/)(?:([A-Z]+-[0-9]+).*|(.*)), description,"
+    })
+    void regexBranchName_uses_first_non_empty_group(String recognitionPattern, String branch, String qualifiedBranch) {
+        // Given:
+        BranchingPolicy bp = new BranchingPolicy(recognitionPattern);
+        // Then:
+        assertThat(bp.appliesOn(branch), is(qualifiedBranch != null));
+        assertThat(bp.qualifier(branch), is(Optional.ofNullable(qualifiedBranch)));
     }
 }
