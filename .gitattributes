@@ -5,6 +5,7 @@
 
 # Force the following filetypes to have unix eols, so Windows does not break them
 *.sh text eol=lf
+mvnw text eol=lf
 
 # Force images/fonts to be handled as binaries
 *.jpg binary
