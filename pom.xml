@@ -74,7 +74,7 @@
 
         <!-- plugins versions -->
         <ossindex-maven-plugin.version>3.0.1</ossindex-maven-plugin.version>
-        <checkstyle.version>8.21</checkstyle.version>
+        <checkstyle.version>8.29</checkstyle.version>
         <maven-checkstyle-plugin.version>3.0.0</maven-checkstyle-plugin.version>
         <license-maven-plugin.version>2.11</license-maven-plugin.version>
         <maven-compiler-plugin.version>3.6.0</maven-compiler-plugin.version>
