@@ -279,10 +279,12 @@
                         <email>matthieu@brouillard.fr</email>
                     </properties>
                     <excludes>
-                        <exclude>**/README</exclude>
-                        <exclude>**/LICENSE</exclude>
+                        <exclude>README.md</exclude>
+                        <exclude>LICENSE</exclude>
+                        <exclude>CHANGELOG.md</exclude>
                         <exclude>.*</exclude>
                         <exclude>src/doc/images/**</exclude>
+                        <exclude>src/doc/changelog.mustache</exclude>
                         <exclude>src/quality/**</exclude>
                         <exclude>src/test/resources/**</exclude>
                         <exclude>src/main/resources/**</exclude>
@@ -461,6 +463,37 @@
                                         <echo>all_version_annotated_tags: ${jgitver.all_version_annotated_tags}</echo>
                                         <echo>all_version_lightweight_tags: ${jgitver.all_version_lightweight_tags}</echo>
                                     </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>changelog</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>se.bjurr.gitchangelog</groupId>
+                        <artifactId>git-changelog-maven-plugin</artifactId>
+                        <version>1.49</version>
+                        <executions>
+                            <execution>
+                                <id>GenerateGitChangelog</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>git-changelog</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- A file on filesystem //-->
+                                    <filePath>CHANGELOG.md</filePath>
+                                    <templateFile>src/doc/changelog.mustache</templateFile>
+                                    <gitHubApi>https://api.github.com/repos/jgitver/jgitver</gitHubApi>
+                                    <noIssueName>Without linked issue</noIssueName>
                                 </configuration>
                             </execution>
                         </executions>

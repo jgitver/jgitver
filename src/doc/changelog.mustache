@@ -1,0 +1,25 @@
+# jgitver changelog
+
+Changelog of [jgitver](https://github.com/jgitver/jgitver) project.
+
+{{#tags}}
+## {{name}}
+ {{#issues}}
+  {{#hasIssue}}
+   {{#hasLink}}
+### {{name}} [{{issue}}]({{link}}) {{title}}
+   {{/hasLink}}
+   {{^hasLink}}
+### {{name}} {{issue}} {{title}}
+   {{/hasLink}}
+  {{/hasIssue}}
+  {{^hasIssue}}
+### {{name}}
+  {{/hasIssue}}
+
+  {{#commits}}
+* [{{hash}}](https://github.com/jgitver/jgitver-maven-plugin/commit/{{hash}}) {{messageTitle}} : {{authorName}} *{{commitTime}}*
+  {{/commits}}
+
+ {{/issues}}
+{{/tags}}

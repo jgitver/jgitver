@@ -317,3 +317,13 @@ Execute following command to find new dependencies
 ````
 mvn versions:display-dependency-updates
 ````
+
+## Generating the changelog
+
+After a release, generate the changelog with
+
+````
+mvn -P changelog generate-resources
+````
+
+Commit and push the modified `CHANGELOG.md` file.
