@@ -61,7 +61,7 @@ Most of the time you will want to use `jgitver` via one of its extensions/plugin
       <extension>
         <groupId>fr.brouillard.oss</groupId>
         <artifactId>jgitver-maven-plugin</artifactId>
-        <version>1.5.1</version>
+        <version>1.7.1</version>
       </extension>
     </extensions>
     ```
