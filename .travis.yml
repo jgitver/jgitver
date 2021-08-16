@@ -7,7 +7,7 @@ dist: trusty
 language: java
 
 git:
-  depth: false
+  depth: 3
 
 before_script:
   - ./travis-set-branch.sh
