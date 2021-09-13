@@ -461,9 +461,7 @@ public class GitVersionCalculatorImpl implements GitVersionCalculator {
                     // we take the most recent one among those at the same distance
                     // due to https://github.com/jgitver/jgitver/issues/73
                     // we need to keep only the annotated tags
-                    if (LookupPolicy.LATEST.equals(lookupPolicy)) {
-                        tagsAtMinimumDistance = keepOnlyAnnotatedTags(tagsAtMinimumDistance);
-                    }
+                    tagsAtMinimumDistance = keepOnlyAnnotatedTags(tagsAtMinimumDistance);
                     return latestObjectIdOfTags(tagsAtMinimumDistance, refToObjectIdFunction);
                 }
             default:
