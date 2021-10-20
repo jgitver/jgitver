@@ -31,6 +31,7 @@ import fr.brouillard.oss.jgitver.metadata.Metadatas;
 public class MavenVersionStrategy extends VersionStrategy<MavenVersionStrategy> {
     private boolean useDirty = false;
     private boolean forceComputation = false;
+    private boolean autoIncrementMinor = false;
 
     public MavenVersionStrategy(VersionNamingConfiguration vnc, Repository repository, Git git, MetadataRegistrar metadatas) {
         super(vnc, repository, git, metadatas);
@@ -62,7 +63,7 @@ public class MavenVersionStrategy extends VersionStrategy<MavenVersionStrategy> 
                     // we are not on head
                     if (GitUtils.isAnnotated(tagToUse) && !baseVersion.removeQualifier("SNAPSHOT").isQualified()) {
                         // found tag to use was a non qualified annotated one, lets' increment the version automatically
-                        baseVersion = baseVersion.incrementPatch();
+                        baseVersion = incrementVersion(baseVersion);
                     }
                     baseVersion = baseVersion.noQualifier();
                 }
@@ -98,10 +99,19 @@ public class MavenVersionStrategy extends VersionStrategy<MavenVersionStrategy> 
         }
     }
 
+    private Version incrementVersion(Version baseVersion) {
+        return this.autoIncrementMinor ? baseVersion.incrementMinor() : baseVersion.incrementPatch();
+    }
+
     public MavenVersionStrategy setUseDirty(boolean useDirty) {
         return runAndGetSelf(() -> this.useDirty = useDirty);
     }
     public MavenVersionStrategy setForceComputation(boolean forceComputation) {
         return runAndGetSelf(() -> this.forceComputation = forceComputation);
+    }
+
+    public MavenVersionStrategy setAutoIncrementMinor(boolean autoIncrementMinor) {
+        this.autoIncrementMinor = autoIncrementMinor;
+        return this;
     }
 }

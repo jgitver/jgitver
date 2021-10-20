@@ -43,6 +43,7 @@ public class PatternVersionStrategy extends VersionStrategy<PatternVersionStrate
     private String versionPattern = null;
     private String tagVersionPattern = null;
     private boolean autoIncrementPatch = false;
+    private boolean autoIncrementMinor = false;
 
     /**
      * Default constructor.
@@ -63,11 +64,11 @@ public class PatternVersionStrategy extends VersionStrategy<PatternVersionStrate
             Ref tagToUse = findTagToUse(head, base);
             Version baseVersion = getBaseVersionAndRegisterMetadata(base, tagToUse);
             Optional<String> branchPattern = empty();
-            if (!isBaseCommitOnHead(head, base) && autoIncrementPatch) {
+            if (!isBaseCommitOnHead(head, base) && (autoIncrementPatch || autoIncrementMinor)) {
                 // we are not on head
                 if (GitUtils.isAnnotated(tagToUse)) {
                     // found tag to use was an annotated one, lets' increment the version automatically
-                    baseVersion = baseVersion.incrementPatch();
+                    baseVersion = autoIncrementPatch ? baseVersion.incrementPatch() : baseVersion.incrementMinor();
                 }
             }
 
@@ -159,4 +160,7 @@ public class PatternVersionStrategy extends VersionStrategy<PatternVersionStrate
         return runAndGetSelf(() -> this.autoIncrementPatch = autoIncrementPatch);
     }
 
+    public PatternVersionStrategy setAutoIncrementMinor(boolean autoIncrementMinor) {
+        return runAndGetSelf(() -> this.autoIncrementMinor = autoIncrementMinor);
+    }
 }
