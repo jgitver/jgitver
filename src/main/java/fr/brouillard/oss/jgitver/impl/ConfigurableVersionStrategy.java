@@ -31,6 +31,7 @@ import fr.brouillard.oss.jgitver.metadata.Metadatas;
 
 public class ConfigurableVersionStrategy extends VersionStrategy<ConfigurableVersionStrategy> {
     private boolean autoIncrementPatch = false;
+    private boolean autoIncrementMinor = false;
     private boolean useDistance = true;
     private boolean useCommitTimestamp = false;
     private boolean useGitCommitId = false;
@@ -48,6 +49,9 @@ public class ConfigurableVersionStrategy extends VersionStrategy<ConfigurableVer
         if (useSnapshot && useDistance) {
             throw new VersionCalculationException("Can't use useSnapshot and useDistance in same time");
         }
+        if (autoIncrementPatch && autoIncrementMinor) {
+            throw new VersionCalculationException("Can't use autoIncrementPatch and autoIncrementMinor in same time");
+        }
         try {
             Commit base = findVersionCommit(head, parents);
             Ref tagToUse = findTagToUse(head, base);
@@ -55,11 +59,11 @@ public class ConfigurableVersionStrategy extends VersionStrategy<ConfigurableVer
 
             getRegistrar().registerMetadata(Metadatas.BASE_COMMIT_ON_HEAD, "" + isBaseCommitOnHead(head, base));
             
-            if (!isBaseCommitOnHead(head, base) && autoIncrementPatch && !useLongFormat) {
+            if (!isBaseCommitOnHead(head, base) && !useLongFormat && (autoIncrementPatch || autoIncrementMinor)) {
                 // we are not on head
                 if (GitUtils.isAnnotated(tagToUse)) {
                     // found tag to use was an annotated one, lets' increment the version automatically
-                    baseVersion = baseVersion.incrementPatch();
+                    baseVersion = autoIncrementPatch ? baseVersion.incrementPatch() : baseVersion.incrementMinor();
                 }
             }
 
@@ -184,5 +188,9 @@ public class ConfigurableVersionStrategy extends VersionStrategy<ConfigurableVer
 
     public VersionStrategy setUseSnapshot(boolean useSnapshot) {
         return runAndGetSelf(() -> this.useSnapshot = useSnapshot);
+    }
+
+    public ConfigurableVersionStrategy setAutoIncrementMinor(boolean autoIncrementMinor) {
+        return runAndGetSelf(() -> this.autoIncrementMinor = autoIncrementMinor);
     }
 }

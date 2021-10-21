@@ -126,6 +126,18 @@ public interface GitVersionCalculator extends AutoCloseable, MetadataProvider {
     GitVersionCalculator setAutoIncrementPatch(boolean value);
 
     /**
+     * When true, when the found tag to calculate a version for HEAD is a normal/annotated one, the semver minor version
+     * of the tag is increased by one and the patch version is set to 0 ;
+     * except when the tag is on the HEAD itself. This action is not in use if the
+     * SNAPSHOT qualifier is present on the found version or if the found tag is a lightweight one.
+     *
+     * @param value if true and when found tag is not on HEAD, then version returned will be the found version with
+     *        minor number increased by one and patch number set to 0. default false.
+     * @return itself to chain settings
+     */
+    GitVersionCalculator setAutoIncrementMinor(boolean value);
+
+    /**
      * Defines a comma separated list of branches for which no branch name qualifier will be used. default "master".
      * Example: "master, integration"
      * This method overrides the usage of {@link #setQualifierBranchingPolicies(List)} &amp;

@@ -38,6 +38,9 @@ public class Options {
     @Option(names = {"--autoIncrementPatch"}, description = "activate auto increment patch functionality")
     boolean autoIncrementPatch = true;
 
+    @Option(names = {"--autoIncrementMinor"}, description = "activate auto increment minor functionality")
+    boolean autoIncrementMinor = false;
+
     @Option(names = {"--useDistance"}, description = "activate distance qualifier")
     boolean useDistance = true;
 
