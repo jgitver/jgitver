@@ -198,20 +198,25 @@ public interface DistanceCalculator {
                         // we found it
                         return Optional.of(Integer.valueOf(commitCount));
                     }
-                    // get next head
+                    // get first parent
                     RevCommit firstParent = null;
-                    if (parents != null && parents.length > 0) {
-                        firstParent = parents[0];
+                    if (parents != null) {
+                        if (parents.length > 0) {
+                            firstParent = parents[0];
+                        }
+                        // remember other parents as we may need to follow the other parents as well if
+                        // the target is not on the current branch.
+                        for (int i = 1; i < parents.length; i++) {
+                            if (!processedRevs.contains(parents[i])) {
+                                parentsStack.push(Pair.of(commitCount, parents[i]));
+                            }
+                        }
                     }
+                    // get next head from first parent
                     if (firstParent != null && !processedRevs.contains(firstParent)) {
                         // follow the first parent but only if not yet processed for faster processing and to avoid loops
                         head = walk.parseCommit(firstParent);
                         processedRevs.add(firstParent);
-                        // remember other parents as we may need to follow the other parents as well if
-                        // the target is not on the current branch.
-                        for (int i = 1; i < parents.length; i++) {
-                            parentsStack.push(Pair.of(commitCount, parents[i]));
-                        }
                     } else {
                         // traverse next parent
                         Pair<Integer, RevCommit> previous = parentsStack.poll();
