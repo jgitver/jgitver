@@ -157,6 +157,10 @@ public enum Metadatas {
      */
     COMMIT_DISTANCE,
     /**
+     * Exposes the patch version of the computed version, ie the Z in X.Y.Z, plus the commit distance from the base tag used for the version computation.
+     */
+    PATCH_PLUS_COMMIT_DISTANCE,
+    /**
      * Exposes the distance from HEAD to the root ancestor.
      *
      * not active by default, use {@link fr.brouillard.oss.jgitver.Features#DISTANCE_TO_ROOT} for activation

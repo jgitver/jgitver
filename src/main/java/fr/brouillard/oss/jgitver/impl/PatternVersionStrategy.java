@@ -15,26 +15,19 @@
  */
 package fr.brouillard.oss.jgitver.impl;
 
-import java.util.List;
-import java.util.Optional;
+import static java.util.Optional.empty;
+
+import java.util.*;
 import java.util.function.Function;
 
-import fr.brouillard.oss.jgitver.Features;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.lib.*;
+import org.eclipse.jgit.revwalk.*;
 import org.petitparser.context.Result;
 
-import fr.brouillard.oss.jgitver.Version;
-import fr.brouillard.oss.jgitver.impl.pattern.VersionGrammarParser;
-import fr.brouillard.oss.jgitver.impl.pattern.VersionPatternGrammarDefinition;
-import fr.brouillard.oss.jgitver.metadata.MetadataProvider;
-import fr.brouillard.oss.jgitver.metadata.MetadataRegistrar;
-import fr.brouillard.oss.jgitver.metadata.Metadatas;
-
-import static java.util.Optional.empty;
+import fr.brouillard.oss.jgitver.*;
+import fr.brouillard.oss.jgitver.impl.pattern.*;
+import fr.brouillard.oss.jgitver.metadata.*;
 
 public class PatternVersionStrategy extends VersionStrategy<PatternVersionStrategy> {
     public static final String DEFAULT_VERSION_PATTERN = "${v}${<meta.QUALIFIED_BRANCH_NAME}${<meta.COMMIT_DISTANCE}";
@@ -75,6 +68,7 @@ public class PatternVersionStrategy extends VersionStrategy<PatternVersionStrate
             
             int headDistance = base.getHeadDistance();
             getRegistrar().registerMetadata(Metadatas.COMMIT_DISTANCE, "" + headDistance);
+            getRegistrar().registerMetadata(Metadatas.PATCH_PLUS_COMMIT_DISTANCE, "" + (baseVersion.getPatch()+headDistance));
 
             if (Features.DISTANCE_TO_ROOT.isActive()) {
                 int headToRootDistance = GitUtils.distanceToRoot(getRepository(), head.getGitObject());

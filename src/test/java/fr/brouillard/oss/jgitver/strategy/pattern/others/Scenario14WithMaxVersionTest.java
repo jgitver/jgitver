@@ -22,10 +22,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import org.eclipse.jgit.lib.ObjectId;
 import org.junit.jupiter.api.Test;
 
-import fr.brouillard.oss.jgitver.Scenarios;
-import fr.brouillard.oss.jgitver.Strategies;
+import fr.brouillard.oss.jgitver.*;
 import fr.brouillard.oss.jgitver.metadata.Metadatas;
-import fr.brouillard.oss.jgitver.ScenarioTest;
 
 public class Scenario14WithMaxVersionTest extends ScenarioTest {
 
@@ -44,6 +42,8 @@ public class Scenario14WithMaxVersionTest extends ScenarioTest {
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName(cCommit.name()).call());
         assertThat(versionCalculator.getVersion(), is("1.0.0-0"));
+        assertThat(versionCalculator.meta(Metadatas.PATCH_PLUS_COMMIT_DISTANCE).isPresent(), is(true));
+        assertThat(versionCalculator.meta(Metadatas.PATCH_PLUS_COMMIT_DISTANCE).get(), is("0"));
     }
 
     @Test
@@ -53,6 +53,8 @@ public class Scenario14WithMaxVersionTest extends ScenarioTest {
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName(cCommit.name()).call());
         assertThat(versionCalculator.getVersion(), is("1.0.0-1"));
+        assertThat(versionCalculator.meta(Metadatas.PATCH_PLUS_COMMIT_DISTANCE).isPresent(), is(true));
+        assertThat(versionCalculator.meta(Metadatas.PATCH_PLUS_COMMIT_DISTANCE).get(), is("1"));
     }
 
     @Test
@@ -62,7 +64,10 @@ public class Scenario14WithMaxVersionTest extends ScenarioTest {
         // checkout the commit in scenario
         unchecked(() -> git.checkout().setName(cCommit.name()).call());
         assertThat(versionCalculator.getVersion(), is("1.1.1-1"));
+        assertThat(versionCalculator.meta(Metadatas.PATCH_PLUS_COMMIT_DISTANCE).isPresent(), is(true));
+        assertThat(versionCalculator.meta(Metadatas.PATCH_PLUS_COMMIT_DISTANCE).get(), is("2"));
     }
+    
 
     @Test
     public void version_of_master() {
@@ -70,6 +75,9 @@ public class Scenario14WithMaxVersionTest extends ScenarioTest {
         unchecked(() -> git.checkout().setName("master").call());
         assertThat(versionCalculator.getVersion(), is("1.1.1-2"));
 
+        assertThat(versionCalculator.meta(Metadatas.PATCH_PLUS_COMMIT_DISTANCE).isPresent(), is(true));
+        assertThat(versionCalculator.meta(Metadatas.PATCH_PLUS_COMMIT_DISTANCE).get(), is("3"));
+        
         assertThat(versionCalculator.meta(Metadatas.NEXT_MAJOR_VERSION).get(), is("2.0.0"));
         assertThat(versionCalculator.meta(Metadatas.NEXT_MINOR_VERSION).get(), is("1.2.0"));
         assertThat(versionCalculator.meta(Metadatas.NEXT_PATCH_VERSION).get(), is("1.1.2"));
