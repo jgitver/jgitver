@@ -15,19 +15,14 @@
  */
 package fr.brouillard.oss.jgitver.impl;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
-import fr.brouillard.oss.jgitver.Features;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.lib.*;
+import org.eclipse.jgit.revwalk.*;
 
-import fr.brouillard.oss.jgitver.Version;
-import fr.brouillard.oss.jgitver.metadata.MetadataRegistrar;
-import fr.brouillard.oss.jgitver.metadata.Metadatas;
+import fr.brouillard.oss.jgitver.*;
+import fr.brouillard.oss.jgitver.metadata.*;
 
 public class ConfigurableVersionStrategy extends VersionStrategy<ConfigurableVersionStrategy> {
     private boolean autoIncrementPatch = false;
@@ -105,6 +100,7 @@ public class ConfigurableVersionStrategy extends VersionStrategy<ConfigurableVer
 
 
             getRegistrar().registerMetadata(Metadatas.COMMIT_DISTANCE, "" + headDistance);
+            getRegistrar().registerMetadata(Metadatas.PATCH_PLUS_COMMIT_DISTANCE, "" + (baseVersion.getPatch()+headDistance));
 
             if (Features.DISTANCE_TO_ROOT.isActive()) {
                 int headToRootDistance = GitUtils.distanceToRoot(getRepository(), head.getGitObject());

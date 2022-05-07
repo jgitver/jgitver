@@ -15,36 +15,17 @@
  */
 package fr.brouillard.oss.jgitver.impl;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
-import java.io.InputStream;
-
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 import java.util.function.Function;
 
-import org.apache.maven.shared.scriptinterpreter.ProjectBeanShellScriptInterpreter;
-import org.apache.maven.shared.scriptinterpreter.ProjectGroovyScriptInterpreter;
-import org.apache.maven.shared.scriptinterpreter.ScriptRunner;
+import org.apache.maven.shared.scriptinterpreter.*;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.lib.*;
+import org.eclipse.jgit.revwalk.*;
 
-import org.apache.maven.shared.scriptinterpreter.ScriptInterpreter;
-
-import fr.brouillard.oss.jgitver.Features;
-import fr.brouillard.oss.jgitver.ScriptType;
-import fr.brouillard.oss.jgitver.Version;
-
-import fr.brouillard.oss.jgitver.metadata.MetadataProvider;
-import fr.brouillard.oss.jgitver.metadata.MetadataRegistrar;
-import fr.brouillard.oss.jgitver.metadata.Metadatas;
+import fr.brouillard.oss.jgitver.*;
+import fr.brouillard.oss.jgitver.metadata.*;
 
 /**
  * Executes the given script (according its {@link ScriptType}, 
@@ -95,9 +76,9 @@ public class ScriptVersionStrategy extends VersionStrategy<ScriptVersionStrategy
 
             final HashMap<String, Object> metaProps = new HashMap<String, Object>();
 
-            registrar.registerMetadata(Metadatas.COMMIT_DISTANCE,
-                                       "" + base.getHeadDistance());
-
+            registrar.registerMetadata(Metadatas.COMMIT_DISTANCE, "" + base.getHeadDistance());
+            registrar.registerMetadata(Metadatas.PATCH_PLUS_COMMIT_DISTANCE, "" + (baseVersion.getPatch()+base.getHeadDistance()));
+            
             if (Features.DISTANCE_TO_ROOT.isActive()) {
                 final int dtr = GitUtils.
                     distanceToRoot(getRepository(), head.getGitObject());
@@ -270,6 +251,7 @@ public class ScriptVersionStrategy extends VersionStrategy<ScriptVersionStrategy
             case CURRENT_VERSION_MINOR:
             case CURRENT_VERSION_PATCH:
             case COMMIT_DISTANCE:
+            case PATCH_PLUS_COMMIT_DISTANCE:
             case COMMIT_DISTANCE_TO_ROOT:
                 return TO_INTEGER;
             case DIRTY:
