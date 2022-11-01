@@ -136,7 +136,7 @@ public class GitUtils {
     }
 
     public static DistanceCalculator.CalculatorKind calculatorBuilder() {
-        return DistanceCalculator.CalculatorKind.valueOf(System.getProperty(CALCULATOR_KIND_SYSTEM_PROPERTY, DistanceCalculator.CalculatorKind.FIRST_PARENT.name()));
+        return DistanceCalculator.CalculatorKind.valueOf(System.getProperty(CALCULATOR_KIND_SYSTEM_PROPERTY, DistanceCalculator.CalculatorKind.DEPTH_FIRST.name()));
     }
 
 
