@@ -30,16 +30,12 @@ import fr.brouillard.oss.jgitver.impl.jgit.root.RootCommit;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.errors.IncorrectObjectTypeException;
-import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.lib.AnyObjectId;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.DepthWalk;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevSort;
 
 public class GitUtils {
     public static String tagNameFromRef(Ref tag) {
@@ -136,7 +132,7 @@ public class GitUtils {
     }
 
     public static DistanceCalculator.CalculatorKind calculatorBuilder() {
-        return DistanceCalculator.CalculatorKind.valueOf(System.getProperty(CALCULATOR_KIND_SYSTEM_PROPERTY, DistanceCalculator.CalculatorKind.FIRST_PARENT.name()));
+        return DistanceCalculator.CalculatorKind.valueOf(System.getProperty(CALCULATOR_KIND_SYSTEM_PROPERTY, DistanceCalculator.CalculatorKind.DEPTH_FIRST.name()));
     }
 
 

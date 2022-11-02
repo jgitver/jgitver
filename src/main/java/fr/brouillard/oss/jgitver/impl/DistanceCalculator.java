@@ -16,6 +16,7 @@
 package fr.brouillard.oss.jgitver.impl;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -233,6 +234,54 @@ public interface DistanceCalculator {
             return Optional.empty();
         }
     }
+    
+    public class DepthFirstWalkDistanceCalculator implements DistanceCalculator {
+        
+        private final AnyObjectId startId;
+
+        private final Repository repository;
+
+        private final int maxDepth;
+
+        public DepthFirstWalkDistanceCalculator(AnyObjectId startId, Repository repository, int maxDepth) {
+            this.startId = startId;
+            this.repository = repository;
+            this.maxDepth = maxDepth;
+        }
+
+        @Override
+        public Optional<Integer> distanceTo(ObjectId target) {
+            try (RevWalk walk = new RevWalk(repository)) {
+                HashSet<RevCommit> discovered = new HashSet<>();
+
+                ArrayDeque<Pair<AnyObjectId, Integer>> stack = new ArrayDeque<>();
+                stack.push(Pair.of(startId, 0));
+
+                while (!stack.isEmpty()) {
+                    Pair<AnyObjectId, Integer> rev = stack.pop();
+                    
+                    if (!discovered.contains(rev.getLeft())) {
+                        RevCommit commit = walk.parseCommit(rev.getLeft());
+
+                        if (target.equals(commit.getId())) {
+                            return Optional.of(rev.getRight());
+                        }
+
+                        discovered.add(commit);
+
+                        if (rev.getRight() < maxDepth && commit.getParents() != null) {
+                            for (int i = commit.getParentCount(); i > 0; --i) {
+                                stack.push(Pair.of(commit.getParent(i - 1), rev.getRight() + 1));
+                            }
+                        }
+                    }
+                }
+            } catch (IOException ignore) {
+                ignore.printStackTrace();
+            }
+            return Optional.empty();
+        }
+    }
 
     public static enum CalculatorKind {
         /**
@@ -249,10 +298,17 @@ public interface DistanceCalculator {
             DistanceCalculator calculator(AnyObjectId start, Repository repository, int maxDepth) {
                 return new DepthWalkDistanceCalculator(start, repository, maxDepth);
             }
-        }, FIRST_PARENT {
+        },
+        FIRST_PARENT {
             @Override
             DistanceCalculator calculator(AnyObjectId start, Repository repository, int maxDepth) {
                 return new FirstParentWalkDistanceCalculator(start, repository, maxDepth);
+            }
+        },
+        DEPTH_FIRST {
+            @Override
+            DistanceCalculator calculator(AnyObjectId start, Repository repository, int maxDepth) {
+                return new DepthFirstWalkDistanceCalculator(start, repository, maxDepth);
             }
         };
 
